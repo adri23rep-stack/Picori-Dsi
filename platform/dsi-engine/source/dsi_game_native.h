@@ -6,6 +6,7 @@ typedef struct {
     unsigned transition_ticks;
     unsigned init_ticks;
     unsigned room_prefix_ticks;
+    unsigned original_room_calls;
     unsigned deferred_services;
     unsigned errors;
 } DsiGameNativeStats;
