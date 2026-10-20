@@ -31,6 +31,8 @@ jobs:
         run: sh platform/dsi-engine/tests/run_original_initroom_e28.sh
       - name: E28 original room header mirror
         run: sh platform/dsi-engine/tests/run_area_headers_e28.sh
+      - name: E28.3 original entity list snapshots
+        run: sh platform/dsi-engine/tests/run_entity_lists_e28.sh
   nds:
     name: Compile original InitRoom for ARM9
     needs: host-check
@@ -67,9 +69,31 @@ jobs:
             cat e28-build.log
             exit 1
           fi
-          test -s platform/dsi-engine/tmc-dsi-engine-e25.nds
-          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e25.elf > e28-symbols.txt
-          grep -Eq ' T InitRoom$' e28-symbols.txt
+          test -s platform/dsi-engine/tmc-dsi-engine-e28.nds
+          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e28.elf > e28-symbols.txt
+          grep -Eq ' T InitRoom
+          grep -Eq ' T InitAllRoomResInfo$' e28-symbols.txt
+          grep -Eq ' T InitRoomTransition$' e28-symbols.txt
+          grep -Eq ' T SetFadeInverted$' e28-symbols.txt
+          echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E28-Build-Log
+          path: |
+            e28-build.log
+            e28-symbols.txt
+          if-no-files-found: ignore
+      - name: Download experimental NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E28-Original-Motor-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e28.nds
+          if-no-files-found: error
+ e28-symbols.txt
+          grep -Eq ' T __wrap_InitRoom
           grep -Eq ' T InitAllRoomResInfo$' e28-symbols.txt
           grep -Eq ' T InitRoomTransition$' e28-symbols.txt
           grep -Eq ' T SetFadeInverted$' e28-symbols.txt
@@ -88,5 +112,26 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Zelda-Min-Cap-DSi-E28-original-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e25.nds
+          path: platform/dsi-engine/tmc-dsi-engine-e28.nds
+          if-no-files-found: error
+ e28-symbols.txt
+          grep -Eq ' T InitAllRoomResInfo$' e28-symbols.txt
+          grep -Eq ' T InitRoomTransition$' e28-symbols.txt
+          grep -Eq ' T SetFadeInverted$' e28-symbols.txt
+          echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E28-Build-Log
+          path: |
+            e28-build.log
+            e28-symbols.txt
+          if-no-files-found: ignore
+      - name: Download experimental NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zelda-Min-Cap-DSi-E28-original-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e28.nds
           if-no-files-found: error
