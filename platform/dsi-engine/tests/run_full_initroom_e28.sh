@@ -27,7 +27,7 @@ for signature in \
   'void InitRoomTransition(void) {' \
   'void InitRoom(void) {' \
   'void InitAllRoomResInfo(void) {' \
-  'void InitRoomResInfo(' \
+  'void InitRoomResInfo(RoomResInfo* info, RoomHeader* r_hdr, u32 area, u32 room) {' \
   'RoomResInfo* GetCurrentRoomInfo(void) {'; do
     awk -v sig="$signature" 'index($0,sig)==1 { active=1 } active{print} active && /^}$/ {exit}' \
         "$ROOT/src/gameUtils.c"
