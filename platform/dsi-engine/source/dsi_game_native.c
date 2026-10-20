@@ -48,9 +48,13 @@ PriorityHandler gPriorityHandler;
 /* Temporary DSi adapter for src/entity.c's original priority setter.
  * The full entity system is not linkable yet; this is the EXACT one-line
  * original assignment, not a replacement for entity/gameplay handling. */
+#ifndef TMC_DSI_E29_ENTITY_CORE
 void SetInitializationPriority(void) {
     gPriorityHandler.event_priority = PRIO_HIGHEST;
 }
+#endif
+/* E29.4 uses the actual SetInitializationPriority from src/entity.c.
+ * This fallback only exists for tests and older build configurations. */
 
 void ClearRoomMemory(void) { ++sStats.deferred_services; }
 void ClearArmosData(void) { ++sStats.deferred_services; }
