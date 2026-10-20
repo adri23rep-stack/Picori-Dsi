@@ -45,6 +45,7 @@
 #include "dsi_room_tiles.h"
 #include "dsi_room_preview.h"
 #include "dsi_room_resources.h"
+#include "dsi_area_headers.h"
 #include "port_gba_mem.h"
 
 Input gInput;
@@ -124,6 +125,7 @@ int main(void) {
     consoleSelect(&bottom);
     DsiGbaBus_Init();
     DsiRoomResources_Reset();
+    DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
     iprintf("TMC / DSi ENGINE E25\n");
     iprintf("========================\n");
@@ -259,8 +261,21 @@ int main(void) {
                  * Does not dispatch InitRoom or change E25 rendering. */
                 bool room_refs_ok = room_ok &&
                     DsiRoomResources_PrepareEU(&room_metadata);
-                iprintf("\x1b[8;0HRoom cache: %-8s",
-                        room_refs_ok ? "READY" : "PENDING");
+                /* Original EU room header table: all native copies survive
+                 * ROM cache eviction. Compare to the already verified current
+                 * room before publishing the diagnostic. */
+                bool area_hdr_ok = room_ok && DsiAreaHeaders_PrepareEU(room_metadata.area);
+                const RoomHeader *current_hdr = area_hdr_ok ?
+                    DsiAreaHeaders_Get(room_metadata.area, room_metadata.room) : NULL;
+                area_hdr_ok = current_hdr != NULL &&
+                    current_hdr->map_x == room_metadata.map_x &&
+                    current_hdr->map_y == room_metadata.map_y &&
+                    current_hdr->pixel_width == room_metadata.width &&
+                    current_hdr->pixel_height == room_metadata.height &&
+                    current_hdr->tileSet_id == room_metadata.tileset_id;
+                iprintf("\x1b[8;0HRoom cache: %-7s H:%s",
+                        room_refs_ok ? "READY" : "PENDING",
+                        area_hdr_ok ? "OK" : "ERR");
                 DsiRoomMapStats map_stats = {0};
                 bool map_ok = room_ok && DsiRoomMaps_LoadEU(&room_metadata, &map_stats);
                 DsiRoomTileStats tile_stats = {0};
