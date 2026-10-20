@@ -38,12 +38,20 @@ jobs:
       PORTLIBS: /opt/devkitpro/portlibs/nds
     steps:
       - uses: actions/checkout@v4
+      - name: Add devkitARM compiler to PATH
+        run: |
+          set -eu
+          printf '%s\n' "$DEVKITARM/bin" >> "$GITHUB_PATH"
+          test -f "$DEVKITARM/ds_rules"
+          test -x "$DEVKITARM/bin/arm-none-eabi-gcc"
       - name: Verify compiler and libnds
         run: |
           set -eu
-          test -f "$DEVKITARM/ds_rules"
           command -v arm-none-eabi-gcc
+          arm-none-eabi-gcc --version
           command -v ndstool
+          test -f "$LIBNDS/include/nds.h"
+          test -f "$LIBNDS/lib/libnds9.a" || echo 'libnds9.a may live in the ARM9 subfolder; checking during make'
       - name: Compile E25 into NDS
         run: |
           set -eu
