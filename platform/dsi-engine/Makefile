@@ -29,7 +29,7 @@ LIBDIRS := $(LIBNDS) $(PORTLIBS)
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 export OUTPUT := $(STAGE_DIR)/$(TARGET)
-export VPATH := $(STAGE_DIR)/source:$(ROOT_DIR)/src:$(ROOT_DIR)/src/object:$(ROOT_DIR)/platform/dsi/source
+export VPATH := $(STAGE_DIR)/source:$(ROOT_DIR)/src:$(ROOT_DIR)/src/object:$(ROOT_DIR)/src/data:$(ROOT_DIR)/platform/dsi/source
 export DEPSDIR := $(STAGE_DIR)/$(BUILD)
 # Original main/common/flags/title compiled unmodified. The title asset bridge
 # loads ROM bytes into GBA shadow; E7 displays BG2, E8/E9 draw the
