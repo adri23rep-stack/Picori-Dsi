@@ -32,6 +32,8 @@ jobs:
         run: sh platform/dsi-engine/tests/run_room_resources_e27.sh
       - name: E28 original InitRoom and InitRoomTransition native boundary test
         run: sh platform/dsi-engine/tests/run_original_initroom_e28.sh
+      - name: E28.1 stable original room header mirror
+        run: sh platform/dsi-engine/tests/run_area_headers_e28.sh
 
   nds:
     name: Compile ARM9 Nintendo DS ROM
