@@ -33,6 +33,8 @@ jobs:
         run: sh platform/dsi-engine/tests/run_area_headers_e28.sh
       - name: E28.3 original entity list bytes snapshot tests
         run: sh platform/dsi-engine/tests/run_entity_lists_e28.sh
+      - name: E28.4 full original InitRoom-to-RoomResInfo integration
+        run: sh platform/dsi-engine/tests/run_full_initroom_e28.sh
   nds:
     name: Compile original InitRoom for ARM9
     needs: host-check
