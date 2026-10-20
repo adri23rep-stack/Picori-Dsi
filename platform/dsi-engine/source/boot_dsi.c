@@ -48,6 +48,7 @@
 #include "dsi_room_preview.h"
 #include "dsi_room_resources.h"
 #include "dsi_entity_lists.h"
+#include "dsi_player_preflight.h"
 #include "dsi_area_headers.h"
 #include "port_gba_mem.h"
 
@@ -131,7 +132,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E28\n");
+    iprintf("TMC / DSi ENGINE E29\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -270,6 +271,12 @@ int main(void) {
                  * This prepares data only; no entities are spawned. */
                 bool entity_data_ok = room_ok &&
                     DsiEntityLists_PrepareEU(&room_metadata);
+                /* E29: original save + ROM preflight only.
+                 * InitializePlayer() is NOT called on DSi yet. */
+                bool player_preflight_ok = entity_data_ok && room_refs_ok &&
+                    DsiPlayerPreflight_Ready();
+                iprintf("\x1b[15;0HLink preflight: %-7s ",
+                        player_preflight_ok ? "READY" : "BLOCKED");
                 /* Original EU room header table: all native copies survive
                  * ROM cache eviction. Compare to the already verified current
                  * room before publishing the diagnostic. */
