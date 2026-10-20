@@ -1,4 +1,4 @@
-# E27 — Puente de memoria y datos originales (trabajo en curso)
+# E27 — Puente de memoria y datos originales (E27.2 compilando)
 
 ## Regla
 Portar el **motor original** de The Minish Cap. Solo construir adaptadores
@@ -47,3 +47,37 @@ del hardware GBA a Nintendo DSi, nunca recrear movimiento, enemigos o física.
 
 **E27 no activa InitRoom() ni ejecución de Link.** Una compilación
 exitosa no es prueba de jugabilidad. E25 y E26 están preservadas.
+
+
+## E27.2 — Memoria nativa persistente (2026-10-20)
+
+- `platform/dsi-engine/source/dsi_room_resources.c` copia **los registros
+  originales de 12 bytes** de `MapDataDefinition` de mapa, tileset y tiles
+  directamente desde los punteros EU de la ROM. Conserva `src/dest/size`
+  empaquetados en una estructura estable de RAM ARM9; **no** intenta
+  reinterpretar direcciones `0x08...` como punteros nativos.
+- Los tres flujos guardan hasta 16 registros cada uno, exigen fin de
+  cadena y comprueban destinos GBA, paletas y tamaños. Si hay error,
+  conserva intacta la última copia válida.
+- `DsiRoomResources_PrepareEU()` prepara esos datos junto a geometría,
+  índices, direcciones de listas de entidades y conteos de la habitación.
+  `DsiRoomResources_Current()` devuelve una dirección **de RAM nativa**
+  estable hasta reset o preparación exitosa siguiente.
+- `Area gArea` y `RoomVars gRoomVars` ya existen como **estructuras
+  originales** en RAM de ARM9, sin cargar aún sus punteros de `RoomResInfo`.
+- En la pantalla inferior el arranque muestra `Room cache: READY`
+  cuando consigue verificar y fijar los tres flujos de datos originales.
+  Este paso no altera el renderizador E25, no ejecuta `InitRoom()` y
+  no inventa un motor paralelo.
+- Nueva prueba de host con una ROM sintética verifica flujo encadenado,
+  comando de paleta, vida útil, datos inválidos, atomicidad y reset.
+
+**Aceptación de E27.2:** compilar en Actions y probar en melonDS/DSi con
+la ROM EU del usuario: `Area tables: PASS`, `Room cache: READY`,
+y la casa visible como antes. Si hay `PENDING` resolver diferencias de
+los descriptores, sin saltar a E28.
+
+**Siguiente paso E28:** adaptar `RoomResInfo` original a punteros
+nativos válidos y conectar `InitRoom()` auténtico de `src/gameUtils.c`,
+`InitRoomTransition()`, `InitAllRoomResInfo()` y su estado asociado,
+sin desactivar validaciones de memoria.
