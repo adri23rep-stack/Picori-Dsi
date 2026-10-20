@@ -49,6 +49,7 @@
 #include "dsi_room_resources.h"
 #include "dsi_entity_lists.h"
 #include "dsi_player_preflight.h"
+#include "dsi_entity_state_e29.h"
 #include "dsi_area_headers.h"
 #include "port_gba_mem.h"
 
@@ -273,10 +274,12 @@ int main(void) {
                     DsiEntityLists_PrepareEU(&room_metadata);
                 /* E29: original save + ROM preflight only.
                  * InitializePlayer() is NOT called on DSi yet. */
+                bool list_memory_ok = DsiEntityState_EmptyValid();
                 bool player_preflight_ok = entity_data_ok && room_refs_ok &&
-                    DsiPlayerPreflight_Ready();
-                iprintf("\x1b[15;0HLink preflight: %-7s ",
-                        player_preflight_ok ? "READY" : "BLOCKED");
+                    list_memory_ok && DsiPlayerPreflight_Ready();
+                iprintf("\x1b[15;0HLink preflight: %-7s L:%s ",
+                        player_preflight_ok ? "READY" : "BLOCKED",
+                        list_memory_ok ? "OK" : "ERR");
                 /* Original EU room header table: all native copies survive
                  * ROM cache eviction. Compare to the already verified current
                  * room before publishing the diagnostic. */
