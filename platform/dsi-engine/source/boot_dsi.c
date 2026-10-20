@@ -23,6 +23,8 @@
 #include "game.h"
 #include "area.h"
 #include "flags.h"
+#include "area.h"
+#include "flags.h"
 #include "dsi_gba_bus.h"
 #include "dsi_rom_refs.h"
 #include "dsi_engine_state.h"
@@ -45,6 +47,8 @@
 #include "dsi_room_tiles.h"
 #include "dsi_room_preview.h"
 #include "dsi_room_resources.h"
+#include "dsi_entity_lists.h"
+#include "dsi_area_headers.h"
 #include "port_gba_mem.h"
 
 Input gInput;
@@ -124,8 +128,10 @@ int main(void) {
     consoleSelect(&bottom);
     DsiGbaBus_Init();
     DsiRoomResources_Reset();
+    DsiEntityLists_Reset();
+    DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E25\n");
+    iprintf("TMC / DSi ENGINE E28\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -259,8 +265,26 @@ int main(void) {
                  * Does not dispatch InitRoom or change E25 rendering. */
                 bool room_refs_ok = room_ok &&
                     DsiRoomResources_PrepareEU(&room_metadata);
-                iprintf("\x1b[8;0HRoom cache: %-8s",
-                        room_refs_ok ? "READY" : "PENDING");
+                /* E28.3: exact 16-byte ORIGINAL EU entity records are
+                 * preserved in native RAM for future InitializeEntities.
+                 * This prepares data only; no entities are spawned. */
+                bool entity_data_ok = room_ok &&
+                    DsiEntityLists_PrepareEU(&room_metadata);
+                /* Original EU room header table: all native copies survive
+                 * ROM cache eviction. Compare to the already verified current
+                 * room before publishing the diagnostic. */
+                bool area_hdr_ok = room_ok && DsiAreaHeaders_PrepareEU(room_metadata.area);
+                const RoomHeader *current_hdr = area_hdr_ok ?
+                    DsiAreaHeaders_Get(room_metadata.area, room_metadata.room) : NULL;
+                area_hdr_ok = current_hdr != NULL &&
+                    current_hdr->map_x == room_metadata.map_x &&
+                    current_hdr->map_y == room_metadata.map_y &&
+                    current_hdr->pixel_width == room_metadata.width &&
+                    current_hdr->pixel_height == room_metadata.height &&
+                    current_hdr->tileSet_id == room_metadata.tileset_id;
+                iprintf("\x1b[8;0HRoom cache: %-7s H:%s",
+                        room_refs_ok ? "READY" : "PENDING",
+                        area_hdr_ok ? "OK" : "ERR");
                 DsiRoomMapStats map_stats = {0};
                 bool map_ok = room_ok && DsiRoomMaps_LoadEU(&room_metadata, &map_stats);
                 DsiRoomTileStats tile_stats = {0};
@@ -285,12 +309,29 @@ int main(void) {
                     }
                 }
                 native = DsiGameNative_Status();
-                iprintf("\x1b[10;0HRoom prefix: %-7s", prefix_ok ? "PASS" : "BLOCKED");
+                /* E28: Only the actual original InitRoom()/InitAllRoomResInfo()
+                 * can fill gArea after the E24 transition. Verify the active
+                 * room pointer and metadata, not an independent imitation. */
+                const RoomResInfo *initialized = gArea.pCurrentRoomInfo;
+                bool original_room_ok = prefix_ok && room_refs_ok && area_hdr_ok &&
+                    gRoomControls.room < MAX_ROOMS &&
+                    initialized == &gArea.roomResInfos[gRoomControls.room] &&
+                    gArea.flag_bank == gAreaMetadata[gRoomControls.area].flag_bank &&
+                    gArea.localFlagOffset == gLocalFlagBanks[gArea.flag_bank] &&
+                    gArea.portal_timer == 180u && gArea.lightLevel == 256u &&
+                    initialized->pixel_width == room_metadata.width &&
+                    initialized->pixel_height == room_metadata.height &&
+                    initialized->map_x == room_metadata.map_x &&
+                    initialized->map_y == room_metadata.map_y &&
+                    initialized->tileSet != NULL && initialized->map != NULL &&
+                    initialized->tiles != NULL;
+                iprintf("\x1b[10;0HInitRoom original: %-6s",
+                        original_room_ok ? "PASS" : "PENDING");
                 iprintf("\x1b[16;0HGameTask: %-11s", prefix_ok ? "ROOM PREFIX" : "BLOCKED");
-                iprintf("\x1b[17;0Horig:%u+%u+%u def:%u err:%u   ",
+                iprintf("\x1b[17;0Horg:%u/%u/%u init:%u d:%u e:%u  ",
                         native->transition_ticks, native->init_ticks,
-                        native->room_prefix_ticks, native->deferred_services,
-                        native->errors);
+                        native->room_prefix_ticks, native->original_room_calls,
+                        native->deferred_services, native->errors);
                 iprintf("\x1b[11;0HRoom tiles: %s %lu B   ", tile_ok ? "OK" : "BLOCKED",
                         (unsigned long)(tile_stats.tileset.uncompressed_bytes +
                                         tile_stats.tiles.uncompressed_bytes));
@@ -302,8 +343,9 @@ int main(void) {
                             room_metadata.entity_counts[0], room_metadata.entity_counts[1]);
                 }
                 if (scene_ok) {
-                    iprintf("\x1b[14;0HRoom pixels: %lu      ",
-                            (unsigned long)room_draw_stats.colored_pixels);
+                    iprintf("\x1b[14;0HRoom pixels:%lu E:%s  ",
+                            (unsigned long)room_draw_stats.colored_pixels,
+                            entity_data_ok ? "READY" : "BAD");
                 }
             } else {
                 iprintf("\x1b[15;0HGame RAM: BLOCKED     ");

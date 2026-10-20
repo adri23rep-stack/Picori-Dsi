@@ -1,9 +1,8 @@
-name: Build Zelda Minish Cap DSi E27 (Original Engine)
-
+name: Build Zelda Minish Cap DSi E28 (Original InitRoom)
 on:
   workflow_dispatch:
   push:
-    branches: [main, e26-original-engine, e27-native-memory]
+    branches: [main, e26-original-engine, e27-native-memory, e28-original-initroom]
     paths:
       - 'platform/dsi-engine/**'
       - 'platform/dsi/source/**'
@@ -12,27 +11,32 @@ on:
       - 'port/**'
       - 'build/EU/assets/**'
       - '.github/workflows/dsi-e25.yml'
-
 permissions:
   contents: read
-
 jobs:
   host-check:
-    name: Validate E25 and original E26 message initialization
+    name: Test original E25-E28 engine bridges
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run E25 framebuffer tests (no ROM needed)
+      - name: E25 room framebuffer
         run: sh platform/dsi-engine/tests/run_room_preview_e25.sh
-      - name: Verify original src/message.c initialises engine state
+      - name: E26 original message initialization
         run: sh platform/dsi-engine/tests/run_original_message_e26.sh
-      - name: Validate E27 native original areas and ROM pointers
+      - name: E27 original area and ROM pointers
         run: sh platform/dsi-engine/tests/run_memory_bridge_e27.sh
-      - name: E27.2 persistent native room descriptors (no ROM)
+      - name: E27.2 persistent native room resources
         run: sh platform/dsi-engine/tests/run_room_resources_e27.sh
-
+      - name: E28 unmodified original InitRoom host test
+        run: sh platform/dsi-engine/tests/run_original_initroom_e28.sh
+      - name: E28 original RoomHeader snapshot tests
+        run: sh platform/dsi-engine/tests/run_area_headers_e28.sh
+      - name: E28.3 original entity list bytes snapshot tests
+        run: sh platform/dsi-engine/tests/run_entity_lists_e28.sh
+      - name: E28.4 full original InitRoom-to-RoomResInfo integration
+        run: sh platform/dsi-engine/tests/run_full_initroom_e28.sh
   nds:
-    name: Compile ARM9 Nintendo DS ROM
+    name: Compile original InitRoom for ARM9
     needs: host-check
     runs-on: ubuntu-latest
     container:
@@ -57,29 +61,37 @@ jobs:
           arm-none-eabi-gcc --version
           command -v ndstool
           test -f "$LIBNDS/include/nds.h"
-          test -f "$LIBNDS/lib/libnds9.a" || echo 'libnds9.a may live in the ARM9 subfolder; checking during make'
-      - name: Compile E27 into NDS
+      - name: Build E28 and verify linked original functions
         run: |
           set -eu
           make -C platform/dsi-engine clean
-          if make -C platform/dsi-engine > e25-build.log 2>&1; then
-            cat e25-build.log
+          if make -C platform/dsi-engine > e28-build.log 2>&1; then
+            cat e28-build.log
           else
-            cat e25-build.log
+            cat e28-build.log
             exit 1
           fi
-          test -s platform/dsi-engine/tmc-dsi-engine-e25.nds
-      - name: Upload build log (even on failure)
+          test -s platform/dsi-engine/tmc-dsi-engine-e28.nds
+          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e28.elf > e28-symbols.txt
+          grep -Eq ' T InitRoom$' e28-symbols.txt
+          grep -Eq ' T __wrap_InitRoom$' e28-symbols.txt
+          grep -Eq ' T InitAllRoomResInfo$' e28-symbols.txt
+          grep -Eq ' T InitRoomTransition$' e28-symbols.txt
+          grep -Eq ' T SetFadeInverted$' e28-symbols.txt
+          echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
+      - name: Upload build diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: E27-Build-Log
-          path: e25-build.log
+          name: E28-Build-Log
+          path: |
+            e28-build.log
+            e28-symbols.txt
           if-no-files-found: ignore
-      - name: Downloadable NDS
+      - name: Download experimental NDS
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Zelda-Min-Cap-DSi-E27-original-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e25.nds
+          name: Picori-DSi-E28-Original-Motor-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e28.nds
           if-no-files-found: error

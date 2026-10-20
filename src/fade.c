@@ -181,7 +181,7 @@ void SetFadeProgress(u32 arg0) {
 }
 
 void SetFade(u32 type, u32 speed) {
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI_E28_ORIGINAL_INITROOM)
     {
         extern void Port_LogFadeCall(const char* fn, u32 arg1, u32 arg2, u32 priorType, u32 priorActive, u32 priorProg);
         Port_LogFadeCall("SetFade", type, speed, gFadeControl.type, gFadeControl.active, gFadeControl.progress);
@@ -203,6 +203,9 @@ void SetFade(u32 type, u32 speed) {
         gScreen.bg2.control |= BGCNT_MOSAIC;
         gScreen.bg3.control |= BGCNT_MOSAIC;
     }
+#ifndef TMC_DSI_E28_ORIGINAL_INITROOM
+    /* Iris registers are GBA hardware; adapt in a later stage. E28 only
+     * starts the original default room fade, which does not use this path. */
     if (type & FADE_IRIS) {
         sub_0801E1B8(gFadeControl.win_inside_cnt, gFadeControl.win_outside_cnt);
         sub_0801E1EC(gFadeControl.iris_x, gFadeControl.iris_y, gFadeControl.iris_size);
@@ -212,10 +215,11 @@ void SetFade(u32 type, u32 speed) {
             gUsedPalettes = 0xffffffff;
         }
     }
+#endif
 }
 
 void SetFadeInverted(u32 speed) {
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI_E28_ORIGINAL_INITROOM)
     {
         extern void Port_LogFadeCall(const char* fn, u32 arg1, u32 arg2, u32 priorType, u32 priorActive, u32 priorProg);
         Port_LogFadeCall("SetFadeInverted", speed, 0, gFadeControl.type, gFadeControl.active, gFadeControl.progress);

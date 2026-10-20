@@ -5,6 +5,10 @@
  * @brief Game task
  */
 #include "game.h"
+#ifdef TMC_DSI_E28_ORIGINAL_INITROOM
+#include "dsi_area_headers.h"
+#include "dsi_room_resources.h"
+#endif
 
 #include "area.h"
 #include "asm.h"
@@ -204,6 +208,21 @@ static void GameMain_InitRoom(void) {
     /* E26: run ORIGINAL src/message.c message initialization. Other
      * missing game/room/physics services are still deliberately gated. */
     MessageInitialize();
+#endif
+#ifdef TMC_DSI_E28_ORIGINAL_INITROOM
+    /* E28: execute genuine gameUtils.c::InitRoom, never a replacement.
+     * It is deliberately guarded until both original ROM tables are pinned.
+     * InitUI, entities and gameplay loops remain disabled.
+     */
+    const DsiRoomResources *roomResources = DsiRoomResources_Current();
+    const DsiAreaHeaders *areaHeaders = DsiAreaHeaders_Current();
+    if (roomResources && areaHeaders &&
+        roomResources->area == gRoomControls.area &&
+        roomResources->room == gRoomControls.room &&
+        areaHeaders->area == gRoomControls.area &&
+        gRoomControls.room < areaHeaders->count) {
+        InitRoom();
+    }
 #endif
     /* E24: stop at the original room-initialization prefix. The REAL
      * MessageInitialize/InitRoom/InitUI/InitializeEntities calls remain

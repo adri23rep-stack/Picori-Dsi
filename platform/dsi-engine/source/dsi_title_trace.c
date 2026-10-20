@@ -104,7 +104,17 @@ void __wrap_DispReset(bool32 refresh) {
     ResetScreenRegs();
     gScreen.bg0.updated = (u16)refresh;
 }
+#ifdef TMC_DSI_E28_ORIGINAL_INITROOM
+/* Keep the proven TITLE diagnostic behavior (no active fade) while
+ * forwarding real GAME room transitions to original src/fade.c. */
+void __real_SetFade(u32 type, u32 speed);
+void __wrap_SetFade(u32 type, u32 speed) {
+    ++gDsiTitleTrace.fade_count;
+    if (gMain.task == TASK_GAME) __real_SetFade(type, speed);
+}
+#else
 void SetFade(u32 type, u32 speed) { (void)type; (void)speed; ++gDsiTitleTrace.fade_count; }
+#endif
 void __wrap_LoadGfxGroup(u32 group) {
     unsigned idx = gDsiTitleTrace.gfx_count++;
     if (idx < 4) gDsiTitleTrace.gfx_group[idx] = group;

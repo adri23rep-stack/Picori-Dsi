@@ -5,6 +5,12 @@
 #include "dsi_game_native.h"
 #include "dsi_game_transition.h"
 #include "dsi_game_bootstrap.h"
+#ifdef TMC_DSI_E28_ORIGINAL_INITROOM
+#include "dsi_area_headers.h"
+#include "dsi_room_resources.h"
+#include "area.h"
+#include "flags.h"
+#endif
 #include "main.h"
 #include "game.h"
 #include "room.h"
@@ -57,6 +63,16 @@ void ClearTileMaps(void) { ++sStats.deferred_services; }
 void sub_0806FD8C(void) { ++sStats.deferred_services; }
 void LoadGfxGroups(void) { ++sStats.deferred_services; }
 
+#ifdef TMC_DSI_E28_ORIGINAL_INITROOM
+/* Link-time tap: verifies the REAL InitRoom in src/gameUtils.c ran, not a
+ * dummy status updated by the diagnostic renderer. */
+void __real_InitRoom(void);
+void __wrap_InitRoom(void) {
+    ++sStats.original_room_calls;
+    __real_InitRoom();
+}
+#endif
+
 void DsiGameNative_Reset(void) {
     memset(&sStats, 0, sizeof(sStats));
     sAllowRoomTick = false;
@@ -107,9 +123,40 @@ bool DsiGameNative_BootRoomPrefix(void) {
         gRoomControls.area != 0x22 || gRoomControls.room != 0x15)
         return false;
 
+#ifdef TMC_DSI_E28_ORIGINAL_INITROOM
+    /* Fail closed if either immutable EU ROM snapshot is absent. The older
+     * code silently skipped original InitRoom yet advanced to CHANGEROOM. */
+    const DsiRoomResources *res = DsiRoomResources_Current();
+    const RoomHeader *hdr = DsiAreaHeaders_Get(gRoomControls.area, gRoomControls.room);
+    if (!res || !hdr || !res->valid ||
+        res->area != gRoomControls.area || res->room != gRoomControls.room ||
+        hdr->map_x != res->map_x || hdr->map_y != res->map_y ||
+        hdr->pixel_width != res->width || hdr->pixel_height != res->height ||
+        hdr->tileSet_id != res->tileSet_id) {
+        ++sStats.errors;
+        return false;
+    }
+#endif
+
     sAllowRoomTick = true;
     GameTask(); /* ORIGINAL GameTask_Main -> GameMain_InitRoom prefix */
     sAllowRoomTick = false;
+#ifdef TMC_DSI_E28_ORIGINAL_INITROOM
+    /* The room was initialized by ORIGINAL engine functions. Prove both the
+     * invocation and the original structure fields, not merely task state. */
+    const RoomResInfo *info = gArea.pCurrentRoomInfo;
+    if (sStats.original_room_calls != 1u ||
+        info != &gArea.roomResInfos[gRoomControls.room] ||
+        gArea.flag_bank != gAreaMetadata[gRoomControls.area].flag_bank ||
+        gArea.localFlagOffset != gLocalFlagBanks[gArea.flag_bank] ||
+        gArea.portal_timer != 180u || gArea.lightLevel != 256u ||
+        info->map_x != res->map_x || info->map_y != res->map_y ||
+        info->pixel_width != res->width || info->pixel_height != res->height ||
+        !info->map || !info->tileSet || !info->tiles) {
+        ++sStats.errors;
+        return false;
+    }
+#endif
     if (gMain.task != TASK_GAME || gMain.state != GAMETASK_MAIN ||
         gMain.substate != GAMEMAIN_CHANGEROOM ||
         gRoomTransition.transitioningOut != 0 ||
