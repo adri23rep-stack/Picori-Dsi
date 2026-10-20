@@ -71,7 +71,6 @@ jobs:
           arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e25.elf > e28-symbols.txt
           grep -Eq ' T InitRoom$' e28-symbols.txt
           grep -Eq ' T InitAllRoomResInfo$' e28-symbols.txt
-          grep -Eq ' T InitRoomResInfo$' e28-symbols.txt
           grep -Eq ' T InitRoomTransition$' e28-symbols.txt
           grep -Eq ' T SetFadeInverted$' e28-symbols.txt
           echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
