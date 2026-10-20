@@ -86,7 +86,16 @@ bool DsiTitleTrace_TestFirstTransitions(void) {
 void __wrap_MemClear(void* dest, u32 len) { memset(dest, 0, len); }
 void FlushSprites(void) { DsiTitleSprites_Clear(); }
 void CopyOAM(void) { ++gDsiTitleTrace.oam_count; }
+#ifdef TMC_DSI_E26_ORIGINAL_MESSAGE
+/* Trace the call, then execute the UNMODIFIED original function. */
+void __real_MessageInitialize(void);
+void __wrap_MessageInitialize(void) {
+    ++gDsiTitleTrace.message_count;
+    __real_MessageInitialize();
+}
+#else
 void MessageInitialize(void) { ++gDsiTitleTrace.message_count; }
+#endif
 /* Execute the ORIGINAL ResetScreenRegs() from src/common.c so BG2 control
  * and screen base come from game code (0x1D02), not a hardcoded E7 scene.
  * DispReset itself needs further hardware/other modules and stays wrapped. */
