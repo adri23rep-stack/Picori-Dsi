@@ -33,7 +33,7 @@ PlayerEntity gPlayerEntity;
 PlayerState gPlayerState;
 DiggingCaveEntranceTransition gDiggingCaveEntranceTransition;
 u8 gUpdateVisibleTiles;
-const OverworldLocation gOverworldLocations[1] = {0}; /* not accessed */
+/* E27: gOverworldLocations is linked directly from ORIGINAL src/data/areaMetadata.c. */
 static DsiGameNativeStats sStats;
 static bool sAllowRoomTick;
 /* The GBA linker allocates gPriorityHandler at a fixed RAM address; DSi
