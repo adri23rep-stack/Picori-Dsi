@@ -39,6 +39,8 @@ jobs:
         run: sh platform/dsi-engine/tests/run_original_player_e29.sh
       - name: E29.2 genuine Entity linked-list and priorities
         run: sh platform/dsi-engine/tests/run_original_entity_lists_e29.sh
+      - name: E29.3 native player data preflight
+        run: sh platform/dsi-engine/tests/run_player_preflight_e29.sh
   nds:
     name: Compile original InitRoom for ARM9
     needs: host-check
@@ -75,8 +77,8 @@ jobs:
             cat e28-build.log
             exit 1
           fi
-          test -s platform/dsi-engine/tmc-dsi-engine-e28.nds
-          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e28.elf > e28-symbols.txt
+          test -s platform/dsi-engine/tmc-dsi-engine-e29.nds
+          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf > e28-symbols.txt
           grep -Eq ' T InitRoom$' e28-symbols.txt
           grep -Eq ' T __wrap_InitRoom$' e28-symbols.txt
           grep -Eq ' T InitAllRoomResInfo$' e28-symbols.txt
@@ -96,6 +98,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Picori-DSi-E28-Original-Motor-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e28.nds
+          name: Picori-DSi-E29-Original-Entity-Preflight-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
           if-no-files-found: error
