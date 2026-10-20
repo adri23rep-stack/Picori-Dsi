@@ -23,7 +23,7 @@ CFLAGS := -std=gnu11 -O2 -g -w -ffunction-sections -fdata-sections -fno-strict-a
 CXXFLAGS := $(CFLAGS) -fno-exceptions -fno-rtti
 ASFLAGS := -g $(ARCH)
 LDFLAGS := -specs=ds_arm9.specs $(ARCH) -Wl,-Map,$(notdir $*.map) -Wl,--gc-sections \
-  -Wl,--wrap=LoadGfxGroup -Wl,--wrap=LoadPaletteGroup -Wl,--wrap=DispReset -Wl,--wrap=MemClear -Wl,--wrap=zMallocInit -Wl,--wrap=MessageInitialize
+  -Wl,--wrap=LoadGfxGroup -Wl,--wrap=LoadPaletteGroup -Wl,--wrap=DispReset -Wl,--wrap=MemClear -Wl,--wrap=zMallocInit -Wl,--wrap=MessageInitialize -Wl,--wrap=SetFade
 LIBS := -lfat -lnds9
 LIBDIRS := $(LIBNDS) $(PORTLIBS)
 
