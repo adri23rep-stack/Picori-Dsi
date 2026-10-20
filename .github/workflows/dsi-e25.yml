@@ -73,6 +73,89 @@ jobs:
             exit 1
           fi
           test -s platform/dsi-engine/tmc-dsi-engine-e25.nds
+          # These must be the linked ORIGINAL functions, not host-only tests.
+          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e25.elf > e28-symbols.txt
+          grep -Eq ' T InitRoom
+      - name: Upload build log (even on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E28-Build-Log
+          path: e25-build.log
+          if-no-files-found: ignore
+      - name: Downloadable NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zelda-Min-Cap-DSi-E28-experimental-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e25.nds
+          if-no-files-found: error
+ e28-symbols.txt
+          grep -Eq ' T InitAllRoomResInfo
+      - name: Upload build log (even on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E28-Build-Log
+          path: e25-build.log
+          if-no-files-found: ignore
+      - name: Downloadable NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zelda-Min-Cap-DSi-E28-experimental-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e25.nds
+          if-no-files-found: error
+ e28-symbols.txt
+          grep -Eq ' T InitRoomResInfo
+      - name: Upload build log (even on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E28-Build-Log
+          path: e25-build.log
+          if-no-files-found: ignore
+      - name: Downloadable NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zelda-Min-Cap-DSi-E28-experimental-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e25.nds
+          if-no-files-found: error
+ e28-symbols.txt
+          grep -Eq ' T InitRoomTransition
+      - name: Upload build log (even on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E28-Build-Log
+          path: e25-build.log
+          if-no-files-found: ignore
+      - name: Downloadable NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zelda-Min-Cap-DSi-E28-experimental-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e25.nds
+          if-no-files-found: error
+ e28-symbols.txt
+          grep -Eq ' T SetFadeInverted
+      - name: Upload build log (even on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E28-Build-Log
+          path: e25-build.log
+          if-no-files-found: ignore
+      - name: Downloadable NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zelda-Min-Cap-DSi-E28-experimental-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e25.nds
+          if-no-files-found: error
+ e28-symbols.txt
+          echo "E28: original room and fade functions linked into ARM9 ELF"
       - name: Upload build log (even on failure)
         if: always()
         uses: actions/upload-artifact@v4
