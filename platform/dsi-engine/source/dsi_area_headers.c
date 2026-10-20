@@ -49,6 +49,11 @@ bool DsiAreaHeaders_PrepareEU(uint8_t area) {
         ++staged.count;
     }
     if (staged.count == 0) return false;
+    /* Preserve the exact 0xFFFF sentinel contract of the original
+     * InitAllRoomResInfo loop. Without this, the zero-filled native
+     * tail would be mistaken for more valid rooms. */
+    if (terminated && staged.count < DSI_E28_MAX_ROOMS)
+        staged.rooms[staged.count].map_x = 0xFFFFu;
     /* Both a sentinel and a full 64-room table are legal for the original.
      * Retain exact ROM bytes rather than inventing rooms or dimensions. */
     (void)terminated;
