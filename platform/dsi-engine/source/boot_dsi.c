@@ -44,6 +44,7 @@
 #include "dsi_room_maps.h"
 #include "dsi_room_tiles.h"
 #include "dsi_room_preview.h"
+#include "dsi_room_resources.h"
 #include "port_gba_mem.h"
 
 Input gInput;
@@ -122,6 +123,7 @@ int main(void) {
     consoleInit(&bottom, 0, BgType_Text4bpp, BgSize_T_256x256, 31, 0, false, true);
     consoleSelect(&bottom);
     DsiGbaBus_Init();
+    DsiRoomResources_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
     iprintf("TMC / DSi ENGINE E25\n");
     iprintf("========================\n");
@@ -253,6 +255,12 @@ int main(void) {
                 DsiRoomMetadata room_metadata = {0};
                 bool room_ok = original_game_boot && romReady &&
                     DsiRoomProbe_ReadEU(0x22u, 0x15u, &room_metadata);
+                /* E27.2: pin original map/tileset commands as stable data.
+                 * Does not dispatch InitRoom or change E25 rendering. */
+                bool room_refs_ok = room_ok &&
+                    DsiRoomResources_PrepareEU(&room_metadata);
+                iprintf("\x1b[8;0HRoom cache: %-8s",
+                        room_refs_ok ? "READY" : "PENDING");
                 DsiRoomMapStats map_stats = {0};
                 bool map_ok = room_ok && DsiRoomMaps_LoadEU(&room_metadata, &map_stats);
                 DsiRoomTileStats tile_stats = {0};
