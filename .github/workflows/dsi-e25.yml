@@ -1,9 +1,9 @@
-name: Build Zelda Minish Cap DSi E27 (Original Engine)
+name: Build Zelda Minish Cap DSi E28 (Original InitRoom)
 
 on:
   workflow_dispatch:
   push:
-    branches: [main, e26-original-engine, e27-native-memory]
+    branches: [main, e26-original-engine, e27-native-memory, e28-original-initroom]
     paths:
       - 'platform/dsi-engine/**'
       - 'platform/dsi/source/**'
@@ -30,6 +30,8 @@ jobs:
         run: sh platform/dsi-engine/tests/run_memory_bridge_e27.sh
       - name: E27.2 persistent native room descriptors (no ROM)
         run: sh platform/dsi-engine/tests/run_room_resources_e27.sh
+      - name: E28 original InitRoom and InitRoomTransition native boundary test
+        run: sh platform/dsi-engine/tests/run_original_initroom_e28.sh
 
   nds:
     name: Compile ARM9 Nintendo DS ROM
@@ -58,7 +60,7 @@ jobs:
           command -v ndstool
           test -f "$LIBNDS/include/nds.h"
           test -f "$LIBNDS/lib/libnds9.a" || echo 'libnds9.a may live in the ARM9 subfolder; checking during make'
-      - name: Compile E27 into NDS
+      - name: Compile E28 into NDS
         run: |
           set -eu
           make -C platform/dsi-engine clean
@@ -73,13 +75,13 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: E27-Build-Log
+          name: E28-Build-Log
           path: e25-build.log
           if-no-files-found: ignore
       - name: Downloadable NDS
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Zelda-Min-Cap-DSi-E27-original-NDS
+          name: Zelda-Min-Cap-DSi-E28-experimental-NDS
           path: platform/dsi-engine/tmc-dsi-engine-e25.nds
           if-no-files-found: error
