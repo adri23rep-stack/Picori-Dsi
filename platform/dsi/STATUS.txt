@@ -1,0 +1,7 @@
+TMC DSi V4 (experimental) — REAL Link metasprite display + free movement.
+Passed local host tests against clean EU user ROM: 50 frames x 4 tunic palettes;
+ROM-reader, input and title-graphics tests passed.
+NOT YET compiled with devkitARM here; NOT YET tested on melonDS/DSi hardware.
+Not a playable Minish Cap port. No game engine, maps, collisions, sound, saves.
+The user must supply their own European baserom_eu.gba via SD/DLDI.
+See LINK_V4.md for commands and exact key controls.

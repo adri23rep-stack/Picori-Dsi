@@ -1,0 +1,13 @@
+ZELDA MINISH CAP DSi - E25 (primera habitacion)
+================================================
+Empieza leyendo platform/dsi-engine/README_E25.md.
+
+PRUEBAS VERIFICADAS: renderizador de PC con datos sinteticos: PASS.
+PRUEBAS PENDIENTES: ROM europea real, compilacion ARM9, DSi/melonDS.
+
+NO incluye .nds ni ROM. NO es jugable aun.
+Incluye GitHub Actions (.github/workflows/dsi-e25.yml) para compilar
+cuando subas el proyecto a un repositorio propio.
+
+Mantenido: el trabajo de E24 y las funciones originales TitleTask/GameTask.
+Nuevo: arranque automatico desde el titulo y render metatile primer cuarto.
