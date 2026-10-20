@@ -69,7 +69,7 @@ bool DsiRoomResources_PrepareEU(const DsiRoomMetadata *room) {
     uint32_t subtable;
     DsiRoomResources tmp;
     if (!room || room->area >= 0x90u || room->room >= 64u ||
-        room->tileSet_id >= 128u || !room->width || !room->height ||
+        room->tileset_id >= 128u || !room->width || !room->height ||
         (room->width & 15u) || (room->height & 15u) ||
         room->width > 1024u || room->height > 1024u ||
         !DsiRomRefs_IsRomSpan(room->room_map_address, 12u) ||
@@ -93,7 +93,7 @@ bool DsiRoomResources_PrepareEU(const DsiRoomMetadata *room) {
     }
 
     if (!DsiRomRefs_RomArrayEntry(EU_AREA_TILESETS, room->area, &subtable) ||
-        !DsiRomRefs_RomArrayEntry(subtable, room->tileSet_id, &tmp.tileset_address) ||
+        !DsiRomRefs_RomArrayEntry(subtable, room->tileset_id, &tmp.tileset_address) ||
         !DsiRomRefs_RomArrayEntry(EU_AREA_TILES, room->area, &tmp.area_tiles_address) ||
         !pin_stream(room->room_map_address, &tmp.map) ||
         !pin_stream(tmp.tileset_address, &tmp.tileset) ||
