@@ -41,7 +41,6 @@ void AppendEntityToList(Entity *p, u32 list) {
     ++list_appends;
 }
 void RegisterPlayerHitbox(void) { ++hitboxes; }
-u32 Direction8FromAnimationState(u32 state) { return state * 4u; }
 void InitializePlayer(void);
 
 int main(void) {
