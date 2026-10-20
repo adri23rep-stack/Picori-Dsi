@@ -1,4 +1,4 @@
-# E27 — Puente de memoria y datos originales (E27.2 compilando)
+# E27 — Puente de memoria y datos originales (validado en melonDS)
 
 ## Regla
 Portar el **motor original** de The Minish Cap. Solo construir adaptadores
@@ -80,3 +80,17 @@ los descriptores, sin saltar a E28.
 nativos válidos y conectar `InitRoom()` auténtico de `src/gameUtils.c`,
 `InitRoomTransition()`, `InitAllRoomResInfo()` y su estado asociado,
 sin desactivar validaciones de memoria.
+
+
+## Confirmación real del usuario — 2026-10-20
+
+E27.2 arrancó correctamente en melonDS con la ROM europea del usuario:
+
+- `Area tables: PASS`
+- `Room cache: READY`
+- La casa de Link se sigue mostrando correctamente.
+
+Esto cierra los criterios **específicos de E27**. **No** significa que
+`InitRoom()`, `InitUI()`, `InitializeEntities()` o la jugabilidad estén
+completos; se implementarán en E28 y posteriores. El `.nds` E27.2 es
+un respaldo validado para comparar futuras compilaciones.
