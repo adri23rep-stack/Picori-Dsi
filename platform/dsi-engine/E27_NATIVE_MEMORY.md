@@ -63,8 +63,7 @@ exitosa no es prueba de jugabilidad. E25 y E26 están preservadas.
   índices, direcciones de listas de entidades y conteos de la habitación.
   `DsiRoomResources_Current()` devuelve una dirección **de RAM nativa**
   estable hasta reset o preparación exitosa siguiente.
-- `Area gArea` y `RoomVars gRoomVars` ya existen como **estructuras
-  originales** en RAM de ARM9, sin cargar aún sus punteros de `RoomResInfo`.
+- `Area gArea` y `RoomVars gRoomVars` **ya estaban presentes** en `dsi_engine_state.c` desde etapas anteriores. E27.2 reutiliza estas estructuras originales en ARM9 y no crea estados paralelos.
 - En la pantalla inferior el arranque muestra `Room cache: READY`
   cuando consigue verificar y fijar los tres flujos de datos originales.
   Este paso no altera el renderizador E25, no ejecuta `InitRoom()` y
