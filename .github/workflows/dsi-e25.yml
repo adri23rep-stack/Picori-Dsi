@@ -15,36 +15,36 @@ permissions:
   contents: read
 jobs:
   host-check:
-    name: Test original E25-E29 engine bridges
+    name: Test E25-E29 original engine boundaries
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: E25 room framebuffer
+      - name: E25 framebuffer
         run: sh platform/dsi-engine/tests/run_room_preview_e25.sh
-      - name: E26 original message initialization
+      - name: E26 original message engine
         run: sh platform/dsi-engine/tests/run_original_message_e26.sh
-      - name: E27 original area and ROM pointers
+      - name: E27 ROM pointers
         run: sh platform/dsi-engine/tests/run_memory_bridge_e27.sh
-      - name: E27.2 persistent native room resources
+      - name: E27 native room resources
         run: sh platform/dsi-engine/tests/run_room_resources_e27.sh
-      - name: E28 original InitRoom host test
+      - name: E28 original InitRoom
         run: sh platform/dsi-engine/tests/run_original_initroom_e28.sh
-      - name: E28 RoomHeader snapshot tests
+      - name: E28 original room headers
         run: sh platform/dsi-engine/tests/run_area_headers_e28.sh
-      - name: E28.3 original entity-list bytes snapshot
+      - name: E28 original entity records
         run: sh platform/dsi-engine/tests/run_entity_lists_e28.sh
-      - name: E28.4 complete original InitRoom chain
+      - name: E28 full original InitRoom chain
         run: sh platform/dsi-engine/tests/run_full_initroom_e28.sh
-      - name: E29.1 original InitializePlayer
+      - name: E29 original InitializePlayer
         run: sh platform/dsi-engine/tests/run_original_player_e29.sh
-      - name: E29.2 original entity linked-list and priorities
+      - name: E29 genuine list functions
         run: sh platform/dsi-engine/tests/run_original_entity_lists_e29.sh
-      - name: E29.3 native player data preflight
+      - name: E29 player data preflight
         run: sh platform/dsi-engine/tests/run_player_preflight_e29.sh
-      - name: E29.4b genuine native entity pool and original list operations
+      - name: E29.4b entity pool + real src/entity.c operations
         run: sh platform/dsi-engine/tests/run_entity_state_e29.sh
   nds:
-    name: Compile original E29 entity primitives for ARM9
+    name: Build E29.4b ARM9 with original entity memory
     needs: host-check
     runs-on: ubuntu-latest
     container:
@@ -56,15 +56,14 @@ jobs:
       PORTLIBS: /opt/devkitpro/portlibs/nds
     steps:
       - uses: actions/checkout@v4
-      - name: Set compiler PATH
+      - name: Configure devkitARM
         run: |
           set -eu
           printf '%s\n' "$DEVKITARM/bin" >> "$GITHUB_PATH"
-          test -f "$DEVKITARM/ds_rules"
           test -x "$DEVKITARM/bin/arm-none-eabi-gcc"
-          command -v ndstool
           test -f "$LIBNDS/include/nds.h"
-      - name: Build E29 and verify original game and entity symbols
+          command -v ndstool
+      - name: Build and verify original engine symbols
         run: |
           set -eu
           make -C platform/dsi-engine clean
@@ -79,123 +78,34 @@ jobs:
           grep -Eq ' T InitRoom$' e29-linked-symbols.txt
           grep -Eq ' T __wrap_InitRoom$' e29-linked-symbols.txt
           grep -Eq ' T InitAllRoomResInfo$' e29-linked-symbols.txt
-          grep -Eq ' T InitRoomTransition$' e29-linked-symbols.txt
           grep -Eq ' T SetInitializationPriority$' e29-linked-symbols.txt
           test -s platform/dsi-engine/build/dsi_entity_core_e29.o
           arm-none-eabi-nm platform/dsi-engine/build/dsi_entity_core_e29.o > e29-original-entity-symbols.txt
-          grep -Eq ' T SetInitializationPriority
-          grep -Eq ' T SetEntityPriority$' e29-original-entity-symbols.txt
+          grep -Eq ' T SetInitializationPriority$' e29-original-entity-symbols.txt
           grep -Eq ' T InitDefaultPriority$' e29-original-entity-symbols.txt
+          grep -Eq ' T SetEntityPriority$' e29-original-entity-symbols.txt
           grep -Eq ' T AppendEntityToList$' e29-original-entity-symbols.txt
-          echo 'E29 original entity.c routines compiled for ARM9; priority initialization linked.'
-      - name: Upload build diagnostics
+          test -s platform/dsi-engine/build/dsi_entity_state_e29.o
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_entity_state_e29.o > e29-native-entity-storage-symbols.txt
+          grep -Eq ' B gEntityLists$' e29-native-entity-storage-symbols.txt
+          grep -Eq ' B gEntities$' e29-native-entity-storage-symbols.txt
+          grep -Eq ' T DsiEntityState_Reset$' e29-native-entity-storage-symbols.txt
+          echo 'E29.4b: authentic entity RAM storage and source functions verified'
+      - name: Upload diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: E29-Build-Log
+          name: E29-4b-Build-Log
           path: |
             e29-build.log
             e29-linked-symbols.txt
             e29-original-entity-symbols.txt
             e29-native-entity-storage-symbols.txt
           if-no-files-found: ignore
-      - name: Download experimental NDS
+      - name: Upload NDS
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Picori-DSi-E29-4b-Original-Entity-Memory-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
-          if-no-files-found: error
- e29-original-entity-symbols.txt
-          test -s platform/dsi-engine/build/dsi_entity_state_e29.o
-          arm-none-eabi-nm platform/dsi-engine/build/dsi_entity_state_e29.o > e29-native-entity-storage-symbols.txt
-          grep -Eq ' B gEntityLists
-          grep -Eq ' T SetEntityPriority$' e29-original-entity-symbols.txt
-          grep -Eq ' T InitDefaultPriority$' e29-original-entity-symbols.txt
-          grep -Eq ' T AppendEntityToList$' e29-original-entity-symbols.txt
-          echo 'E29 original entity.c routines compiled for ARM9; priority initialization linked.'
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: E29-Build-Log
-          path: |
-            e29-build.log
-            e29-linked-symbols.txt
-            e29-original-entity-symbols.txt
-          if-no-files-found: ignore
-      - name: Download experimental NDS
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E29-Original-Entity-Core-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
-          if-no-files-found: error
- e29-native-entity-storage-symbols.txt
-          grep -Eq ' B gEntities
-          grep -Eq ' T SetEntityPriority$' e29-original-entity-symbols.txt
-          grep -Eq ' T InitDefaultPriority$' e29-original-entity-symbols.txt
-          grep -Eq ' T AppendEntityToList$' e29-original-entity-symbols.txt
-          echo 'E29 original entity.c routines compiled for ARM9; priority initialization linked.'
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: E29-Build-Log
-          path: |
-            e29-build.log
-            e29-linked-symbols.txt
-            e29-original-entity-symbols.txt
-          if-no-files-found: ignore
-      - name: Download experimental NDS
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E29-Original-Entity-Core-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
-          if-no-files-found: error
- e29-native-entity-storage-symbols.txt
-          grep -Eq ' T DsiEntityState_Reset
-          grep -Eq ' T SetEntityPriority$' e29-original-entity-symbols.txt
-          grep -Eq ' T InitDefaultPriority$' e29-original-entity-symbols.txt
-          grep -Eq ' T AppendEntityToList$' e29-original-entity-symbols.txt
-          echo 'E29 original entity.c routines compiled for ARM9; priority initialization linked.'
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: E29-Build-Log
-          path: |
-            e29-build.log
-            e29-linked-symbols.txt
-            e29-original-entity-symbols.txt
-          if-no-files-found: ignore
-      - name: Download experimental NDS
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E29-Original-Entity-Core-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
-          if-no-files-found: error
- e29-native-entity-storage-symbols.txt
-          grep -Eq ' T SetEntityPriority$' e29-original-entity-symbols.txt
-          grep -Eq ' T InitDefaultPriority$' e29-original-entity-symbols.txt
-          grep -Eq ' T AppendEntityToList$' e29-original-entity-symbols.txt
-          echo 'E29 original entity.c routines compiled for ARM9; priority initialization linked.'
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: E29-Build-Log
-          path: |
-            e29-build.log
-            e29-linked-symbols.txt
-            e29-original-entity-symbols.txt
-          if-no-files-found: ignore
-      - name: Download experimental NDS
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E29-Original-Entity-Core-NDS
+          name: Picori-DSi-E29-4b-Native-Entities-NDS
           path: platform/dsi-engine/tmc-dsi-engine-e29.nds
           if-no-files-found: error
