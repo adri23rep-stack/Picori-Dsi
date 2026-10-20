@@ -1,8 +1,8 @@
-name: Build Zelda Minish Cap DSi E28 (Original InitRoom)
+name: Build Zelda Minish Cap DSi E29 (Original Entities)
 on:
   workflow_dispatch:
   push:
-    branches: [main, e26-original-engine, e27-native-memory, e28-original-initroom]
+    branches: [main, e26-original-engine, e27-native-memory, e28-original-initroom, e29-original-entities]
     paths:
       - 'platform/dsi-engine/**'
       - 'platform/dsi/source/**'
@@ -35,6 +35,8 @@ jobs:
         run: sh platform/dsi-engine/tests/run_entity_lists_e28.sh
       - name: E28.4 full original InitRoom-to-RoomResInfo integration
         run: sh platform/dsi-engine/tests/run_full_initroom_e28.sh
+      - name: E29.1 original InitializePlayer host test
+        run: sh platform/dsi-engine/tests/run_original_player_e29.sh
   nds:
     name: Compile original InitRoom for ARM9
     needs: host-check
