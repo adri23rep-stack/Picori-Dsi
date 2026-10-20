@@ -23,6 +23,8 @@
 #include "game.h"
 #include "area.h"
 #include "flags.h"
+#include "area.h"
+#include "flags.h"
 #include "dsi_gba_bus.h"
 #include "dsi_rom_refs.h"
 #include "dsi_engine_state.h"
@@ -300,7 +302,24 @@ int main(void) {
                     }
                 }
                 native = DsiGameNative_Status();
-                iprintf("\x1b[10;0HRoom prefix: %-7s", prefix_ok ? "PASS" : "BLOCKED");
+                /* E28: Only the actual original InitRoom()/InitAllRoomResInfo()
+                 * can fill gArea after the E24 transition. Verify the active
+                 * room pointer and metadata, not an independent imitation. */
+                const RoomResInfo *initialized = gArea.pCurrentRoomInfo;
+                bool original_room_ok = prefix_ok && room_refs_ok && area_hdr_ok &&
+                    gRoomControls.room < MAX_ROOMS &&
+                    initialized == &gArea.roomResInfos[gRoomControls.room] &&
+                    gArea.flag_bank == gAreaMetadata[gRoomControls.area].flag_bank &&
+                    gArea.localFlagOffset == gLocalFlagBanks[gArea.flag_bank] &&
+                    gArea.portal_timer == 180u && gArea.lightLevel == 256u &&
+                    initialized->pixel_width == room_metadata.width &&
+                    initialized->pixel_height == room_metadata.height &&
+                    initialized->map_x == room_metadata.map_x &&
+                    initialized->map_y == room_metadata.map_y &&
+                    initialized->tileSet != NULL && initialized->map != NULL &&
+                    initialized->tiles != NULL;
+                iprintf("\x1b[10;0HInitRoom original: %-6s",
+                        original_room_ok ? "PASS" : "PENDING");
                 iprintf("\x1b[16;0HGameTask: %-11s", prefix_ok ? "ROOM PREFIX" : "BLOCKED");
                 iprintf("\x1b[17;0Horig:%u+%u+%u def:%u err:%u   ",
                         native->transition_ticks, native->init_ticks,
