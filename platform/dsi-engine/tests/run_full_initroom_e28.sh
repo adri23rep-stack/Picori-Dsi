@@ -23,6 +23,8 @@ extern void** gAreaTileSets[];
 extern void** gAreaRoomMaps[];
 extern void* gAreaTiles[];
 extern void** gAreaTable[];
+/* Unreachable PC_PORT fallback in the original C body; declared for parsing. */
+void** ReadAreaSubTableEntry(void** table, u32 index);
 #define AREA_TABLE_COUNT 0x90
 void InitRoomTransition(void);
 void InitAllRoomResInfo(void);
