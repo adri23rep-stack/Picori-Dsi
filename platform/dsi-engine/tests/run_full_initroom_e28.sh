@@ -15,7 +15,14 @@ cat <<'HEADERS'
 #include "fade.h"
 #include "dsi_area_headers.h"
 #include "dsi_room_resources.h"
+#include "backgroundAnimations.h"
+#include "port_rom.h"
 #include <stdio.h>
+/* Original declarations from src/gameUtils.c's translation unit. */
+extern void** gAreaTileSets[];
+extern void** gAreaRoomMaps[];
+extern void* gAreaTiles[];
+extern void** gAreaTable[];
 #define AREA_TABLE_COUNT 0x90
 void InitRoomTransition(void);
 void InitAllRoomResInfo(void);
