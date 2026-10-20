@@ -61,3 +61,42 @@ E27.2 es respaldo. No significa que se ejecute aún el motor jugable.
 Un .nds que solo compila sigue siendo una prueba de compilación.
 El primer paso de E28 es un test host del código original; NO es aún
 la inicialización completa de habitación en la consola.
+
+## E28.1–E28.2 — Ejecución ORIGINAL en ARM9 (pendiente validación visual)
+
+- `src/gameUtils.c` y `src/fade.c` originales ya se incluyen en el
+  binario ARM9 bajo `TMC_DSI_E28_ORIGINAL_INITROOM`.
+- `GameMain_InitRoom()` de `src/game.c` llama realmente a
+  `InitRoom()` si E27 tiene una copia válida de los descriptores EU
+  y E28 ha fijado las cabeceras EU del área.
+- `InitRoom()` original invoca `InitRoomTransition()` original y
+  `InitAllRoomResInfo()` original. **El compilador puede optimizar
+  `InitRoomResInfo()` e integrarla en su llamador**, por lo que no
+  se exige un símbolo separado para esa función.
+- El adaptador E28.1 devuelve una tabla persistente de `RoomHeader`
+  originales y preserva el terminador `0xFFFF`; no se permite que
+  el recorrido de 64 salas salga de la copia nativa.
+- Los recursos de mapa, tileset y tiles de la habitación **activa**
+  apuntan a copias originales verificadas en RAM. Para otras
+  habitaciones se conservan geometría/metadata originales, pero aún
+  no se materializan sus flujos.
+- `exits`, `properties` y `bg_anim` todavía son `NULL` en el
+  adaptador E28; **no significa que el sistema completo de habitaciones
+  esté habilitado**. Antes de avanzar a entidades, hay que adaptarlos
+  desde datos ROM genuinos y revisar sus consumidores.
+- El código original de fade se ejecuta en la transición de juego,
+  mientras el diagnóstico de títulos conserva su fade inmóvil; el
+  modo iris de GBA no está habilitado en DSi.
+- La pantalla inferior reporta
+  `Room cache: READY H:OK` y `InitRoom original: PASS` cuando
+  la inicialización coincide con el motor y la geometría de la ROM.
+  **Esto necesita confirmación en melonDS/DSi con ROM EU.**
+
+GitHub Actions: pruebas host (E25–E28), compilación ARM9 y
+comprobación de símbolos `InitRoom`, `InitAllRoomResInfo`,
+`InitRoomTransition` y `SetFadeInverted`. Un enlace exitoso
+no sustituye la prueba visual en consola.
+
+**No declarado completado todavía:** E28 se cerrará cuando el usuario
+confirme la casa visible y ambas comprobaciones nuevas, y se evalúen
+las dependencias que todavía se bloquean.
