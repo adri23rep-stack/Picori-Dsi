@@ -7,7 +7,6 @@
 #include "dsi_game_bootstrap.h"
 #include "main.h"
 #include "game.h"
-#include "area.h"
 #include "room.h"
 #include "screen.h"
 #include "fade.h"
@@ -28,10 +27,6 @@ struct_02000040 gUnk_02000040;
 
 RoomTransition gRoomTransition;
 RoomControls gRoomControls;
-/* E27.2: original game state structures in native ARM9 RAM (not GBA pointers).
- * InitRoom() will fill these when its real resource tables are ported. */
-Area gArea;
-RoomVars gRoomVars;
 OAMControls gOAMControls;
 PauseMenuOptions gPauseMenuOptions;
 PlayerEntity gPlayerEntity;
@@ -68,8 +63,6 @@ void DsiGameNative_Reset(void) {
     memset(&gPriorityHandler, 0, sizeof(gPriorityHandler));
     memset(&gRoomTransition, 0, sizeof(gRoomTransition));
     memset(&gRoomControls, 0, sizeof(gRoomControls));
-    memset(&gArea, 0, sizeof(gArea));
-    memset(&gRoomVars, 0, sizeof(gRoomVars));
     memset(&gOAMControls, 0, sizeof(gOAMControls));
 }
 
