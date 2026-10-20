@@ -67,7 +67,7 @@ jobs:
           arm-none-eabi-gcc --version
           command -v ndstool
           test -f "$LIBNDS/include/nds.h"
-      - name: Build E28 and verify linked original functions
+      - name: Compile ARM9 with original E28 room and E29 entity code
         run: |
           set -eu
           make -C platform/dsi-engine clean
@@ -83,7 +83,126 @@ jobs:
           grep -Eq ' T __wrap_InitRoom$' e28-symbols.txt
           grep -Eq ' T InitAllRoomResInfo$' e28-symbols.txt
           grep -Eq ' T InitRoomTransition$' e28-symbols.txt
-          grep -Eq ' T SetFadeInverted$' e28-symbols.txt
+          grep -Eq ' T SetFadeInverted
+          echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E28-Build-Log
+          path: |
+            e28-build.log
+            e28-symbols.txt
+            e29-original-entity-symbols.txt
+          if-no-files-found: ignore
+      - name: Download experimental NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E29-Original-Entity-Preflight-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
+          if-no-files-found: error
+ e28-symbols.txt
+          # E29.4: both the ARM9 OBJECT FILE and linked NDS carry code
+          # extracted at build time from original src/entity.c.
+          test -s platform/dsi-engine/build/dsi_entity_core_e29.o
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_entity_core_e29.o > e29-original-entity-symbols.txt
+          grep -Eq ' T SetInitializationPriority
+          echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E28-Build-Log
+          path: |
+            e28-build.log
+            e28-symbols.txt
+          if-no-files-found: ignore
+      - name: Download experimental NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E29-Original-Entity-Preflight-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
+          if-no-files-found: error
+ e29-original-entity-symbols.txt
+          grep -Eq ' T InitDefaultPriority
+          echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E28-Build-Log
+          path: |
+            e28-build.log
+            e28-symbols.txt
+          if-no-files-found: ignore
+      - name: Download experimental NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E29-Original-Entity-Preflight-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
+          if-no-files-found: error
+ e29-original-entity-symbols.txt
+          grep -Eq ' T SetEntityPriority
+          echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E28-Build-Log
+          path: |
+            e28-build.log
+            e28-symbols.txt
+          if-no-files-found: ignore
+      - name: Download experimental NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E29-Original-Entity-Preflight-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
+          if-no-files-found: error
+ e29-original-entity-symbols.txt
+          grep -Eq ' T AppendEntityToList
+          echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E28-Build-Log
+          path: |
+            e28-build.log
+            e28-symbols.txt
+          if-no-files-found: ignore
+      - name: Download experimental NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E29-Original-Entity-Preflight-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
+          if-no-files-found: error
+ e29-original-entity-symbols.txt
+          grep -Eq ' T SetInitializationPriority
+          echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E28-Build-Log
+          path: |
+            e28-build.log
+            e28-symbols.txt
+          if-no-files-found: ignore
+      - name: Download experimental NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E29-Original-Entity-Preflight-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
+          if-no-files-found: error
+ e28-symbols.txt
+          echo 'E29: verified original entity.c priorities and lists compiled for ARM9'
           echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
       - name: Upload build diagnostics
         if: always()
