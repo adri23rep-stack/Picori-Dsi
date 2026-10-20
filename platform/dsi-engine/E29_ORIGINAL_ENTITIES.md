@@ -71,3 +71,19 @@ servicios auténticos de listas, prioridad, sprites y hitbox.
 - E28 queda intacto como último hito aceptado en melonDS.
 
 Este trabajo no incluye la ROM comercial ni datos protegidos del juego.
+
+## E29.3 — PRUEBA REAL EN MELONDS (confirmada por el usuario)
+
+Captura aportada del `TMC / DSi ENGINE E29` utilizando su ROM EU:
+
+- Casa de Link visible y con los gráficos correctos.
+- `Area tables: PASS`, `Room cache: READY H:OK`.
+- `InitRoom original: PASS`, `Room tiles: OK 86132 B`.
+- `Link preflight: READY`.
+- `GameTask: ROOM PREFIX`, `orig:1/1/1 init:1 d:10 e:0`.
+- `Room pixels:38400 E:READY`.
+- `entity:0 upd:0 err:0` — todavía **no hay entidades del juego creadas**.
+
+Esto completa la **validación funcional de E29.3**, no la de E29
+completa. La confirmación no incluye Link dibujado ni movimiento.
+La versión E28 sigue preservada como respaldo probado.
