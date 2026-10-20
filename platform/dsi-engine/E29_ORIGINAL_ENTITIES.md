@@ -87,3 +87,49 @@ Captura aportada del `TMC / DSi ENGINE E29` utilizando su ROM EU:
 Esto completa la **validación funcional de E29.3**, no la de E29
 completa. La confirmación no incluye Link dibujado ni movimiento.
 La versión E28 sigue preservada como respaldo probado.
+
+## E29.4a — Primeras funciones originales de src/entity.c compiladas para ARM9
+
+**Estado:** GitHub Actions PASS en
+https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39477764142
+(sin prueba melonDS de este nuevo .nds).
+
+Primero se intentó enlazar `src/entity.c` completo. El compilador C lo
+aceptó, pero el enlazador detectó referencias reales todavía pendientes:
+`gEntityLists`, `gEntities`, `gAuxPlayerEntities`, servicios gráficos,
+hitbox, scripts, `ram_UpdateEntities` y registro de depuración PC. No se
+solucionó añadiendo stubs engañosos ni un asignador falso.
+
+Como avance seguro, el build genera `dsi_entity_core_e29.c`
+**directamente de los cuerpos literales de `src/entity.c`** mediante
+`tools/generate_entity_core_e29.sh`. No es una recreación de entidades.
+Las funciones auténticas compiladas y comprobadas con `arm-none-eabi-nm`:
+
+- `SetInitializationPriority()`
+- `SetEntityPriority()`
+- `InitDefaultPriority()`
+- `AppendEntityToList()`
+- Las tablas originales `gPrioritiesDefault` y `gPrioritiesKinstoneMenu`.
+
+`SetInitializationPriority()` ya se **enlaza** desde esa fuente original
+y reemplaza el adaptador temporal de E28 que tenía una copia de su
+asignación. Las demás funciones están **compiladas en el objeto ARM9**;
+aún no hemos demostrado la ejecución de `AppendEntityToList()` en el
+juego real ni creado a Link. El enlazador puede descartar funciones que
+todavía no son alcanzables durante esta etapa.
+
+## Próximos pasos para E29.4b
+
+1. Conectar almacenamiento de `gEntityLists`, `gEntities` y
+   `gAuxPlayerEntities` del motor, inicializando centinelas originales
+   y validando límites antes de darles uso.
+2. Sustituir los hooks del título solo cuando no comprometan el arranque.
+3. Incorporar las dependencias originales de `InitializePlayer()`
+   (sprite/layer, hitbox, interacción y registro de entidades).
+4. Resolver `properties`/scripts/ROM GBA antes de habilitar
+   `InitializeEntities()`; nunca ejecutar direcciones ROM como código.
+5. Probar en melonDS que E29.4a mantenga `InitRoom original: PASS`,
+   `Link preflight: READY` y la casa visible.
+
+**E29 completa continúa pendiente.** Este .nds todavía es un diagnóstico
+con la casa renderizada; no es un prototipo jugable.
