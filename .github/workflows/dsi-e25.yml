@@ -41,6 +41,8 @@ jobs:
         run: sh platform/dsi-engine/tests/run_original_entity_lists_e29.sh
       - name: E29.3 native player data preflight
         run: sh platform/dsi-engine/tests/run_player_preflight_e29.sh
+      - name: E29.4b genuine native entity pool and original list operations
+        run: sh platform/dsi-engine/tests/run_entity_state_e29.sh
   nds:
     name: Compile original E29 entity primitives for ARM9
     needs: host-check
@@ -81,7 +83,101 @@ jobs:
           grep -Eq ' T SetInitializationPriority$' e29-linked-symbols.txt
           test -s platform/dsi-engine/build/dsi_entity_core_e29.o
           arm-none-eabi-nm platform/dsi-engine/build/dsi_entity_core_e29.o > e29-original-entity-symbols.txt
-          grep -Eq ' T SetInitializationPriority$' e29-original-entity-symbols.txt
+          grep -Eq ' T SetInitializationPriority
+          grep -Eq ' T SetEntityPriority$' e29-original-entity-symbols.txt
+          grep -Eq ' T InitDefaultPriority$' e29-original-entity-symbols.txt
+          grep -Eq ' T AppendEntityToList$' e29-original-entity-symbols.txt
+          echo 'E29 original entity.c routines compiled for ARM9; priority initialization linked.'
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E29-Build-Log
+          path: |
+            e29-build.log
+            e29-linked-symbols.txt
+            e29-original-entity-symbols.txt
+            e29-native-entity-storage-symbols.txt
+          if-no-files-found: ignore
+      - name: Download experimental NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E29-4b-Original-Entity-Memory-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
+          if-no-files-found: error
+ e29-original-entity-symbols.txt
+          test -s platform/dsi-engine/build/dsi_entity_state_e29.o
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_entity_state_e29.o > e29-native-entity-storage-symbols.txt
+          grep -Eq ' B gEntityLists
+          grep -Eq ' T SetEntityPriority$' e29-original-entity-symbols.txt
+          grep -Eq ' T InitDefaultPriority$' e29-original-entity-symbols.txt
+          grep -Eq ' T AppendEntityToList$' e29-original-entity-symbols.txt
+          echo 'E29 original entity.c routines compiled for ARM9; priority initialization linked.'
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E29-Build-Log
+          path: |
+            e29-build.log
+            e29-linked-symbols.txt
+            e29-original-entity-symbols.txt
+          if-no-files-found: ignore
+      - name: Download experimental NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E29-Original-Entity-Core-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
+          if-no-files-found: error
+ e29-native-entity-storage-symbols.txt
+          grep -Eq ' B gEntities
+          grep -Eq ' T SetEntityPriority$' e29-original-entity-symbols.txt
+          grep -Eq ' T InitDefaultPriority$' e29-original-entity-symbols.txt
+          grep -Eq ' T AppendEntityToList$' e29-original-entity-symbols.txt
+          echo 'E29 original entity.c routines compiled for ARM9; priority initialization linked.'
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E29-Build-Log
+          path: |
+            e29-build.log
+            e29-linked-symbols.txt
+            e29-original-entity-symbols.txt
+          if-no-files-found: ignore
+      - name: Download experimental NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E29-Original-Entity-Core-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
+          if-no-files-found: error
+ e29-native-entity-storage-symbols.txt
+          grep -Eq ' T DsiEntityState_Reset
+          grep -Eq ' T SetEntityPriority$' e29-original-entity-symbols.txt
+          grep -Eq ' T InitDefaultPriority$' e29-original-entity-symbols.txt
+          grep -Eq ' T AppendEntityToList$' e29-original-entity-symbols.txt
+          echo 'E29 original entity.c routines compiled for ARM9; priority initialization linked.'
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E29-Build-Log
+          path: |
+            e29-build.log
+            e29-linked-symbols.txt
+            e29-original-entity-symbols.txt
+          if-no-files-found: ignore
+      - name: Download experimental NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E29-Original-Entity-Core-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
+          if-no-files-found: error
+ e29-native-entity-storage-symbols.txt
           grep -Eq ' T SetEntityPriority$' e29-original-entity-symbols.txt
           grep -Eq ' T InitDefaultPriority$' e29-original-entity-symbols.txt
           grep -Eq ' T AppendEntityToList$' e29-original-entity-symbols.txt
