@@ -4,6 +4,15 @@
  * @brief Game Utils
  */
 #include "area.h"
+#ifdef TMC_DSI_E28_ORIGINAL_INITROOM
+/* Two older E24 diagnostic functions remain linked from dsi_game_native.c.
+ * Rename only these not-yet-executed routines to avoid ABI duplicates.
+ * Everything in InitRoom/InitRoomTransition stays in original source. */
+#define ResetTmpFlags E28_Pending_ResetTmpFlags
+#define LoadGfxGroups E28_Pending_LoadGfxGroups
+#include "dsi_area_headers.h"
+#include "dsi_room_resources.h"
+#endif
 #include "backgroundAnimations.h"
 #include "entity.h"
 #include "fade.h"
@@ -66,6 +75,11 @@ static bool32 IsRoomHeaderPtrInRom(const RoomHeader* ptr) {
 #endif
 
 static RoomHeader* GetAreaRoomHeaderTable(u32 area) {
+#if defined(TMC_DSI_E28_ORIGINAL_INITROOM)
+    const DsiAreaHeaders* snapshot = DsiAreaHeaders_Current();
+    return snapshot && snapshot->area == area ?
+        (RoomHeader*)(void*)snapshot->rooms : NULL;
+#endif
 #ifdef PC_PORT
     RoomHeader* table;
 #endif
@@ -707,7 +721,7 @@ void InitAllRoomResInfo(void) {
     }
 
     for (i = 0; i < MAX_ROOMS; i++, r_hdr++) {
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI_E28_ORIGINAL_INITROOM)
         if (!IsRoomHeaderPtrInRom(r_hdr)) {
             fprintf(stderr, "[AREA] room header walk escaped rom area=%u room=%u ptr=%p\n", gRoomControls.area, i,
                     (void*)r_hdr);
@@ -729,7 +743,26 @@ void InitRoomResInfo(RoomResInfo* info, RoomHeader* r_hdr, u32 area, u32 room) {
     info->map_y = r_hdr->map_y;
     info->pixel_width = r_hdr->pixel_width;
     info->pixel_height = r_hdr->pixel_height;
-#ifdef PC_PORT
+#if defined(TMC_DSI_E28_ORIGINAL_INITROOM)
+    /* Native snapshots are verified records from the real EU ROM.
+     * Only the active room's packed descriptors are materialized yet;
+     * other rooms retain their original geometry and remain unloaded.
+     * Later InitUI/LoadMapData must use shadow memory through the DSi bus. */
+    const DsiRoomResources* native = DsiRoomResources_Current();
+    if (native && native->area == area && native->room == room) {
+        info->tileSet = (MapDataDefinition*)(void*)native->tileset.command;
+        info->map = (MapDataDefinition*)(void*)native->map.command;
+        info->tiles = (MapDataDefinition*)(void*)native->tiles.command;
+    } else {
+        info->tileSet = NULL;
+        info->map = NULL;
+        info->tiles = NULL;
+    }
+    info->bg_anim = NULL; /* GBA ROM function pointers are not ARM9 code. */
+    info->exits = NULL;   /* Pending EU exit-list materialization. */
+    info->properties = NULL; /* Pending packed ROM property decoding. */
+    return;
+#elif defined(PC_PORT)
     if (gAreaTileSets[area] == NULL || gAreaRoomMaps[area] == NULL || gAreaTiles[area] == NULL) {
         Port_RefreshAreaData(area);
     }
