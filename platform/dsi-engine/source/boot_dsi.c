@@ -47,6 +47,7 @@
 #include "dsi_room_tiles.h"
 #include "dsi_room_preview.h"
 #include "dsi_room_resources.h"
+#include "dsi_entity_lists.h"
 #include "dsi_area_headers.h"
 #include "port_gba_mem.h"
 
@@ -127,9 +128,10 @@ int main(void) {
     consoleSelect(&bottom);
     DsiGbaBus_Init();
     DsiRoomResources_Reset();
+    DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E25\n");
+    iprintf("TMC / DSi ENGINE E28\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -263,6 +265,11 @@ int main(void) {
                  * Does not dispatch InitRoom or change E25 rendering. */
                 bool room_refs_ok = room_ok &&
                     DsiRoomResources_PrepareEU(&room_metadata);
+                /* E28.3: exact 16-byte ORIGINAL EU entity records are
+                 * preserved in native RAM for future InitializeEntities.
+                 * This prepares data only; no entities are spawned. */
+                bool entity_data_ok = room_ok &&
+                    DsiEntityLists_PrepareEU(&room_metadata);
                 /* Original EU room header table: all native copies survive
                  * ROM cache eviction. Compare to the already verified current
                  * room before publishing the diagnostic. */
@@ -321,10 +328,10 @@ int main(void) {
                 iprintf("\x1b[10;0HInitRoom original: %-6s",
                         original_room_ok ? "PASS" : "PENDING");
                 iprintf("\x1b[16;0HGameTask: %-11s", prefix_ok ? "ROOM PREFIX" : "BLOCKED");
-                iprintf("\x1b[17;0Horig:%u+%u+%u def:%u err:%u   ",
+                iprintf("\x1b[17;0Horg:%u/%u/%u init:%u d:%u e:%u  ",
                         native->transition_ticks, native->init_ticks,
-                        native->room_prefix_ticks, native->deferred_services,
-                        native->errors);
+                        native->room_prefix_ticks, native->original_room_calls,
+                        native->deferred_services, native->errors);
                 iprintf("\x1b[11;0HRoom tiles: %s %lu B   ", tile_ok ? "OK" : "BLOCKED",
                         (unsigned long)(tile_stats.tileset.uncompressed_bytes +
                                         tile_stats.tiles.uncompressed_bytes));
@@ -336,8 +343,9 @@ int main(void) {
                             room_metadata.entity_counts[0], room_metadata.entity_counts[1]);
                 }
                 if (scene_ok) {
-                    iprintf("\x1b[14;0HRoom pixels: %lu      ",
-                            (unsigned long)room_draw_stats.colored_pixels);
+                    iprintf("\x1b[14;0HRoom pixels:%lu E:%s  ",
+                            (unsigned long)room_draw_stats.colored_pixels,
+                            entity_data_ok ? "READY" : "BAD");
                 }
             } else {
                 iprintf("\x1b[15;0HGame RAM: BLOCKED     ");
