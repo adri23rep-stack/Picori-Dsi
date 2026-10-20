@@ -15,7 +15,7 @@ permissions:
   contents: read
 jobs:
   host-check:
-    name: Test original E25-E28 engine bridges
+    name: Test original E25-E29 engine bridges
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,22 +27,22 @@ jobs:
         run: sh platform/dsi-engine/tests/run_memory_bridge_e27.sh
       - name: E27.2 persistent native room resources
         run: sh platform/dsi-engine/tests/run_room_resources_e27.sh
-      - name: E28 unmodified original InitRoom host test
+      - name: E28 original InitRoom host test
         run: sh platform/dsi-engine/tests/run_original_initroom_e28.sh
-      - name: E28 original RoomHeader snapshot tests
+      - name: E28 RoomHeader snapshot tests
         run: sh platform/dsi-engine/tests/run_area_headers_e28.sh
-      - name: E28.3 original entity list bytes snapshot tests
+      - name: E28.3 original entity-list bytes snapshot
         run: sh platform/dsi-engine/tests/run_entity_lists_e28.sh
-      - name: E28.4 full original InitRoom-to-RoomResInfo integration
+      - name: E28.4 complete original InitRoom chain
         run: sh platform/dsi-engine/tests/run_full_initroom_e28.sh
-      - name: E29.1 original InitializePlayer host test
+      - name: E29.1 original InitializePlayer
         run: sh platform/dsi-engine/tests/run_original_player_e29.sh
-      - name: E29.2 genuine Entity linked-list and priorities
+      - name: E29.2 original entity linked-list and priorities
         run: sh platform/dsi-engine/tests/run_original_entity_lists_e29.sh
       - name: E29.3 native player data preflight
         run: sh platform/dsi-engine/tests/run_player_preflight_e29.sh
   nds:
-    name: Compile original InitRoom for ARM9
+    name: Compile original E29 entity primitives for ARM9
     needs: host-check
     runs-on: ubuntu-latest
     container:
@@ -54,169 +54,52 @@ jobs:
       PORTLIBS: /opt/devkitpro/portlibs/nds
     steps:
       - uses: actions/checkout@v4
-      - name: Add devkitARM compiler to PATH
+      - name: Set compiler PATH
         run: |
           set -eu
           printf '%s\n' "$DEVKITARM/bin" >> "$GITHUB_PATH"
           test -f "$DEVKITARM/ds_rules"
           test -x "$DEVKITARM/bin/arm-none-eabi-gcc"
-      - name: Verify compiler and libnds
-        run: |
-          set -eu
-          command -v arm-none-eabi-gcc
-          arm-none-eabi-gcc --version
           command -v ndstool
           test -f "$LIBNDS/include/nds.h"
-      - name: Compile ARM9 with original E28 room and E29 entity code
+      - name: Build E29 and verify original game and entity symbols
         run: |
           set -eu
           make -C platform/dsi-engine clean
-          if make -C platform/dsi-engine > e28-build.log 2>&1; then
-            cat e28-build.log
+          if make -C platform/dsi-engine > e29-build.log 2>&1; then
+            cat e29-build.log
           else
-            cat e28-build.log
+            cat e29-build.log
             exit 1
           fi
           test -s platform/dsi-engine/tmc-dsi-engine-e29.nds
-          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf > e28-symbols.txt
-          grep -Eq ' T InitRoom$' e28-symbols.txt
-          grep -Eq ' T __wrap_InitRoom$' e28-symbols.txt
-          grep -Eq ' T InitAllRoomResInfo$' e28-symbols.txt
-          grep -Eq ' T InitRoomTransition$' e28-symbols.txt
-          grep -Eq ' T SetFadeInverted
-          echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
+          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf > e29-linked-symbols.txt
+          grep -Eq ' T InitRoom$' e29-linked-symbols.txt
+          grep -Eq ' T __wrap_InitRoom$' e29-linked-symbols.txt
+          grep -Eq ' T InitAllRoomResInfo$' e29-linked-symbols.txt
+          grep -Eq ' T InitRoomTransition$' e29-linked-symbols.txt
+          grep -Eq ' T SetInitializationPriority$' e29-linked-symbols.txt
+          test -s platform/dsi-engine/build/dsi_entity_core_e29.o
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_entity_core_e29.o > e29-original-entity-symbols.txt
+          grep -Eq ' T SetInitializationPriority$' e29-original-entity-symbols.txt
+          grep -Eq ' T SetEntityPriority$' e29-original-entity-symbols.txt
+          grep -Eq ' T InitDefaultPriority$' e29-original-entity-symbols.txt
+          grep -Eq ' T AppendEntityToList$' e29-original-entity-symbols.txt
+          echo 'E29 original entity.c routines compiled for ARM9; priority initialization linked.'
       - name: Upload build diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: E28-Build-Log
+          name: E29-Build-Log
           path: |
-            e28-build.log
-            e28-symbols.txt
+            e29-build.log
+            e29-linked-symbols.txt
             e29-original-entity-symbols.txt
           if-no-files-found: ignore
       - name: Download experimental NDS
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Picori-DSi-E29-Original-Entity-Preflight-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
-          if-no-files-found: error
- e28-symbols.txt
-          # E29.4: both the ARM9 OBJECT FILE and linked NDS carry code
-          # extracted at build time from original src/entity.c.
-          test -s platform/dsi-engine/build/dsi_entity_core_e29.o
-          arm-none-eabi-nm platform/dsi-engine/build/dsi_entity_core_e29.o > e29-original-entity-symbols.txt
-          grep -Eq ' T SetInitializationPriority
-          echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: E28-Build-Log
-          path: |
-            e28-build.log
-            e28-symbols.txt
-          if-no-files-found: ignore
-      - name: Download experimental NDS
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E29-Original-Entity-Preflight-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
-          if-no-files-found: error
- e29-original-entity-symbols.txt
-          grep -Eq ' T InitDefaultPriority
-          echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: E28-Build-Log
-          path: |
-            e28-build.log
-            e28-symbols.txt
-          if-no-files-found: ignore
-      - name: Download experimental NDS
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E29-Original-Entity-Preflight-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
-          if-no-files-found: error
- e29-original-entity-symbols.txt
-          grep -Eq ' T SetEntityPriority
-          echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: E28-Build-Log
-          path: |
-            e28-build.log
-            e28-symbols.txt
-          if-no-files-found: ignore
-      - name: Download experimental NDS
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E29-Original-Entity-Preflight-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
-          if-no-files-found: error
- e29-original-entity-symbols.txt
-          grep -Eq ' T AppendEntityToList
-          echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: E28-Build-Log
-          path: |
-            e28-build.log
-            e28-symbols.txt
-          if-no-files-found: ignore
-      - name: Download experimental NDS
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E29-Original-Entity-Preflight-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
-          if-no-files-found: error
- e29-original-entity-symbols.txt
-          grep -Eq ' T SetInitializationPriority
-          echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: E28-Build-Log
-          path: |
-            e28-build.log
-            e28-symbols.txt
-          if-no-files-found: ignore
-      - name: Download experimental NDS
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E29-Original-Entity-Preflight-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
-          if-no-files-found: error
- e28-symbols.txt
-          echo 'E29: verified original entity.c priorities and lists compiled for ARM9'
-          echo 'E28: ORIGINAL InitRoom and fade linked in ARM9'
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: E28-Build-Log
-          path: |
-            e28-build.log
-            e28-symbols.txt
-          if-no-files-found: ignore
-      - name: Download experimental NDS
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E29-Original-Entity-Preflight-NDS
+          name: Picori-DSi-E29-Original-Entity-Core-NDS
           path: platform/dsi-engine/tmc-dsi-engine-e29.nds
           if-no-files-found: error
