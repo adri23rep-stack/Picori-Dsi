@@ -200,6 +200,11 @@ static void GameMain_InitRoom(void) {
     gRoomTransition.field_0x4[0] = 0;
     gRoomTransition.field_0x4[1] = 0;
 #ifdef TMC_DSI_SAFE_GAME_BOOT
+#ifdef TMC_DSI_E26_ORIGINAL_MESSAGE
+    /* E26: run ORIGINAL src/message.c message initialization. Other
+     * missing game/room/physics services are still deliberately gated. */
+    MessageInitialize();
+#endif
     /* E24: stop at the original room-initialization prefix. The REAL
      * MessageInitialize/InitRoom/InitUI/InitializeEntities calls remain
      * pending until their ROM pointers and allocators are ported.

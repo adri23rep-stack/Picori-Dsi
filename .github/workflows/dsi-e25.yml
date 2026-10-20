@@ -1,9 +1,9 @@
-name: Build Zelda Minish Cap DSi E25
+name: Build Zelda Minish Cap DSi E26 (Original Engine)
 
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, e26-original-engine]
     paths:
       - 'platform/dsi-engine/**'
       - 'platform/dsi/source/**'
@@ -18,12 +18,14 @@ permissions:
 
 jobs:
   host-check:
-    name: Check E25 room renderer
+    name: Validate E25 and original E26 message initialization
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Run E25 framebuffer tests (no ROM needed)
         run: sh platform/dsi-engine/tests/run_room_preview_e25.sh
+      - name: Verify original src/message.c initialises engine state
+        run: sh platform/dsi-engine/tests/run_original_message_e26.sh
 
   nds:
     name: Compile ARM9 Nintendo DS ROM
@@ -52,7 +54,7 @@ jobs:
           command -v ndstool
           test -f "$LIBNDS/include/nds.h"
           test -f "$LIBNDS/lib/libnds9.a" || echo 'libnds9.a may live in the ARM9 subfolder; checking during make'
-      - name: Compile E25 into NDS
+      - name: Compile E26 into NDS
         run: |
           set -eu
           make -C platform/dsi-engine clean
@@ -67,13 +69,13 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: E25-Build-Log
+          name: E26-Build-Log
           path: e25-build.log
           if-no-files-found: ignore
       - name: Downloadable NDS
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Zelda-Min-Cap-DSi-E25-NDS
+          name: Zelda-Min-Cap-DSi-E26-original-NDS
           path: platform/dsi-engine/tmc-dsi-engine-e25.nds
           if-no-files-found: error
