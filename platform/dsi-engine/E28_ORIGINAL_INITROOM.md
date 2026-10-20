@@ -146,3 +146,33 @@ habitaciones y los punteros originales a scripts de ROM: actualmente son
 como punteros ARM9.
 
 E27.2 sigue como respaldo comprobado. No se incluye ROM comercial.
+
+## E28 — VALIDACIÓN EN MELONDS (2026-10-20)
+
+**Hito E28 aceptado.** El usuario aportó una captura del ejecutable
+`tmc-dsi-engine-e28.nds` con ROM EU en melonDS. La captura muestra:
+
+- Casa de Link visible, gráficos preservados respecto a E27.
+- `Area tables: PASS`
+- `Room cache: READY H:OK`
+- `InitRoom original: PASS`
+- `org:1/1/1 init:1 d:10 e:0` (una llamada original, sin error en
+  el diagnóstico del prefijo de arranque).
+- `Room pixels:38400 E:READY`
+- `Game RAM: READY` y `GameTask: ROOM PREFIX`.
+
+**Qué significa:** el objetivo de E28, ejecutar una primera
+inicialización real de habitación mediante `InitRoom()` original y
+mantener el renderizado del escenario, quedó demostrado en melonDS.
+
+**Qué NO significa:** el juego todavía no es jugable; la imagen
+superior sigue siendo el render de diagnóstico. Los adaptadores dejan
+`properties`, `exits`, `bg_anim` en NULL; el contador de
+`deferred_services` sigue indicando servicios sin portar. No deben
+habilitarse entidades, transiciones completas ni scripts sin atender
+esas referencias y sus consumidores.
+
+**Próximo hito E29:** inspeccionar `InitializeEntities()`,
+`InitializePlayer()`, estructuras `EntityData`, y dependencias de
+propiedades, salidas, listas y sprites reales; conectar progresivamente
+las funciones originales sin añadir entidades ficticias.
