@@ -133,3 +133,40 @@ todavía no son alcanzables durante esta etapa.
 
 **E29 completa continúa pendiente.** Este .nds todavía es un diagnóstico
 con la casa renderizada; no es un prototipo jugable.
+
+## E29.4b — Variables originales de entidades en memoria de DSi
+
+**Compilación y pruebas CI aprobadas:**
+https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39485524004
+
+`dsi_entity_state_e29.c` ahora aporta RAM real de ARM9 para las
+estructuras exactas del código original:
+
+- `LinkedList gEntityLists[9]`
+- `GenericEntity gEntities[MAX_ENTITIES]`
+- `GenericEntity gAuxPlayerEntities[MAX_AUX_PLAYER_ENTITIES]`
+- `gEntCount` y `gManagerCount`
+
+`DsiEntityState_Reset()` deja las nueve listas vacías con los
+centinelas **originales**, referidos a sí mismos, y limpia el conjunto
+de entidades con tipos originales. No se crean NPC ni Link y tampoco
+se ejecuta un bucle de juego ficticio.
+
+El test `run_entity_state_e29.sh` compila los cuerpos literales
+originales de `src/entity.c` y demuestra que
+`AppendEntityToList()`, prioridades y contadores manipulan esas
+variables, restaurándose luego a su estado vacío.
+
+El arranque DSi utiliza `DsiEntityState_Reset()` y comprueba
+`DsiEntityState_EmptyValid()`. El diagnóstico añade `L:OK`
+junto a `Link preflight: READY`. `L:OK` **solo** demuestra
+preparación correcta de memoria/listas, no que haya entidades vivas.
+
+**Estado real:** tests host y enlace ARM9 correctos. Aún falta
+confirmar en melonDS que se mantengan habitación, inicialización
+original, `L:OK` y errores cero. Se conserva E29.4a validada como
+referencia. E29 completa NO está terminada.
+
+**Próximas dependencias:** enlazar la asignación auténtica, hitbox,
+colisión, gestión de sprites, scripts y referencias ROM necesarias
+antes de ejecutar `InitializePlayer()`/ `InitializeEntities()`.
