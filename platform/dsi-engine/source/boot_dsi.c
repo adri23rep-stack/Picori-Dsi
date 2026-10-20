@@ -21,6 +21,8 @@
 #include "common.h"
 #include "main.h"
 #include "game.h"
+#include "area.h"
+#include "flags.h"
 #include "dsi_gba_bus.h"
 #include "dsi_rom_refs.h"
 #include "dsi_engine_state.h"
@@ -78,6 +80,15 @@ static bool memory_test(void) {
            gba_read32(0x06000020u) == 0xBEEFCAFEu &&
            gba_read16(0x05000006u) == 0x3210u;
 }
+/* Read the real compiled decompilation metadata on DSi.
+ * Keeping it live also ensures the linker retains these original tables. */
+static bool original_area_metadata_test(void) {
+    const AreaHeader *house = &gAreaMetadata[AREA_HOUSE_INTERIORS_2];
+    return house->flag_bank == LOCAL_BANK_2 &&
+           (house->flags & AR_HAS_ENEMIES) != 0 &&
+           gOverworldLocations[0].minX == 0 &&
+           gOverworldLocations[17].minX == 0xFFu;
+}
 static bool engine_task_test(void) {
     /* Calls the ORIGINAL implementation in src/main.c. This does not
      * call TitleTask or AgbMain and does not simulate gameplay. */
@@ -118,6 +129,7 @@ int main(void) {
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
     iprintf("SetTask original: %s\n", engine_task_test()?"PASS":"FAIL");
     iprintf("Flags original: %s\n", flags_ok?"PASS":"FAIL");
+    iprintf("Area tables: %s\n", original_area_metadata_test()?"PASS":"FAIL");
     bool storage = fatInitDefault();
     iprintf("SD/FAT: %s\n", storage?"ready":"FAILED");
     romReady = storage && find_rom();
