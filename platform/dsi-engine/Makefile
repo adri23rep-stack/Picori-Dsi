@@ -18,18 +18,18 @@ ARCH := -march=armv5te -mtune=arm946e-s -mthumb
 # The original port uses old-style C declarations. GCC 15 defaults to GNU23,
 # where void f() means no arguments; use GNU11 to retain upstream C semantics.
 CFLAGS := -std=gnu11 -O2 -g -w -ffunction-sections -fdata-sections -fno-strict-aliasing -fwrapv \
-  $(ARCH) -DPC_PORT -DTMC_DSI -DTMC_DSI_SAFE_GAME_BOOT -DNON_MATCHING -DUSE_HDMA -DEU -DENGLISH -DREVISION=0 \
+  $(ARCH) -DPC_PORT -DTMC_DSI -DTMC_DSI_SAFE_GAME_BOOT -DTMC_DSI_E26_ORIGINAL_MESSAGE -DNON_MATCHING -DUSE_HDMA -DEU -DENGLISH -DREVISION=0 \
   -include $(ROOT_DIR)/include/region.h $(INCLUDE) -DARM9
 CXXFLAGS := $(CFLAGS) -fno-exceptions -fno-rtti
 ASFLAGS := -g $(ARCH)
 LDFLAGS := -specs=ds_arm9.specs $(ARCH) -Wl,-Map,$(notdir $*.map) -Wl,--gc-sections \
-  -Wl,--wrap=LoadGfxGroup -Wl,--wrap=LoadPaletteGroup -Wl,--wrap=DispReset -Wl,--wrap=MemClear -Wl,--wrap=zMallocInit
+  -Wl,--wrap=LoadGfxGroup -Wl,--wrap=LoadPaletteGroup -Wl,--wrap=DispReset -Wl,--wrap=MemClear -Wl,--wrap=zMallocInit -Wl,--wrap=MessageInitialize
 LIBS := -lfat -lnds9
 LIBDIRS := $(LIBNDS) $(PORTLIBS)
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 export OUTPUT := $(STAGE_DIR)/$(TARGET)
-export VPATH := $(STAGE_DIR)/source:$(ROOT_DIR)/src:$(ROOT_DIR)/src/object:$(ROOT_DIR)/platform/dsi/source
+export VPATH := $(STAGE_DIR)/source:$(ROOT_DIR)/src:$(ROOT_DIR)/src/object:$(ROOT_DIR)/src/data:$(ROOT_DIR)/platform/dsi/source
 export DEPSDIR := $(STAGE_DIR)/$(BUILD)
 # Original main/common/flags/title compiled unmodified. The title asset bridge
 # loads ROM bytes into GBA shadow; E7 displays BG2, E8/E9 draw the
@@ -42,7 +42,7 @@ export DEPSDIR := $(STAGE_DIR)/$(BUILD)
 # ORIGINAL GameMain_InitRoom using src/game.c with DSi-only compile guards.
 # The remaining room/graphics/entity/save systems are NOT implemented.
 # The real screen stays on the title; this is not a playable build.
-CFILES := dsi_room_preview.c game.c playerUtils.c save.c dsi_game_native.c dsi_room_tiles.c dsi_room_maps.c dsi_room_probe.c dsi_game_bootstrap.c dsi_game_transition.c boot_dsi.c main.c common.c flags.c title.c tmc_rom_stream.c dsi_gba_bus.c dsi_engine_state.c dsi_rom_refs.c dsi_title_trace.c dsi_title_assets.c dsi_gba_renderer.c dsi_title_composite.c dsi_title_live.c dsi_title_sprites.c dsi_title_object_gfx.c dsi_title_entities.c dsi_title_runner.c dsi_file_select_probe.c dsi_file_select_palette.c fileselect.c titleScreenObject.c objectDefinitions.c
+CFILES := areaMetadata.c message.c dsi_room_resources.c dsi_room_preview.c game.c playerUtils.c save.c dsi_game_native.c dsi_room_tiles.c dsi_room_maps.c dsi_room_probe.c dsi_game_bootstrap.c dsi_game_transition.c boot_dsi.c main.c common.c flags.c title.c tmc_rom_stream.c dsi_gba_bus.c dsi_engine_state.c dsi_rom_refs.c dsi_title_trace.c dsi_title_assets.c dsi_gba_renderer.c dsi_title_composite.c dsi_title_live.c dsi_title_sprites.c dsi_title_object_gfx.c dsi_title_entities.c dsi_title_runner.c dsi_file_select_probe.c dsi_file_select_palette.c fileselect.c titleScreenObject.c objectDefinitions.c
 export LD := $(CC)
 export OFILES := $(CFILES:.c=.o)
 export INCLUDE := -I$(STAGE_DIR)/source -I$(ROOT_DIR) -I$(ROOT_DIR)/include \

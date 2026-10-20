@@ -21,13 +21,13 @@ static uint16_t le16(const unsigned char *p) {
     return (uint16_t)(p[0] | ((uint16_t)p[1] << 8));
 }
 static bool area_array(uint32_t base, unsigned area, uint32_t *ptr) {
-    if (!DsiRomRefs_ArrayEntry(base, area, ptr)) return false;
+    if (!DsiRomRefs_RomArrayEntry(base, area, ptr)) return false;
     return rom_range(*ptr, 4);
 }
 static bool room_ptr(uint32_t table, unsigned room, uint32_t *ptr) {
     if (room > (UINT32_MAX - table) / 4u || !rom_range(table + room * 4u, 4))
         return false;
-    if (!DsiRomRefs_ArrayEntry(table, room, ptr)) return false;
+    if (!DsiRomRefs_RomArrayEntry(table, room, ptr)) return false;
     return rom_range(*ptr, 1);
 }
 static bool entity_count(uint32_t gba_list, uint16_t *out_count) {
@@ -68,7 +68,7 @@ bool DsiRoomProbe_ReadEU(uint8_t area, uint8_t room, DsiRoomMetadata *out) {
     if (!room_ptr(room_map_table, room, &tmp.room_map_address) ||
         !room_ptr(properties_table, room, &tmp.properties_address)) return false;
     for (unsigned i = 0; i < 2; ++i) {
-        if (!DsiRomRefs_ArrayEntry(tmp.properties_address, i,
+        if (!DsiRomRefs_RomArrayEntry(tmp.properties_address, i,
                                    &tmp.entity_list_addresses[i]) ||
             !rom_range(tmp.entity_list_addresses[i], ENTITY_BYTES) ||
             !entity_count(tmp.entity_list_addresses[i], &tmp.entity_counts[i]))

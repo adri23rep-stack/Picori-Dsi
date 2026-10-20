@@ -17,11 +17,11 @@ bool DsiRoomTiles_LoadEU(const DsiRoomMetadata *room, DsiRoomTileStats *stats) {
     DsiRoomTileStats tmp = {0};
     if (!room || !stats || room->area >= 0x90u ||
         room->tileset_id >= 128u || /* bounded table index */
-        !DsiRomRefs_ArrayEntry(EU_AREA_TILESETS, room->area, &subtable) ||
+        !DsiRomRefs_RomArrayEntry(EU_AREA_TILESETS, room->area, &subtable) ||
         !rom_ptr(subtable) ||
-        !DsiRomRefs_ArrayEntry(subtable, room->tileset_id, &tileset) ||
+        !DsiRomRefs_RomArrayEntry(subtable, room->tileset_id, &tileset) ||
         !rom_ptr(tileset) ||
-        !DsiRomRefs_ArrayEntry(EU_AREA_TILES, room->area, &tiles) ||
+        !DsiRomRefs_RomArrayEntry(EU_AREA_TILES, room->area, &tiles) ||
         !rom_ptr(tiles)) return false;
     info = *room;
     info.room_map_address = tileset;

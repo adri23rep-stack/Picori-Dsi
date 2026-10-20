@@ -15,6 +15,15 @@
 #include "entity.h"
 #include "manager/diggingCaveEntranceManager.h"
 #include <string.h>
+#ifdef TMC_DSI_E26_ORIGINAL_MESSAGE
+#include "message.h"
+#include "structures.h"
+/* Original engine variables relocated to native DSi memory. Window
+ * globals are already defined inside original src/message.c (PC_PORT). */
+Message gMessage;
+TextRender gTextRender;
+struct_02000040 gUnk_02000040;
+#endif
 
 RoomTransition gRoomTransition;
 RoomControls gRoomControls;
@@ -24,7 +33,7 @@ PlayerEntity gPlayerEntity;
 PlayerState gPlayerState;
 DiggingCaveEntranceTransition gDiggingCaveEntranceTransition;
 u8 gUpdateVisibleTiles;
-const OverworldLocation gOverworldLocations[1] = {0}; /* not accessed */
+/* E27: gOverworldLocations is linked directly from ORIGINAL src/data/areaMetadata.c. */
 static DsiGameNativeStats sStats;
 static bool sAllowRoomTick;
 /* The GBA linker allocates gPriorityHandler at a fixed RAM address; DSi

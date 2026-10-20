@@ -36,6 +36,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -111,7 +112,8 @@ const char* Port_TTS_GetBackendName(void);
  * directly — bypassing the MessageMain dialog pipeline that already
  * has its own per-page TTS hook. URGENT + dedupe under the hood.
  * Implementation lives in src/message.c (needs Token / GetCharacter). */
-void Port_TTS_SpeakTextIndex(unsigned int textIndex);
+/* Fixed-width argument matches u32 across PC and devkitARM ABIs. */
+void Port_TTS_SpeakTextIndex(uint32_t textIndex);
 
 #ifdef __cplusplus
 }
