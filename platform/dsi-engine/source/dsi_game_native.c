@@ -5,6 +5,9 @@
 #include "dsi_game_native.h"
 #include "dsi_game_transition.h"
 #include "dsi_game_bootstrap.h"
+#ifdef TMC_DSI_E29_ENTITY_CORE
+#include "dsi_entity_state_e29.h"
+#endif
 #ifdef TMC_DSI_E28_ORIGINAL_INITROOM
 #include "dsi_area_headers.h"
 #include "dsi_room_resources.h"
@@ -78,6 +81,11 @@ void __wrap_InitRoom(void) {
 #endif
 
 void DsiGameNative_Reset(void) {
+#ifdef TMC_DSI_E29_ENTITY_CORE
+    /* Allocate/reset ORIGINAL game entity pool and 9 self-sentinel lists.
+     * Does not spawn Link or advance any entity tick. */
+    DsiEntityState_Reset();
+#endif
     memset(&sStats, 0, sizeof(sStats));
     sAllowRoomTick = false;
     memset(&gPriorityHandler, 0, sizeof(gPriorityHandler));
