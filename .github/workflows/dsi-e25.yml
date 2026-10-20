@@ -37,6 +37,8 @@ jobs:
         run: sh platform/dsi-engine/tests/run_full_initroom_e28.sh
       - name: E29.1 original InitializePlayer host test
         run: sh platform/dsi-engine/tests/run_original_player_e29.sh
+      - name: E29.2 genuine Entity linked-list and priorities
+        run: sh platform/dsi-engine/tests/run_original_entity_lists_e29.sh
   nds:
     name: Compile original InitRoom for ARM9
     needs: host-check
