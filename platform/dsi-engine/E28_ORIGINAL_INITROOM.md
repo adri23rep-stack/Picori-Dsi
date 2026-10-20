@@ -100,3 +100,49 @@ no sustituye la prueba visual en consola.
 **No declarado completado todavía:** E28 se cerrará cuando el usuario
 confirme la casa visible y ambas comprobaciones nuevas, y se evalúen
 las dependencias que todavía se bloquean.
+
+## E28.3 — Seguridad de integración y datos originales de entidades
+
+- `--wrap=InitRoom` instrumenta la llamada a la función **original**; la
+  implementación original nunca se sustituye. La estadística
+  `original_room_calls` debe ser exactamente 1.
+- `DsiGameNative_BootRoomPrefix()` ahora **bloquea el avance** si no existe
+  un snapshot EU válido, si no coincide la geometría del `RoomHeader` con
+  `DsiRoomResources`, o si la ejecución no llenó correctamente las
+  estructuras originales `gArea`/`pCurrentRoomInfo`.
+- `dsi_entity_lists.c` copia únicamente los bytes **auténticos** de las
+  dos listas de registros EU de 16 bytes que ya verificaba el lector ROM.
+  Verifica terminadores `0xFF`, longitudes y límites; conserva el último
+  snapshot válido ante un error. **No crea ni actualiza entidades**.
+- La pantalla de diagnóstico muestra ahora el contador `init:1`
+  de llamadas originales y, junto a la cantidad de píxeles, `E:READY`
+  cuando los registros originales se copiaron de la ROM.
+- El archivo generado se llama `tmc-dsi-engine-e28.nds`, evitando
+  confundir las pruebas con E25.
+
+## E28.4 — Prueba de integración del motor original
+
+La prueba `run_full_initroom_e28.sh` extrae directamente de
+`src/gameUtils.c` y compila los cuerpos originales de:
+
+1. `InitRoomTransition()`
+2. `InitRoom()`
+3. `InitAllRoomResInfo()`
+4. `InitRoomResInfo()`
+5. `GetCurrentRoomInfo()`
+
+Solo se simulan los límites de ROM/fade y se enlazan las tablas originales
+`gAreaMetadata` y `gLocalFlagBanks`. Verifica el centinela de fin de
+habitaciones, información correcta de la sala activa, punteros estables a
+mapas/tilesets/tiles y falla con seguridad cuando falta la tabla original.
+
+**Criterio para comenzar E29:** primero confirmar en melonDS que la casa
+sigue visible y que se muestran `Room cache: READY H:OK`,
+`InitRoom original: PASS`, `init:1` y `E:READY`. Estos valores no
+prueban todavía NPC ni Link (E29). Antes de ejecutar `InitializeEntities()`
+hay que resolver `RoomResInfo.properties`, `exits`, recursos de las demás
+habitaciones y los punteros originales a scripts de ROM: actualmente son
+`NULL` o identificadores GBA sin convertir; jamás se deben desreferenciar
+como punteros ARM9.
+
+E27.2 sigue como respaldo comprobado. No se incluye ROM comercial.
