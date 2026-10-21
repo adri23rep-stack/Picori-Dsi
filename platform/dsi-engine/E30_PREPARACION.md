@@ -304,3 +304,21 @@ NPC y manager originales sin alterar contadores. `LoadRoomEntity`
 todavía NO corre; allocators y scripts siguen fuera del enlace del
 ELF gracias al recorte por secciones. No se ejecuta el bucle normal
 ni se renderiza Link. **No confundir búsqueda real con spawn real.**
+
+## E30.6 — Validación CI y prueba solicitada
+
+GitHub Actions host y ARM9: **PASS** (ejecución de prueba host original,
+símbolo `DeepFindEntityByID` enlazado en ELF y
+`DsiGameNative_OriginalEntityLookupReady` presente).
+https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39577117676
+
+Artefacto `.nds`:
+https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39577117676/artifacts/12333729173
+
+**Pendiente de melonDS:** con la ROM EU el título debe ser
+`TMC / DSi ENGINE E30.6`. Verificar
+`InitRoom original: PASS N:OK`, `Link original: LINKED L:OK C:OK`,
+`Room ROM: VERIFIED P:OK B:OK`,
+`GameTask: ROOM PREFIX F:OK`, `err:0`. Si `F:--`,
+`BLOCKED` o error, no habilitar el siguiente escalón. Sigue sin
+haber NPC visibles ni movimiento: la búsqueda no ejecuta spawns.
