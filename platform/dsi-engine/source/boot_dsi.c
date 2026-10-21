@@ -47,7 +47,13 @@
 #include "dsi_room_tiles.h"
 #include "dsi_room_preview.h"
 #include "dsi_room_resources.h"
+#include "dsi_room_properties_e30.h"
 #include "dsi_entity_lists.h"
+#include "dsi_player_preflight.h"
+#include "dsi_entity_state_e29.h"
+#include "dsi_collision_state_e29.h"
+#include "dsi_e30_gate.h"
+#include "dsi_player_state_e29.h"
 #include "dsi_area_headers.h"
 #include "port_gba_mem.h"
 
@@ -131,7 +137,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E28\n");
+    iprintf("TMC / DSi ENGINE E29\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -270,6 +276,24 @@ int main(void) {
                  * This prepares data only; no entities are spawned. */
                 bool entity_data_ok = room_ok &&
                     DsiEntityLists_PrepareEU(&room_metadata);
+                /* E30.1: copy original 8 ROM property words into ARM9 RAM.
+                 * This does NOT install raw GBA pointers in RoomResInfo,
+                 * call any Thumb callbacks or run InitializeEntities. */
+                bool properties_ok = room_ok && room_refs_ok && entity_data_ok &&
+                    DsiRoomPropertiesE30_PrepareEU(&room_metadata);
+
+                /* E29: original save + ROM preflight only.
+                 * InitializePlayer() is NOT called on DSi yet. */
+                bool list_memory_ok = DsiEntityState_EmptyValid();
+                bool collision_memory_ok = DsiCollisionState_EmptyValid();
+                bool interaction_memory_ok = DsiPlayerState_Ready();
+                bool player_preflight_ok = entity_data_ok && room_refs_ok &&
+                    list_memory_ok && collision_memory_ok && interaction_memory_ok &&
+                    DsiPlayerPreflight_Ready();
+                iprintf("\x1b[15;0HLink preflight: %-7s L:%s C:%s",
+                        player_preflight_ok ? "READY" : "BLOCKED",
+                        list_memory_ok ? "OK" : "ERR",
+                        collision_memory_ok ? "OK" : "ERR");
                 /* Original EU room header table: all native copies survive
                  * ROM cache eviction. Compare to the already verified current
                  * room before publishing the diagnostic. */
@@ -327,6 +351,17 @@ int main(void) {
                     initialized->tiles != NULL;
                 iprintf("\x1b[10;0HInitRoom original: %-6s",
                         original_room_ok ? "PASS" : "PENDING");
+                /* E29.8: invoke AUTHENTIC InitializePlayer only after the
+                 * EU ROM and original room checks. Never run GameTask UPDATE. */
+                bool link_native = original_room_ok && player_preflight_ok &&
+                    DsiGameNative_BootOriginalPlayer();
+                iprintf("\x1b[15;0HLink original: %-7s L:%s C:%s",
+                        link_native ? "LINKED" : "BLOCKED",
+                        link_native ? "OK" : (list_memory_ok ? "OK" : "ERR"),
+                        link_native ? "OK" : (collision_memory_ok ? "OK" : "ERR"));
+                volatile unsigned e30Blocked = DsiE30Gate_Blockers();
+                (void)e30Blocked; /* debugger trace; must stay blocked */
+
                 iprintf("\x1b[16;0HGameTask: %-11s", prefix_ok ? "ROOM PREFIX" : "BLOCKED");
                 iprintf("\x1b[17;0Horg:%u/%u/%u init:%u d:%u e:%u  ",
                         native->transition_ticks, native->init_ticks,
@@ -335,7 +370,9 @@ int main(void) {
                 iprintf("\x1b[11;0HRoom tiles: %s %lu B   ", tile_ok ? "OK" : "BLOCKED",
                         (unsigned long)(tile_stats.tileset.uncompressed_bytes +
                                         tile_stats.tiles.uncompressed_bytes));
-                iprintf("\x1b[12;0HRoom ROM: %s       ", room_ok ? "VERIFIED" : "BLOCKED");
+                iprintf("\x1b[12;0HRoom ROM: %-8s P:%s ",
+                        room_ok ? "VERIFIED" : "BLOCKED",
+                        properties_ok ? "OK" : "--");
                 if (room_ok) {
                     iprintf("\x1b[13;0Hsize: %ux%u area:22 room:15   ",
                             room_metadata.width, room_metadata.height);

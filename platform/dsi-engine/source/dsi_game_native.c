@@ -5,6 +5,14 @@
 #include "dsi_game_native.h"
 #include "dsi_game_transition.h"
 #include "dsi_game_bootstrap.h"
+#ifdef TMC_DSI_E29_ENTITY_CORE
+#include "dsi_entity_state_e29.h"
+#include "dsi_collision_state_e29.h"
+#include "dsi_player_state_e29.h"
+#include "dsi_e30_gate.h"
+#include "dsi_player_preflight.h"
+#include "dsi_room_properties_e30.h"
+#endif
 #ifdef TMC_DSI_E28_ORIGINAL_INITROOM
 #include "dsi_area_headers.h"
 #include "dsi_room_resources.h"
@@ -48,9 +56,13 @@ PriorityHandler gPriorityHandler;
 /* Temporary DSi adapter for src/entity.c's original priority setter.
  * The full entity system is not linkable yet; this is the EXACT one-line
  * original assignment, not a replacement for entity/gameplay handling. */
+#ifndef TMC_DSI_E29_ENTITY_CORE
 void SetInitializationPriority(void) {
     gPriorityHandler.event_priority = PRIO_HIGHEST;
 }
+#endif
+/* E29.4 uses the actual SetInitializationPriority from src/entity.c.
+ * This fallback only exists for tests and older build configurations. */
 
 void ClearRoomMemory(void) { ++sStats.deferred_services; }
 void ClearArmosData(void) { ++sStats.deferred_services; }
@@ -73,7 +85,32 @@ void __wrap_InitRoom(void) {
 }
 #endif
 
+/* PC_PORT MemFill32 treats all 0x02xxxxxx pointers as GBA shadow RAM.
+ * On DSi the real ARM9 player state also occupies this range. Override
+ * ONLY the genuine path_memory write; preserve prior behavior elsewhere. */
+void __real_MemFill32(u32 value, void* dest, u32 size);
+void __wrap_MemFill32(u32 value, void* dest, u32 size) {
+    if (dest == (void*)&gPlayerState.path_memory &&
+        size == sizeof(gPlayerState.path_memory)) {
+        if (size & 3u) { ++sStats.errors; return; }
+        u32 *p = (u32*)dest;
+        for (u32 i = 0; i < size / sizeof(u32); ++i) p[i] = value;
+        return;
+    }
+    __real_MemFill32(value, dest, size);
+}
+
 void DsiGameNative_Reset(void) {
+#ifdef TMC_DSI_E29_ENTITY_CORE
+    /* Allocate/reset ORIGINAL game entity pool and 9 self-sentinel lists.
+     * Does not spawn Link or advance any entity tick. */
+    DsiEntityState_Reset();
+    DsiCollisionState_Reset();
+    /* E29.6: the unmodified playerUtils.c interaction reset. */
+    DsiPlayerState_Reset();
+    DsiE30Gate_Reset();
+    DsiRoomPropertiesE30_Reset();
+#endif
     memset(&sStats, 0, sizeof(sStats));
     sAllowRoomTick = false;
     memset(&gPriorityHandler, 0, sizeof(gPriorityHandler));
@@ -170,5 +207,40 @@ bool DsiGameNative_BootRoomPrefix(void) {
         return false;
     }
     ++sStats.room_prefix_ticks;
+    return true;
+}
+
+/* E29.8: REAL gameUtils.c::InitializePlayer with original list, collision
+ * and the existing 3DS source translation of the Thumb sprite layer.
+ * Separate from InitializeEntities (still blocked on room properties).
+ * May run only ONCE after original InitRoom completed and ROM EU preflight.
+ */
+bool DsiGameNative_BootOriginalPlayer(void) {
+    if (!sStats.attempted || sStats.errors || sStats.room_prefix_ticks != 1u ||
+        sStats.original_room_calls != 1u || sStats.original_player_calls ||
+        gMain.task != TASK_GAME || gMain.state != GAMETASK_MAIN ||
+        gMain.substate != GAMEMAIN_CHANGEROOM ||
+        !DsiPlayerPreflight_Ready() ||
+        !DsiEntityState_EmptyValid() ||
+        !DsiCollisionState_EmptyValid() ||
+        !DsiPlayerState_Ready()) return false;
+
+    InitializePlayer(); /* AUTHENTIC src/gameUtils.c, not a game shim. */
+    LinkedList *list = &gEntityLists[1];
+    Entity *pl = &gPlayerEntity.base;
+    if (pl->kind != PLAYER || pl->health != gSave.stats.health ||
+        pl->x.HALF.HI != gRoomTransition.player_status.start_pos_x ||
+        pl->y.HALF.HI != gRoomTransition.player_status.start_pos_y ||
+        gRoomControls.camera_target != pl ||
+        list->first != pl || list->last != pl ||
+        pl->prev != (Entity*)(void*)list ||
+        pl->next != (Entity*)(void*)list ||
+        gEntCount != 1 || gManagerCount != 0 ||
+        !DsiCollisionState_PlayerRegistered() ||
+        !DsiPlayerState_Ready()) {
+        ++sStats.errors;
+        return false;
+    }
+    ++sStats.original_player_calls;
     return true;
 }
