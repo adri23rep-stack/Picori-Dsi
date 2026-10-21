@@ -69,7 +69,7 @@ jobs:
           command -v ndstool
       - name: Build and verify original entity and collision objects
         run: |
-          set -eu
+          set -eux
           make -C platform/dsi-engine clean
           if make -C platform/dsi-engine > e29-build.log 2>&1; then
             cat e29-build.log
