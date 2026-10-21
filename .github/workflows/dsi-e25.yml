@@ -105,7 +105,9 @@ jobs:
           arm-none-eabi-nm platform/dsi-engine/build/playerUtils.o > e29-original-player-utils-symbols.txt
           grep -Eq ' T ResetPossibleInteraction$' e29-original-player-utils-symbols.txt
           grep -Eq ' [Tt] ResetPossibleInteraction$' e29-linked-symbols.txt
-          grep -Eq ' [Rr] gNoInteraction$' e29-linked-symbols.txt
+          # const pointer-bearing objects may live in .data.rel.ro (D), not .rodata (R).
+          grep -E 'gNoInteraction$' e29-linked-symbols.txt
+          grep -Eq ' [DRdr] gNoInteraction$' e29-linked-symbols.txt
           grep -Eq ' B gPossibleInteraction$' e29-linked-symbols.txt
           grep -Eq ' B gActiveItems$' e29-linked-symbols.txt
           grep -Eq ' T DsiPlayerState_Reset$' e29-linked-symbols.txt
