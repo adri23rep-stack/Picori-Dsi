@@ -228,3 +228,33 @@ mantenerse idénticos a E30.3. No hay NPC nuevos ni movimiento.
   `GameTask: ROOM PREFIX` deben continuar sin cambio.
 - **Pendiente melonDS**: comprobar diagnóstico y `err:0` en el .nds.
   La etapa no crea NPC ni dibuja a Link; eso sigue bloqueado.
+
+## E30.5 — Asignación y registro ORIGINALES de entidades
+
+Validación del usuario: E30.4 ejecuta en melonDS con
+`InitRoom PASS N:OK`, `Link LINKED L:OK C:OK`,
+`Room ROM VERIFIED P:OK B:OK` y confirmó `err:0`.
+
+El generador `generate_entity_allocator_e30.sh` selecciona, **sin
+reescritura de cuerpos** de `src/entity.c`:
+- `GetEmptyEntity()`: escaneo y reciclaje originales del pool GBA.
+- `GetEmptyManager()`: pool original de 32 managers (`Temp`).
+- `GetEmptyEntityByKind()`: despacho original a ambos pools.
+- `gEntityListLUT`: mapa de clases a listas del juego original.
+Y de `src/room.c`: `RegisterRoomEntity()` original, con la
+estructura `GenericEntity` y prioridad/lista del juego.
+
+Prueba de host E30.5: registro auténtico de Link existente y, después,
+asignación de NPC y manager auténticos en pools separados; se comprueban
+listados/cuentas/prioridades y que **Link no sea duplicado ni mutado**.
+La simulación de host se limita a servicios de borrado no alcanzados en
+este caso y al `MemCopy` estándar. No se ejecuta `LoadRoomEntity()`.
+
+Los módulos quedan **compilados como objetos ARM9**, no enlazados al
+ELF de la consola hasta tener los demás servicios originales. El CI
+audita ambos símbolos y comprueba que no se introdujeron funciones de
+spawn sin resolver al ejecutable. La habitación, Link y los indicadores
+E30.3 siguen igual; el título es E30.5. La creación de NPC reales en
+melonDS aún no está activada: siguiente trabajo será resolver
+`DeepFindEntityByID`, `ResolveCollisionLayer` y scripts/objetos
+originales sin stubs engañosos.
