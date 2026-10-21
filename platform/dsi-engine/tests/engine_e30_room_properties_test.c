@@ -61,7 +61,8 @@ int main(void) {
            p->kind[4]==DSI_E30_PROPERTY_THUMB_ADDRESS);
     assert(p->kind[6]==DSI_E30_PROPERTY_THUMB_ADDRESS);
     assert(!p->native_dispatch_ready);
-    assert(reads>=7u);
+    /* One table read plus five non-null target probes. */
+    assert(reads>=6u);
     const DsiRoomPropertiesE30 snapshot=*p;
     /* Refuse mismatches while preserving last known-good data. */
     put32(0x104,BASE+0x444);
