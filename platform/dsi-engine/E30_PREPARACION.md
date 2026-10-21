@@ -139,3 +139,31 @@ se espera `Room ROM: VERIFIED P:OK B:OK` y el resto de E30.1 sin cambios.
   https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39566359126/artifacts/12330361089
 - **Pendiente:** confirmar en melonDS `B:OK`, Link `LINKED L:OK C:OK`,
   InitRoom PASS y `err:0`. Sin esto no declarar ejecución validada.
+
+## E30.3 — Propiedades 0/1 en la estructura original RoomResInfo (preparadas)
+
+La evidencia del usuario en melonDS confirmó `InitRoom original: PASS`,
+`Link original: LINKED L:OK C:OK` y `Room ROM: VERIFIED P:OK B:OK`
+para E30.2. No se recibió el valor de `err`, así que no se presupone.
+
+Con E30.3, tras el `InitRoom()` y el `InitializePlayer()` originales, la
+capa de plataforma **solo** escribe `RoomResInfo.properties` apuntando
+a un arreglo nativo de ocho slots. Los slots 0/1 son punteros estables a
+`EntityData[]` originales, verificados en E30.2; slots 2–7 quedan
+expresamente NULL. Se conserva intacto el código de `src/gameUtils.c`
+y las entidades **no** se instancian ni actualizan.
+
+El nuevo `DsiRoomPropertyNativeE30_Ready()` confirma que
+`gArea.pCurrentRoomInfo` es exactamente la sala original correcta,
+sus dimensiones, el puntero instalado, y que slots 2–7 permanecen
+vacíos (sin callbacks Thumb de GBA). Rechaza estados sucios, corrupción,
+otras habitaciones y doble instalación. El reset solo retira
+`properties` si pertenece a este adaptador.
+
+`DsiE30Gate_Blockers()` añade `DSI_E30_BLOCK_NATIVE_ROOM_PROPS`.
+**E30 sigue bloqueado:** faltan portear scripts/callbacks 2–7,
+`InitializeEntities()` y el dibujado de entidades de OAM; no ejecutar
+`GameTask UPDATE`. El nuevo diagnóstico de E30.3 será
+`InitRoom original: PASS N:OK` junto a `P:OK B:OK`.
+
+Pruebas CI y evidencia de melonDS pendientes para E30.3.

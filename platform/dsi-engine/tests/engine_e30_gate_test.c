@@ -5,6 +5,7 @@
 #include "dsi_game_native.h"
 #include "dsi_room_properties_e30.h"
 #include "dsi_room_property_data_e30.h"
+#include "dsi_room_property_native_e30.h"
 #include "main.h"
 #include "game.h"
 #include "area.h"
@@ -24,12 +25,14 @@ static DsiGameNativeStats stats;
 static bool collisionOK;
 static bool interactionOK;
 static bool dataBanksOK;
+static bool nativeRoomPropsOK;
 static DsiRoomPropertiesE30 mockProperties;
 const DsiGameNativeStats *DsiGameNative_Status(void) { return &stats; }
 bool DsiCollisionState_PlayerRegistered(void) { return collisionOK; }
 bool DsiPlayerState_Ready(void) { return interactionOK; }
 const DsiRoomPropertiesE30 *DsiRoomPropertiesE30_Current(void) { return &mockProperties; }
 bool DsiRoomPropertyDataE30_Ready(void) { return dataBanksOK; }
+bool DsiRoomPropertyNativeE30_Ready(void) { return nativeRoomPropsOK; }
 int main(void) {
     unsigned failures;
     DsiE30Gate_Reset();
@@ -38,6 +41,7 @@ int main(void) {
     assert((failures & DSI_E30_BLOCK_ENTITIES_INIT) != 0u);
     assert((failures & DSI_E30_BLOCK_SPRITE_LAYER) != 0u);
     assert((failures & DSI_E30_BLOCK_ENTITY_BANKS) != 0u);
+    assert((failures & DSI_E30_BLOCK_NATIVE_ROOM_PROPS) != 0u);
     assert(!DsiE30Gate_Ready());
 
     stats.room_prefix_ticks=1;
@@ -69,11 +73,15 @@ int main(void) {
     mockProperties.room=0x15;
     /* A real ROM snapshot is STILL not enough to execute callbacks. */
     failures=DsiE30Gate_Blockers();
-    assert(failures == (DSI_E30_BLOCK_PROPERTIES | DSI_E30_BLOCK_SPRITE_LAYER | DSI_E30_BLOCK_ENTITY_BANKS));
+    assert(failures == (DSI_E30_BLOCK_PROPERTIES | DSI_E30_BLOCK_SPRITE_LAYER |
+                        DSI_E30_BLOCK_ENTITY_BANKS | DSI_E30_BLOCK_NATIVE_ROOM_PROPS));
     mockProperties.native_dispatch_ready=true; /* test-only idealized future */
     failures=DsiE30Gate_Blockers();
-    assert(failures == (DSI_E30_BLOCK_SPRITE_LAYER | DSI_E30_BLOCK_ENTITY_BANKS));
+    assert(failures == (DSI_E30_BLOCK_SPRITE_LAYER | DSI_E30_BLOCK_ENTITY_BANKS | DSI_E30_BLOCK_NATIVE_ROOM_PROPS));
     dataBanksOK=true; /* test-only: verified native EntityData */
+    failures=DsiE30Gate_Blockers();
+    assert(failures == (DSI_E30_BLOCK_SPRITE_LAYER | DSI_E30_BLOCK_NATIVE_ROOM_PROPS));
+    nativeRoomPropsOK=true; /* test-only: attached original RoomResInfo */
     failures=DsiE30Gate_Blockers();
     assert(failures == DSI_E30_BLOCK_SPRITE_LAYER);
     assert(!DsiE30Gate_Ready());

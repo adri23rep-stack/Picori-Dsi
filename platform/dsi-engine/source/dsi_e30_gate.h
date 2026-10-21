@@ -12,7 +12,8 @@ enum {
     DSI_E30_BLOCK_PROPERTIES = 1u << 6,
     DSI_E30_BLOCK_ENTITIES_INIT = 1u << 7,
     DSI_E30_BLOCK_SPRITE_LAYER = 1u << 8,
-    DSI_E30_BLOCK_ENTITY_BANKS = 1u << 9
+    DSI_E30_BLOCK_ENTITY_BANKS = 1u << 9,
+    DSI_E30_BLOCK_NATIVE_ROOM_PROPS = 1u << 10
 };
 void DsiE30Gate_Reset(void);
 /* Called ONLY after original static InitializeEntities in src/game.c returns. */

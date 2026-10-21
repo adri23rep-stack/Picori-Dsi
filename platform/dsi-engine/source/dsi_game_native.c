@@ -13,6 +13,7 @@
 #include "dsi_player_preflight.h"
 #include "dsi_room_properties_e30.h"
 #include "dsi_room_property_data_e30.h"
+#include "dsi_room_property_native_e30.h"
 #endif
 #ifdef TMC_DSI_E28_ORIGINAL_INITROOM
 #include "dsi_area_headers.h"
@@ -111,6 +112,8 @@ void DsiGameNative_Reset(void) {
     DsiPlayerState_Reset();
     DsiE30Gate_Reset();
     DsiRoomPropertiesE30_Reset();
+    /* Detach before invalidating property source banks. */
+    DsiRoomPropertyNativeE30_Reset();
     DsiRoomPropertyDataE30_Reset();
 #endif
     memset(&sStats, 0, sizeof(sStats));

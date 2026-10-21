@@ -49,6 +49,7 @@
 #include "dsi_room_resources.h"
 #include "dsi_room_properties_e30.h"
 #include "dsi_room_property_data_e30.h"
+#include "dsi_room_property_native_e30.h"
 #include "dsi_entity_lists.h"
 #include "dsi_player_preflight.h"
 #include "dsi_entity_state_e29.h"
@@ -356,12 +357,19 @@ int main(void) {
                     initialized->map_y == room_metadata.map_y &&
                     initialized->tileSet != NULL && initialized->map != NULL &&
                     initialized->tiles != NULL;
-                iprintf("\x1b[10;0HInitRoom original: %-6s",
-                        original_room_ok ? "PASS" : "PENDING");
                 /* E29.8: invoke AUTHENTIC InitializePlayer only after the
                  * EU ROM and original room checks. Never run GameTask UPDATE. */
                 bool link_native = original_room_ok && player_preflight_ok &&
                     DsiGameNative_BootOriginalPlayer();
+                /* E30.3: attach only original property 0/1 (EntityData) to
+                 * the original RoomResInfo AFTER original InitRoom and Link.
+                 * Slots 2..7 remain NULL; no GBA callbacks can run. */
+                bool native_props_ok = link_native && property_banks_ok &&
+                    original_room_ok &&
+                    DsiRoomPropertyNativeE30_Attach(&room_metadata);
+                iprintf("\x1b[10;0HInitRoom original: %-6s N:%s",
+                        original_room_ok ? "PASS" : "PENDING",
+                        native_props_ok ? "OK" : "--");
                 iprintf("\x1b[15;0HLink original: %-7s L:%s C:%s",
                         link_native ? "LINKED" : "BLOCKED",
                         link_native ? "OK" : (list_memory_ok ? "OK" : "ERR"),
