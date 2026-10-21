@@ -223,5 +223,13 @@ READY no significa que Link se haya creado ni que ya pueda moverse.
   `UpdateSpriteForCollisionLayer()` y dependencias gráficas auténticas.
   **Sin Link visible ni movimiento nuevo.** La casa E25/E29 permanece de prueba.
 
-**Estado:** pendiente verificar CI y melonDS con ROM EU. El hito E29 no está
-completo; E29.5 sigue siendo el respaldo anterior.
+**Estado verificado:** pruebas host E25–E29.6 PASS y ARM9/Actions PASS:
+https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39528402176
+
+**Artefacto E29.6:**
+https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39528402176/artifacts/12313119805
+
+**Falta:** prueba real en melonDS con ROM EU: casa visible,
+`InitRoom original: PASS`, `Link preflight: READY L:OK C:OK`, sin regresiones
+ni errores. Este preflight ahora también verifica la memoria de interacción.
+No hay jugador creado; E29.5 sigue como respaldo anterior probado por CI.
