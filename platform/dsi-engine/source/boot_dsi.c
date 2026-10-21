@@ -139,7 +139,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E30.5\n");
+    iprintf("TMC / DSi ENGINE E30.6\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -377,7 +377,9 @@ int main(void) {
                 volatile unsigned e30Blocked = DsiE30Gate_Blockers();
                 (void)e30Blocked; /* debugger trace; must stay blocked */
 
-                iprintf("\x1b[16;0HGameTask: %-11s", prefix_ok ? "ROOM PREFIX" : "BLOCKED");
+                iprintf("\x1b[16;0HGameTask: %-11s F:%s",
+                        prefix_ok ? "ROOM PREFIX" : "BLOCKED",
+                        DsiGameNative_OriginalEntityLookupReady() ? "OK" : "--");
                 iprintf("\x1b[17;0Horg:%u/%u/%u init:%u d:%u e:%u  ",
                         native->transition_ticks, native->init_ticks,
                         native->room_prefix_ticks, native->original_room_calls,

@@ -8,6 +8,7 @@ typedef struct {
     unsigned room_prefix_ticks;
     unsigned original_room_calls;
     unsigned original_player_calls;
+    unsigned original_entity_lookups;
     unsigned deferred_services;
     unsigned errors;
 } DsiGameNativeStats;
@@ -20,4 +21,6 @@ bool DsiGameNative_AllowRoomTick(void);
 bool DsiGameNative_BootRoomPrefix(void);
 /* E29.8: original Link RAM registration, not an animation or gameplay loop. */
 bool DsiGameNative_BootOriginalPlayer(void);
+/* E30.6: confirms two REAL DeepFindEntityByID traversals on ARM9. */
+bool DsiGameNative_OriginalEntityLookupReady(void);
 #endif

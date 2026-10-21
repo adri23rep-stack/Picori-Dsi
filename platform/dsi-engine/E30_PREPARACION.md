@@ -275,3 +275,32 @@ originales sin stubs engañosos.
   `Room ROM: VERIFIED P:OK B:OK`, `GameTask: ROOM PREFIX` y
   contador `err:0`. La escena permanece vacía porque no se ejecutan
   los nuevos allocators/registro ni el bucle original.
+
+## E30.6 — DeepFindEntityByID ORIGINAL ejecutado en ARM9
+
+La E30.5 fue confirmada en melonDS por el usuario con
+`TMC / DSi ENGINE E30.5`, `InitRoom PASS N:OK`,
+`Link LINKED L:OK C:OK`, `Room ROM VERIFIED P:OK B:OK` y
+`err:0`.
+
+E30.6 extrae de **`src/entity.c` sin reescritura** la rutina
+`DeepFindEntityByID`, añadiéndola al módulo que ya alberga la
+validación original `Port_IsValidEntityAddr` y el límite de recorrido
+de listas introducidos por el port de PC/3DS.
+
+La propia `DsiGameNative_BootOriginalPlayer()` llama ahora a la
+función auténtica en ARM9 para comprobar:
+- búsqueda positiva de Link por su `kind` e `id`;
+- búsqueda negativa de un ID distinto de jugador;
+- conservación de `gEntCount=1`, `gManagerCount=0` y lista de Link.
+
+Si falla alguna, incrementa el contador real de errores y no
+marca `Link original: LINKED`. El indicador **`F:OK`** en
+`GameTask: ROOM PREFIX F:OK` solo aparece tras las dos búsquedas
+auténticas y cero errores.
+
+Prueba de host extendida: búsquedas positivas/negativas en jugador,
+NPC y manager originales sin alterar contadores. `LoadRoomEntity`
+todavía NO corre; allocators y scripts siguen fuera del enlace del
+ELF gracias al recorte por secciones. No se ejecuta el bucle normal
+ni se renderiza Link. **No confundir búsqueda real con spawn real.**

@@ -24,6 +24,9 @@ mkdir -p "$(dirname "$ALLOC")" "$(dirname "$REG")"
     done
     awk '/^typedef void\* \(\*Getter\)\(void\);/ {print;found=1;exit} END {if(!found)exit 1}' "$ENTITY_SRC"
     awk '/^void\* GetEmptyEntityByKind\(u32 kind\) \{/ {active=1;found=1} active {print} active && /^}$/ {exit} END {if(!found)exit 1}' "$ENTITY_SRC"
+    # Genuine duplicate/entity ID search from src/entity.c, with its
+    # upstream PC_PORT bounded walker and real pool validity validator.
+    awk '/^Entity\* DeepFindEntityByID\(u32 kind, u32 id\) \{/ {active=1;found=1} active {print} active && /^}$/ {exit} END {if(!found)exit 1}' "$ENTITY_SRC"
 } > "$ALLOC.tmp"
 {
     printf '%s\n' '/* Generated original src/room.c::RegisterRoomEntity. */'

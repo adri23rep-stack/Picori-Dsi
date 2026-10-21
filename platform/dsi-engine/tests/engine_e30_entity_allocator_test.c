@@ -1,4 +1,4 @@
-/* E30.5: invoke the ACTUAL unchanged GetEmptyEntity / GetEmptyManager /
+/* E30.6: invoke the ACTUAL unchanged GetEmptyEntity / GetEmptyManager /
  * GetEmptyEntityByKind / RegisterRoomEntity / AppendEntityToList.
  * Only test-only callbacks are the unreachable recycled/deletion boundary,
  * logging, and MemCopy host-memory operation. No gameplay scripts or NPC AI.
@@ -39,6 +39,8 @@ int main(void) {
     AppendEntityToList(link,1);
     assert(gEntityLists[1].first==link && gEntityLists[1].last==link);
     assert(gEntCount==1u);
+    assert(DeepFindEntityByID(PLAYER, link->id) == link);
+    assert(DeepFindEntityByID(PLAYER, link->id ^ 0x80u) == NULL);
     EntityData record={0};
     record.kind=NPC; record.flags=0x0f; record.id=0x2a; record.type=3;
     record.type2=0x11223344u; record.xPos=50;record.yPos=65;
@@ -53,6 +55,8 @@ int main(void) {
     assert(npc->prev==(Entity*)(void*)&gEntityLists[7]);
     assert(npc->next==(Entity*)(void*)&gEntityLists[7]);
     assert(npc->updatePriority==1);
+    assert(DeepFindEntityByID(NPC, record.id) == npc);
+    assert(DeepFindEntityByID(NPC, record.id ^ 0x80u) == NULL);
     assert(link->kind==PLAYER && link->health==20 &&
            gEntityLists[1].first==link && gEntityLists[1].last==link &&
            link->prev==(Entity*)(void*)&gEntityLists[1] &&
@@ -74,7 +78,12 @@ int main(void) {
     assert(gEntityLists[8].first==(Entity*)mgr &&
            gEntityLists[8].last==(Entity*)mgr);
     assert(GetEmptyManager()!=mgr);
+    assert(DeepFindEntityByID(MANAGER, md.id) == (Entity*)mgr);
+    assert(DeepFindEntityByID(MANAGER, md.id ^ 0x80u) == NULL);
     assert(link->kind==PLAYER && link->health==20 && npc->kind==NPC);
-    puts("PASS E30.5: original allocator, manager pool, registration and priority preserve Link");
+    /* The original search never allocates or mutates active lists. */
+    assert(gEntCount == 2 && gManagerCount == 1);
+    assert(gEntityLists[1].first == link && gEntityLists[1].last == link);
+    puts("PASS E30.6: original allocator, manager pool, registry and ID search preserve Link");
     return 0;
 }

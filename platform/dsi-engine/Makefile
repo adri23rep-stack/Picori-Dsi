@@ -9,7 +9,7 @@ STAGE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
 ROOT_DIR := $(abspath $(STAGE_DIR)/../..)
 include $(DEVKITARM)/ds_rules
 
-GAME_TITLE := TMC DSi Engine E30.5
+GAME_TITLE := TMC DSi Engine E30.6
 GAME_SUBTITLE1 := Original game source
 GAME_SUBTITLE2 := Original Link / EU ROM
 TARGET := tmc-dsi-engine-e29

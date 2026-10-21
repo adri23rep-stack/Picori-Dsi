@@ -246,6 +246,23 @@ bool DsiGameNative_BootOriginalPlayer(void) {
         ++sStats.errors;
         return false;
     }
+    /* E30.6: ORIGINAL src/entity.c::DeepFindEntityByID is now linked
+     * and exercised on ARM9's real intrusive list containing Link.
+     * Two read-only lookups: one hit, one guaranteed missing ID.
+     * This never allocates NPCs or runs LoadRoomEntity. */
+    if (DeepFindEntityByID(PLAYER, pl->id) != pl ||
+        DeepFindEntityByID(PLAYER, (u8)(pl->id ^ 0x80u)) != NULL ||
+        gEntCount != 1u || gManagerCount != 0u ||
+        list->first != pl || list->last != pl) {
+        ++sStats.errors;
+        return false;
+    }
+    sStats.original_entity_lookups = 2u;
     ++sStats.original_player_calls;
     return true;
+}
+bool DsiGameNative_OriginalEntityLookupReady(void) {
+    return sStats.original_player_calls == 1u &&
+           sStats.original_entity_lookups == 2u &&
+           sStats.errors == 0u;
 }
