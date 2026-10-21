@@ -258,3 +258,20 @@ E30.3 siguen igual; el título es E30.5. La creación de NPC reales en
 melonDS aún no está activada: siguiente trabajo será resolver
 `DeepFindEntityByID`, `ResolveCollisionLayer` y scripts/objetos
 originales sin stubs engañosos.
+
+## Resultado E30.5
+
+- CI definitivo **PASS**: prueba host, ensamblado ARM9 y auditoría
+  de `GetEmptyEntity`, `GetEmptyManager`, `GetEmptyEntityByKind`,
+  `RegisterRoomEntity` y `gEntityListLUT`.
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39575097634
+- Archivo .nds E30.5:
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39575097634/artifacts/12334425258
+- Respaldo estable anterior: `e30-4-ci-pass`. Trabajo vigente:
+  `e30-original-room-properties`.
+- **Aún sin probar E30.5 en melonDS**. Esperado:
+  `TMC / DSi ENGINE E30.5`, `InitRoom original: PASS N:OK`,
+  `Link original: LINKED L:OK C:OK`,
+  `Room ROM: VERIFIED P:OK B:OK`, `GameTask: ROOM PREFIX` y
+  contador `err:0`. La escena permanece vacía porque no se ejecutan
+  los nuevos allocators/registro ni el bucle original.
