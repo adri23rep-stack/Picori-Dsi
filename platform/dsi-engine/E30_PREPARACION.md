@@ -348,6 +348,6 @@ scripts de GBA ni mueve o dibuja personajes. Las funciones originales
 de asignación/sprite/colisión siguen pendientes de enlazarse para
 crear NPC reales.
 
-**Diagnóstico E30.7:** `Registry original: PASS` o `BLOCKED`.
+**Diagnóstico E30.7:** `GameTask: ROOM PREFIX F:OK R:OK` o `R:--` (sin ocultar `ROOM SCREEN`).
 `err:0`, `F:OK`, `N:OK`, `B:OK` y `P:OK` deben conservarse.
 CI debe verificar ejecución host y símbolo nativo auténtico.

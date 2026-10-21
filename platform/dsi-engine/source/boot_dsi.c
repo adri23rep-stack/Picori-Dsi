@@ -383,11 +383,10 @@ int main(void) {
                 volatile unsigned e30Blocked = DsiE30Gate_Blockers();
                 (void)e30Blocked; /* debugger trace; must stay blocked */
 
-                iprintf("\x1b[16;0HGameTask: %-11s F:%s",
+                iprintf("\x1b[16;0HGameTask: %-11s F:%s R:%s",
                         prefix_ok ? "ROOM PREFIX" : "BLOCKED",
-                        DsiGameNative_OriginalEntityLookupReady() ? "OK" : "--");
-                iprintf("\x1b[9;0HRegistry original: %s   ",
-                        registry_probe_ok ? "PASS" : "BLOCKED");
+                        DsiGameNative_OriginalEntityLookupReady() ? "OK" : "--",
+                        registry_probe_ok ? "OK" : "--");
                 iprintf("\x1b[17;0Horg:%u/%u/%u init:%u d:%u e:%u  ",
                         native->transition_ticks, native->init_ticks,
                         native->room_prefix_ticks, native->original_room_calls,
