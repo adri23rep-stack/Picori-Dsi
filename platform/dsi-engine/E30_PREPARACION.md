@@ -57,3 +57,13 @@ en el test **E30 siga rechazado**. La guarda se reinicia en el arranque
 y se compila en ARM9 sin habilitar ninguna actualización de juego.
 
 **No confundir gate creado con E29 completado o E30 listo para ejecutar.**
+
+## E29.8 / E30
+
+En E29.8 se intenta ejecutar **InitializePlayer real** una sola vez
+tras InitRoom, con hitbox y lista; no se ejecuta el resto de
+InitializeEntities mientras properties/scripts y cámara estén pendientes.
+El gate de E30 sigue rechazando el bucle y el movimiento del jugador.
+
+La función sprite/layer de la fuente 3DS ya está disponible, pero la
+habilitación completa del render OAM del juego corresponde a E31.

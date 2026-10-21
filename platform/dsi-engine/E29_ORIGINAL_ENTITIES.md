@@ -254,3 +254,27 @@ porque todavía no existe una llamada segura a ella en DSi.
 completar `RoomResInfo.properties` y las cargas reales de habitación;
 probar en melonDS. No activar E30 antes de registrar Link y validar
 listas, hitbox y gráficos en hardware.
+
+## E29.8 — Primera llamada nativa al InitializePlayer ORIGINAL (experimental)
+
+Se descubrió el port de `UpdateSpriteForCollisionLayer` ya presente en
+`port/port_linked_stubs.c`, documentado como traducción del Thumb
+0x08016A04 original. Se extrae ese cuerpo literal en cada compilación,
+sin inventar prioridad gráfica.
+
+La función original `InitializePlayer()` ahora puede ser invocada
+**solo después** de pasar el preflight de ROM EU e `InitRoom()`.
+Verifica lista de entidad real, contador, cámara, salud, coordenadas,
+puntero de interacción y hitbox. Si falla, deja un error visible en el
+diagnóstico y **no** enciende el bucle de E30.
+
+`MemFill32` para `gPlayerState.path_memory` se redirige a la RAM ARM9
+nativa: el PC_PORT genérico confunde punteros ARM9 0x02xxxxxx con
+sombra EWRAM de GBA. El resto conserva el comportamiento anterior.
+
+Esto **no** equivale a ejecutar `InitializeEntities()` completo ni
+renderizar el sprite en pantalla; faltan propiedades/scripts/LoadRoom/
+InitializeCamera e integración de sprites/OAM del juego.
+
+**NO marcar E29 completada hasta probar en melonDS E29.8 y resolver
+las dependencias originales de InitializeEntities.**

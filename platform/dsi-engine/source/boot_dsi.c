@@ -51,6 +51,7 @@
 #include "dsi_player_preflight.h"
 #include "dsi_entity_state_e29.h"
 #include "dsi_collision_state_e29.h"
+#include "dsi_e30_gate.h"
 #include "dsi_player_state_e29.h"
 #include "dsi_area_headers.h"
 #include "port_gba_mem.h"
@@ -343,6 +344,17 @@ int main(void) {
                     initialized->tiles != NULL;
                 iprintf("\x1b[10;0HInitRoom original: %-6s",
                         original_room_ok ? "PASS" : "PENDING");
+                /* E29.8: invoke AUTHENTIC InitializePlayer only after the
+                 * EU ROM and original room checks. Never run GameTask UPDATE. */
+                bool link_native = original_room_ok && player_preflight_ok &&
+                    DsiGameNative_BootOriginalPlayer();
+                iprintf("\x1b[15;0HLink original: %-7s L:%s C:%s",
+                        link_native ? "LINKED" : "BLOCKED",
+                        link_native ? "OK" : (list_memory_ok ? "OK" : "ERR"),
+                        link_native ? "OK" : (collision_memory_ok ? "OK" : "ERR"));
+                volatile unsigned e30Blocked = DsiE30Gate_Blockers();
+                (void)e30Blocked; /* debugger trace; must stay blocked */
+
                 iprintf("\x1b[16;0HGameTask: %-11s", prefix_ok ? "ROOM PREFIX" : "BLOCKED");
                 iprintf("\x1b[17;0Horg:%u/%u/%u init:%u d:%u e:%u  ",
                         native->transition_ticks, native->init_ticks,
