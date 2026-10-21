@@ -110,3 +110,27 @@ luego el despacho nativo realmente verificado más
 `RoomResInfo.properties` materializado. El primer requisito ya tiene
 código y pruebas; el segundo sigue **bloqueado a propósito**.
 El test host verifica ambos casos y nunca habilita `GameTask UPDATE`.
+
+## E30.2 — Bancos originales EntityData materializados en ARM9
+
+La ROM EU ya se leyó en E30.1. El paso siguiente usa **solo** las
+propiedades originales 0 y 1 (`EntityData[]`). Se comprueba la
+coincidencia con `DsiEntityLists`, se copian íntegros los registros
+y el terminador `0xFF` a estructuras C nativas **alineadas**, con
+`_Static_assert(sizeof(EntityData)==16)` para proteger el layout GBA.
+
+`DsiRoomPropertyDataE30_EntityBank(0/1)` expone const datos originales
+preparados para el futuro `LoadRoomEntityList()` del `src/room.c`, pero
+**no lo llama**. Las direcciones spritePtr originales **NO** son
+punteros nativos y no se desreferencian. Los campos 2–7 todavía pueden
+ser datos/scripts/callbacks GBA sin equivalentes nativos y siguen bloqueados.
+
+`DsiE30Gate_Blockers()` agrega `DSI_E30_BLOCK_ENTITY_BANKS`. Debe
+seguir bloqueando `GameTask UPDATE` hasta enlazar
+`InitializeEntities()`, callbacks y render original. Al cargar en melonDS
+se espera `Room ROM: VERIFIED P:OK B:OK` y el resto de E30.1 sin cambios.
+
+- Validación host: coincidencia byte-a-byte, alineación de `EntityData`,
+  terminadores, cambio de sala, datos corruptos, snapshot anterior estable.
+- Validación ARM9: objeto nativo y símbolos presentes en ELF.
+- Prueba de ejecución en melonDS y confirmación de `B:OK` pendiente.

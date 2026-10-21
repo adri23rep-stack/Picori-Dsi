@@ -1,4 +1,4 @@
-name: Build Zelda Minish Cap DSi E30.1 (Original ROM Room Properties)
+name: Build Zelda Minish Cap DSi E30.2 (Original Entity Property Banks)
 on:
   workflow_dispatch:
   push:
@@ -55,8 +55,10 @@ jobs:
         run: sh platform/dsi-engine/tests/run_sprite_layer_e29.sh
       - name: E30.1 original EU room property snapshot and bounds
         run: sh platform/dsi-engine/tests/run_room_properties_e30.sh
+      - name: E30.2 original EntityData bank materialization
+        run: sh platform/dsi-engine/tests/run_room_property_data_e30.sh
   nds:
-    name: Build E30.1 ARM9 with original ROM property snapshot
+    name: Build E30.2 ARM9 with original entity property banks
     needs: host-check
     runs-on: ubuntu-latest
     container:
@@ -137,12 +139,15 @@ jobs:
           arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf | grep -Eq ' T DsiE30Gate_Blockers$'
           test -s platform/dsi-engine/build/dsi_room_properties_e30.o
           arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf | grep -Eq ' T DsiRoomPropertiesE30_PrepareEU$'
-          echo 'E30.1: property ROM snapshot compiled and linked; original callbacks and GameTask UPDATE remain blocked'
+          test -s platform/dsi-engine/build/dsi_room_property_data_e30.o
+          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf | grep -Eq ' T DsiRoomPropertyDataE30_Bind$'
+          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf | grep -Eq ' T DsiRoomPropertyDataE30_Ready$'
+          echo 'E30.2: genuine EntityData banks materialized; scripts, InitializeEntities and GameTask UPDATE remain BLOCKED'
       - name: Upload build diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: E30-1-Build-Log
+          name: E30-2-Build-Log
           path: |
             e29-build.log
             e29-linked-symbols.txt
@@ -157,6 +162,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Picori-DSi-E30-1-Original-Properties-NDS
+          name: Picori-DSi-E30-2-Original-EntityData-NDS
           path: platform/dsi-engine/tmc-dsi-engine-e29.nds
           if-no-files-found: error

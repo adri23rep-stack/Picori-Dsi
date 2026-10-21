@@ -7,6 +7,7 @@
 #include "dsi_player_state_e29.h"
 #include "dsi_collision_state_e29.h"
 #include "dsi_room_properties_e30.h"
+#include "dsi_room_property_data_e30.h"
 #include "main.h"
 #include "game.h"
 #include "room.h"
@@ -51,6 +52,8 @@ unsigned DsiE30Gate_Blockers(void) {
         !source->native_dispatch_ready ||
         !gArea.pCurrentRoomInfo || !gArea.pCurrentRoomInfo->properties)
         blocked |= DSI_E30_BLOCK_PROPERTIES;
+    if (!DsiRoomPropertyDataE30_Ready())
+        blocked |= DSI_E30_BLOCK_ENTITY_BANKS;
     if (!sOriginalEntitiesComplete)
         blocked |= DSI_E30_BLOCK_ENTITIES_INIT;
 #ifndef TMC_DSI_E30_NATIVE_SPRITE_LAYER_VERIFIED

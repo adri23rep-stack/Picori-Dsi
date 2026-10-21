@@ -48,6 +48,7 @@
 #include "dsi_room_preview.h"
 #include "dsi_room_resources.h"
 #include "dsi_room_properties_e30.h"
+#include "dsi_room_property_data_e30.h"
 #include "dsi_entity_lists.h"
 #include "dsi_player_preflight.h"
 #include "dsi_entity_state_e29.h"
@@ -281,6 +282,12 @@ int main(void) {
                  * call any Thumb callbacks or run InitializeEntities. */
                 bool properties_ok = room_ok && room_refs_ok && entity_data_ok &&
                     DsiRoomPropertiesE30_PrepareEU(&room_metadata);
+                /* E30.2: materialize ONLY the verified original 16-byte
+                 * entity records as aligned native EntityData. Never touch
+                 * room callback slots, gCurrentRoomProperties or GameTask. */
+                bool property_banks_ok = properties_ok &&
+                    DsiRoomPropertyDataE30_Bind();
+
 
                 /* E29: original save + ROM preflight only.
                  * InitializePlayer() is NOT called on DSi yet. */
@@ -370,9 +377,10 @@ int main(void) {
                 iprintf("\x1b[11;0HRoom tiles: %s %lu B   ", tile_ok ? "OK" : "BLOCKED",
                         (unsigned long)(tile_stats.tileset.uncompressed_bytes +
                                         tile_stats.tiles.uncompressed_bytes));
-                iprintf("\x1b[12;0HRoom ROM: %-8s P:%s ",
+                iprintf("\x1b[12;0HRoom ROM: %-8s P:%s B:%s",
                         room_ok ? "VERIFIED" : "BLOCKED",
-                        properties_ok ? "OK" : "--");
+                        properties_ok ? "OK" : "--",
+                        property_banks_ok ? "OK" : "--");
                 if (room_ok) {
                     iprintf("\x1b[13;0Hsize: %ux%u area:22 room:15   ",
                             room_metadata.width, room_metadata.height);
