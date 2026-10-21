@@ -103,7 +103,13 @@ jobs:
           grep -Eq ' B gUnk_02018EA0$' e29-hitbox-storage-symbols.txt
           test -s platform/dsi-engine/build/playerUtils.o
           arm-none-eabi-nm platform/dsi-engine/build/playerUtils.o > e29-original-player-utils-symbols.txt
-          grep -Eq ' T ResetPossibleInteraction
+          grep -Eq ' T ResetPossibleInteraction$' e29-original-player-utils-symbols.txt
+          grep -Eq ' [Tt] ResetPossibleInteraction$' e29-linked-symbols.txt
+          grep -Eq ' [Rr] gNoInteraction$' e29-linked-symbols.txt
+          grep -Eq ' B gPossibleInteraction$' e29-linked-symbols.txt
+          grep -Eq ' B gActiveItems$' e29-linked-symbols.txt
+          grep -Eq ' T DsiPlayerState_Reset$' e29-linked-symbols.txt
+          echo 'E29.6: genuine player interaction reset linked on ARM9'
       - name: Upload build diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -123,137 +129,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Picori-DSi-E29-6-Interaction-RAM-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
-          if-no-files-found: error
- e29-original-player-utils-symbols.txt
-          grep -Eq ' [Tt] ResetPossibleInteraction
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: E29-5-Build-Log
-          path: |
-            e29-build.log
-            e29-linked-symbols.txt
-            e29-original-entity-symbols.txt
-            e29-native-entity-storage-symbols.txt
-            e29-collision-symbols.txt
-            e29-hitbox-storage-symbols.txt
-          if-no-files-found: ignore
-      - name: Upload experimental NDS
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E29-5-Native-Collision-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
-          if-no-files-found: error
- e29-linked-symbols.txt
-          grep -Eq ' [Rr] gNoInteraction
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: E29-5-Build-Log
-          path: |
-            e29-build.log
-            e29-linked-symbols.txt
-            e29-original-entity-symbols.txt
-            e29-native-entity-storage-symbols.txt
-            e29-collision-symbols.txt
-            e29-hitbox-storage-symbols.txt
-          if-no-files-found: ignore
-      - name: Upload experimental NDS
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E29-5-Native-Collision-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
-          if-no-files-found: error
- e29-linked-symbols.txt
-          grep -Eq ' B gPossibleInteraction
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: E29-5-Build-Log
-          path: |
-            e29-build.log
-            e29-linked-symbols.txt
-            e29-original-entity-symbols.txt
-            e29-native-entity-storage-symbols.txt
-            e29-collision-symbols.txt
-            e29-hitbox-storage-symbols.txt
-          if-no-files-found: ignore
-      - name: Upload experimental NDS
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E29-5-Native-Collision-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
-          if-no-files-found: error
- e29-linked-symbols.txt
-          grep -Eq ' B gActiveItems
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: E29-5-Build-Log
-          path: |
-            e29-build.log
-            e29-linked-symbols.txt
-            e29-original-entity-symbols.txt
-            e29-native-entity-storage-symbols.txt
-            e29-collision-symbols.txt
-            e29-hitbox-storage-symbols.txt
-          if-no-files-found: ignore
-      - name: Upload experimental NDS
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E29-5-Native-Collision-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
-          if-no-files-found: error
- e29-linked-symbols.txt
-          grep -Eq ' T DsiPlayerState_Reset
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: E29-5-Build-Log
-          path: |
-            e29-build.log
-            e29-linked-symbols.txt
-            e29-original-entity-symbols.txt
-            e29-native-entity-storage-symbols.txt
-            e29-collision-symbols.txt
-            e29-hitbox-storage-symbols.txt
-          if-no-files-found: ignore
-      - name: Upload experimental NDS
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E29-5-Native-Collision-NDS
-          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
-          if-no-files-found: error
- e29-linked-symbols.txt
-          echo 'E29.6: original interaction reset linked for ARM9; Link spawn still blocked'
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: E29-5-Build-Log
-          path: |
-            e29-build.log
-            e29-linked-symbols.txt
-            e29-original-entity-symbols.txt
-            e29-native-entity-storage-symbols.txt
-            e29-collision-symbols.txt
-            e29-hitbox-storage-symbols.txt
-          if-no-files-found: ignore
-      - name: Upload experimental NDS
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E29-5-Native-Collision-NDS
           path: platform/dsi-engine/tmc-dsi-engine-e29.nds
           if-no-files-found: error
