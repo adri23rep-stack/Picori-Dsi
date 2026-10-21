@@ -166,4 +166,8 @@ otras habitaciones y doble instalación. El reset solo retira
 `GameTask UPDATE`. El nuevo diagnóstico de E30.3 será
 `InitRoom original: PASS N:OK` junto a `P:OK B:OK`.
 
-Pruebas CI y evidencia de melonDS pendientes para E30.3.
+**Pruebas host y ARM9 E30.3: PASS** — https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39567279884
+
+**NDS E30.3:** https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39567279884/artifacts/12329673108
+
+**Pendiente:** prueba en melonDS con ROM EU, `InitRoom original: PASS N:OK`, `Link original: LINKED L:OK C:OK`, `Room ROM: VERIFIED P:OK B:OK`, `err:0`. No hay movimiento ni sprites del jugador.
