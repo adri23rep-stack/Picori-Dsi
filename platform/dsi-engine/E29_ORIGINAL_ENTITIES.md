@@ -170,3 +170,40 @@ referencia. E29 completa NO está terminada.
 **Próximas dependencias:** enlazar la asignación auténtica, hitbox,
 colisión, gestión de sprites, scripts y referencias ROM necesarias
 antes de ejecutar `InitializePlayer()`/ `InitializeEntities()`.
+
+## E29.5 — Registro ORIGINAL de hitbox de Link (CI verificado)
+
+**Prueba de integración completada en CI, aún pendiente de melonDS.**
+
+- El módulo generado `dsi_collision_core_e29.c` se extrae en build de
+  `src/collision.c`: contiene la función auténtica
+  `RegisterPlayerHitbox()`, sin reescribir su cuerpo.
+- `dsi_collision_state_e29.c` reserva en ARM9 los símbolos originales
+  `gUnk_03003C70[16]` y `gUnk_02018EA0` que en GBA viven en memoria
+  fija. Mantiene los enlaces de lista de `LinkedList2` y permite verificar
+  su inicialización sin fabricar física ni colisiones nuevas.
+- `DsiGameNative_Reset()` limpia este estado en el arranque de juego.
+  `Link preflight` añade `C:OK` cuando no hay hitboxes residuales.
+- El test host `run_collision_state_e29.sh` compila la función
+  original directamente desde la fuente, comprueba punteros circulares,
+  16 registros, reentrada y reset.
+- GitHub Actions exige en el objeto ARM9 los símbolos
+  `RegisterPlayerHitbox`, `gUnk_03003C70` y `gUnk_02018EA0`.
+  Los símbolos se comprueban en los OBJ, no se afirma que todos estén
+  ejecutándose en el ELF final.
+- CI exitosa: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39526330982
+- Artefacto NDS: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39526330982/artifacts/12312657681
+
+**Lo que falta para ejecutar la inicialización original de Link en ARM9:**
+integrar `InitializePlayer()` original y sus dependencias completas,
+especialmente `UpdateSpriteForCollisionLayer()` (no está implementada
+en los C portados y parece provenir de código GBA aún pendiente),
+memoria de interacción `gPossibleInteraction` y
+`ResetPossibleInteraction()` (sí existe en `src/playerUtils.c`),
+entrada original de `InitializeEntities()` y la lógica de sprites.
+No introducir sustitutos que aparenten jugabilidad.
+
+**Prueba visual solicitada:** con ROM EU en melonDS, comprobar que la
+casa sigue visible, `InitRoom original: PASS`,
+`Link preflight: READY L:OK C:OK` y `e:0`.
+READY no significa que Link se haya creado ni que ya pueda moverse.
