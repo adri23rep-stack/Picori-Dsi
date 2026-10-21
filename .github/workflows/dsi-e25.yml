@@ -1,4 +1,4 @@
-name: Build Zelda Minish Cap DSi E30.7 (Genuine Room Registry Probe)
+name: Build Zelda Minish Cap DSi E30.8 (Original Spawn Chain Host & ROM Audit)
 on:
   workflow_dispatch:
   push:
@@ -65,8 +65,12 @@ jobs:
         run: sh platform/dsi-engine/tests/run_entity_allocator_e30.sh
       - name: E30.7 transactional original room registry in native entity pool
         run: sh platform/dsi-engine/tests/run_registry_probe_e30.sh
+      - name: E30.8 original LoadRoomEntity host safe-branch and duplicate suppression
+        run: sh platform/dsi-engine/tests/run_room_spawn_chain_e30.sh
+      - name: E30.8 actual original room bank branch inventory
+        run: sh platform/dsi-engine/tests/run_room_spawn_audit_e30.sh
   nds:
-    name: Build E30.7 ARM9 genuine room registry diagnostic
+    name: Build E30.8 ARM9 original spawn-branch ROM audit
     needs: host-check
     runs-on: ubuntu-latest
     container:
@@ -165,7 +169,7 @@ jobs:
           grep -Eq ' U Port_ResolveRegionData$' e30-original-room-list-symbols.txt
           # Original loader/spawner is only in build/*.o until dependency closure.
           ! grep -Eq ' [Tt] (LoadRoomEntityList|LoadRoomEntity)$' e29-linked-symbols.txt
-          grep -aq 'TMC / DSi ENGINE E30.7' platform/dsi-engine/tmc-dsi-engine-e29.elf
+          grep -aq 'TMC / DSi ENGINE E30.8' platform/dsi-engine/tmc-dsi-engine-e29.elf
           # The loader cannot be activated until genuine allocator, room
           # registration, sprite and scripts are ported. Do not silently add
           # fabricated Nintendo DS implementations to bypass this gate.
@@ -187,12 +191,19 @@ jobs:
           grep -Eq ' [RrDTt] gEntityListLUT$' e30-original-allocator-symbols.txt
           # No incomplete allocations/spawns may enter the final ARM9 ELF.
           ! grep -Eq ' [Tt] (GetEmptyEntity|GetEmptyManager|GetEmptyEntityByKind|LoadRoomEntityList|LoadRoomEntity)$' e29-linked-symbols.txt
-          echo 'E30.7: genuine RegisterRoomEntity LINKED and probed transactionally on ARM9; gameplay spawn stays blocked'
+          test -s platform/dsi-engine/build/dsi_room_entity_params_core_e30.o
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_room_entity_params_core_e30.o > e30-original-spawn-params-symbols.txt
+          grep -Eq ' T sub_0804AF0C$' e30-original-spawn-params-symbols.txt
+          grep -Eq ' U StartCutscene$' e30-original-spawn-params-symbols.txt
+          test -s platform/dsi-engine/build/dsi_room_spawn_audit_e30.o
+          grep -Eq ' T DsiRoomSpawnAuditE30_Run$' e29-linked-symbols.txt
+          ! grep -Eq ' [Tt] (LoadRoomEntityList|LoadRoomEntity|sub_0804AF0C)$' e29-linked-symbols.txt
+          echo 'E30.8: ROM entity branches audited on ARM9; original spawn helper compiled, scripts/collision still blocked'
       - name: Upload build diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: E30-7-Build-Log
+          name: E30-8-Build-Log
           path: |
             e29-build.log
             e29-linked-symbols.txt
@@ -206,11 +217,12 @@ jobs:
             e30-original-room-spawn-symbols.txt
             e30-original-allocator-symbols.txt
             e30-original-registry-symbols.txt
+            e30-original-spawn-params-symbols.txt
           if-no-files-found: ignore
       - name: Upload experimental NDS
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Picori-DSi-E30-7-Original-Room-Registry-NDS
+          name: Picori-DSi-E30-8-Original-Spawn-Audit-NDS
           path: platform/dsi-engine/tmc-dsi-engine-e29.nds
           if-no-files-found: error

@@ -367,3 +367,38 @@ CI debe verificar ejecución host y símbolo nativo auténtico.
   La casa seguirá sin personajes dibujados, sin NPC permanentes ni
   actualización del motor. Un `R:--` indica que no pasó la prueba
   transaccional; no avanzar al spawn original hasta depurarlo.
+
+## E30.8 — Validación de LoadRoomEntity original y auditoría de ROM
+
+E30.7 fue comprobada por el usuario en melonDS:
+`GameTask: ROOM PREFIX F:OK R:OK`, `err:0`.
+
+E30.8 añade dos avances separados y verificables:
+
+1. **Prueba host auténtica de `LoadRoomEntity()` y
+   `LoadRoomEntityList()` desde `src/room.c`**, enlazadas con
+   los `GetEmptyEntityByKind`, `RegisterRoomEntity`,
+   `DeepFindEntityByID` y `AppendEntityToList` originales.
+   Dos registros de prueba usan el modo especial `0x10`, que salta
+   las dependencias de inicialización sin sustituir lógica; otro
+   comprueba el filtro original de duplicados `0x50`. Los
+   fallbacks de hardware o scripts NO se simulan: trampas de test
+   host fallan si la rutina intenta ejecutarlos. Nada de esto
+   se introduce en el ejecutable DSi.
+2. **`DsiRoomSpawnAuditE30` en ARM9** inspecciona los
+   `EntityData` auténticos de la ROM EU ya materializados, enumera
+   cantidad total, rutas que necesitan scripts, managers, detección
+   de duplicados y resolución de capas de colisión. Solo LEE datos.
+   El indicador `ROOM SCREEN: DISPLAYED A:OK` confirma que
+   se inspeccionaron ambas listas, sin crear NPC.
+
+La función `sub_0804AF0C()` original también se extrae íntegra,
+compila para ARM9 y se audita en el objeto, pero permanece **fuera
+del enlace ejecutable**: todavía requiere `StartCutscene`,
+`Port_ResolveEntityScript` y servicios de hardware/colisión.
+
+`GameTask: ROOM PREFIX F:OK R:OK` debe seguir bloqueado.
+`A:OK` **NO significa que el spawn real sea seguro o jugable**.
+Para ejecutar una entidad real hacen falta resolver punteros/scripts
+y `ResolveCollisionLayer` sin stubs de gameplay, además del
+renderizado original. Nunca saltar este bloqueo.

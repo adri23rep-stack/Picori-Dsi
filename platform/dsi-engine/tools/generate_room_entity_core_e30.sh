@@ -8,6 +8,7 @@ set -eu
 SRC=$1
 LIST=$2
 SPAWN=$3
+PARAMS=${4:-}
 test -f "$SRC"
 mkdir -p "$(dirname "$LIST")" "$(dirname "$SPAWN")"
 {
@@ -51,3 +52,24 @@ awk '
 } > "$SPAWN.tmp"
 mv "$LIST.tmp" "$LIST"
 mv "$SPAWN.tmp" "$SPAWN"
+if [ -n "$PARAMS" ]; then
+mkdir -p "$(dirname "$PARAMS")"
+{
+cat <<'HEAD'
+/* Original src/room.c::sub_0804AF0C; no rewritten Zelda gameplay. */
+#include "room.h"
+#include "area.h"
+#include "common.h"
+#include "enemy.h"
+#include "script.h"
+#include "port/port_rom.h"
+HEAD
+awk '
+  /^void sub_0804AF0C\(Entity\* ent, const EntityData\* dat\) \{/ {active=1;found=1}
+  active {print}
+  active && /^}$/ {exit}
+  END {if(!found)exit 1}
+' "$SRC"
+} > "$PARAMS.tmp"
+mv "$PARAMS.tmp" "$PARAMS"
+fi
