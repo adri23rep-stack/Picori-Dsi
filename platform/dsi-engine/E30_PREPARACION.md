@@ -198,3 +198,19 @@ título E30.4. E30 sigue sin `GameTask UPDATE` y sin dibujar Link.
 **Prohibido:** crear un `LoadRoomEntity` falso para facilitar el enlace.
 La próxima etapa deberá cerrar las dependencias con funciones auténticas
 de `src/entity.c`, `src/room.c` y el port ya existente.
+
+## Evidencia E30.4 CI
+
+GitHub Actions **host y ARM9 PASS**:
+https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39568450901
+
+Se auditan los símbolos de los dos cuerpos **originales**, y CI confirma
+que todavía no aparecen en el ejecutable final: permanecen en sus
+objetos ARM9 hasta resolver las dependencias y no se fuerza un
+`LoadRoomEntity` ficticio. La lista necesita adaptar la resolución
+`Port_ResolveRegionData` para memoria DSi; `LoadRoomEntity` necesita
+`GetEmptyEntityByKind` y `RegisterRoomEntity` reales, entre otros.
+
+La pantalla muestra ahora **E30.4** en el título para diferenciar la
+compilación, pero los resultados de habitación y de Link deben
+mantenerse idénticos a E30.3. No hay NPC nuevos ni movimiento.

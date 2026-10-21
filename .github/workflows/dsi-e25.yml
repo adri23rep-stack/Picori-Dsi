@@ -156,6 +156,12 @@ jobs:
           test -s platform/dsi-engine/build/dsi_room_entity_spawn_core_e30.o
           arm-none-eabi-nm platform/dsi-engine/build/dsi_room_entity_spawn_core_e30.o > e30-original-room-spawn-symbols.txt
           grep -Eq ' T LoadRoomEntity$' e30-original-room-spawn-symbols.txt
+          grep -Eq ' U GetEmptyEntityByKind$' e30-original-room-spawn-symbols.txt
+          grep -Eq ' U RegisterRoomEntity$' e30-original-room-spawn-symbols.txt
+          grep -Eq ' U Port_ResolveRegionData$' e30-original-room-list-symbols.txt
+          # Original loader/spawner is only in build/*.o until dependency closure.
+          ! grep -Eq ' [Tt] (LoadRoomEntityList|LoadRoomEntity)$' e29-linked-symbols.txt
+          grep -aq 'TMC / DSi ENGINE E30.4' platform/dsi-engine/tmc-dsi-engine-e29.elf
           # The loader cannot be activated until genuine allocator, room
           # registration, sprite and scripts are ported. Do not silently add
           # fabricated Nintendo DS implementations to bypass this gate.
