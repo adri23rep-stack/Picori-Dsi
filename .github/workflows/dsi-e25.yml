@@ -54,7 +54,7 @@ jobs:
       - name: E29.8 original Thumb sprite-layer port
         run: sh platform/dsi-engine/tests/run_sprite_layer_e29.sh
   nds:
-    name: Build E29.6 ARM9 with original interaction reset
+    name: Build E29.8 ARM9 with authentic Link initialization
     needs: host-check
     runs-on: ubuntu-latest
     container:
@@ -138,7 +138,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: E29-6-Build-Log
+          name: E29-8-Build-Log
           path: |
             e29-build.log
             e29-linked-symbols.txt
@@ -153,6 +153,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Picori-DSi-E29-6-Interaction-RAM-NDS
+          name: Picori-DSi-E29-8-Original-Link-NDS
           path: platform/dsi-engine/tmc-dsi-engine-e29.nds
           if-no-files-found: error

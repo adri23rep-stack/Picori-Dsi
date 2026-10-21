@@ -67,3 +67,13 @@ El gate de E30 sigue rechazando el bucle y el movimiento del jugador.
 
 La función sprite/layer de la fuente 3DS ya está disponible, pero la
 habilitación completa del render OAM del juego corresponde a E31.
+
+## Resultado verificable
+
+E29.8 ARM9 compilada: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39550565870
+
+El `DsiE30Gate_Blockers()` de la build E29.8 sigue bloqueando E30 si
+faltan propiedades reales de sala, ejecución completa de
+`InitializeEntities()` y la validación del sprite/layer nativo en melonDS.
+Hasta resolverlo, `GameTask` permanece intencionalmente en modo seguro,
+sin `GAMEMAIN_UPDATE`.

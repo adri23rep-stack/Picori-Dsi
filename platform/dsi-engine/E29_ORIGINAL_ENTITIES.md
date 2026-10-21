@@ -278,3 +278,27 @@ InitializeCamera e integración de sprites/OAM del juego.
 
 **NO marcar E29 completada hasta probar en melonDS E29.8 y resolver
 las dependencias originales de InitializeEntities.**
+
+## E29.8 — CI ARM9 aceptada; prueba melonDS obligatoria
+
+- GitHub Actions E29.8 (tests host y enlace ARM9): **PASS**
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39550565870
+- Primera versión que enlaza y *puede invocar* `InitializePlayer()` del
+  `src/gameUtils.c` original junto con `AppendEntityToList()`,
+  `RegisterPlayerHitbox()` y `UpdateSpriteForCollisionLayer()` de la
+  traducción Thumb preexistente en `port/port_linked_stubs.c`.
+- El wrapper solo intercepta `MemFill32()` de `path_memory` para evitar
+  resolver una dirección ARM9 nativa como sombra GBA.
+- `Port_LogListOp` en ARM9 recopila diagnóstico de las llamadas auténticas,
+  sin alterar listas ni prioridades.
+
+**PENDIENTE DE ACEPTACIÓN:** probar el .nds en melonDS con ROM EU:
+que muestre `Link original: LINKED L:OK C:OK`, 
+`InitRoom original: PASS`, habitación correcta, sin errores. Este mensaje
+es un diagnóstico de memoria; todavía NO dibuja el sprite original ni
+ejecuta `InitializeEntities` o el bucle.
+
+**E29 no se considera terminada** hasta que `InitializeEntities()`
+original haya ejecutado la cadena de inicialización de sala (scripts,
+properties, sprites/cámara, etc.) y se haya confirmado una actualización
+auténtica de entidad en DSi. La versión previa E29.6 está preservada.
