@@ -27,6 +27,15 @@ mkdir -p "$(dirname "$ALLOC")" "$(dirname "$REG")"
     awk '/^Entity\* CreateAuxPlayerEntity\(void\) \{/ {active=1;found=1} active {print} active && /^}$/ {exit} END {if(!found)exit 1}' "$ENTITY_SRC"
     awk '/^typedef void\* \(\*Getter\)\(void\);/ {print;found=1;exit} END {if(!found)exit 1}' "$ENTITY_SRC"
     awk '/^void\* GetEmptyEntityByKind\(u32 kind\) \{/ {active=1;found=1} active {print} active && /^}$/ {exit} END {if(!found)exit 1}' "$ENTITY_SRC"
+    # E30.11: full original lookup family — used by rooms, enemy and
+    # object spawns. No rewritten list semantics, pointer repairs or AI.
+    for FN in \
+      'bool32 EntityHasDuplicateID(Entity* ent) {' \
+      'Entity* FindEntityByID(u32 kind, u32 id, u32 listIndex) {' \
+      'Entity* FindEntity(u32 kind, u32 id, u32 listIndex, u32 type, u32 type2) {' \
+      'Entity* FindNextDuplicateID(Entity* ent, int listIndex) {'; do
+        awk -v signature="$FN" 'index($0, signature)==1 {active=1;found=1} active {print} active && /^}$/ {exit} END {if(!found)exit 1}' "$ENTITY_SRC"
+    done
     # Genuine duplicate/entity ID search from src/entity.c, with its
     # upstream PC_PORT bounded walker and real pool validity validator.
     awk '/^Entity\* DeepFindEntityByID\(u32 kind, u32 id\) \{/ {active=1;found=1} active {print} active && /^}$/ {exit} END {if(!found)exit 1}' "$ENTITY_SRC"

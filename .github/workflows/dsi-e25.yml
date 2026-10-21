@@ -1,4 +1,4 @@
-name: Build Zelda Minish Cap DSi E30.10 (Original Auxiliary Entity Allocator)
+name: Build Zelda Minish Cap DSi E30.11 (Original Entity Search Family)
 on:
   workflow_dispatch:
   push:
@@ -75,8 +75,10 @@ jobs:
         run: sh platform/dsi-engine/tests/run_entity_placement_e30.sh
       - name: E30.10 original auxiliary player allocator and full-pool exhaustion
         run: sh platform/dsi-engine/tests/run_aux_player_probe_e30.sh
+      - name: E30.11 authentic entity lookup family, duplicates and list integrity
+        run: sh platform/dsi-engine/tests/run_entity_search_probe_e30.sh
   nds:
-    name: Build E30.10 ARM9 original auxiliary player allocator
+    name: Build E30.11 ARM9 original entity search functions
     needs: host-check
     runs-on: ubuntu-latest
     container:
@@ -175,7 +177,7 @@ jobs:
           grep -Eq ' U Port_ResolveRegionData$' e30-original-room-list-symbols.txt
           # Original loader/spawner is only in build/*.o until dependency closure.
           ! grep -Eq ' [Tt] (LoadRoomEntityList|LoadRoomEntity)$' e29-linked-symbols.txt
-          grep -aq 'TMC / DSi ENGINE E30.10' platform/dsi-engine/tmc-dsi-engine-e29.elf
+          grep -aq 'TMC / DSi ENGINE E30.11' platform/dsi-engine/tmc-dsi-engine-e29.elf
           # The loader cannot be activated until genuine allocator, room
           # registration, sprite and scripts are ported. Do not silently add
           # fabricated Nintendo DS implementations to bypass this gate.
@@ -215,12 +217,19 @@ jobs:
           # There must still be no general entity allocator or spawner
           # linked until all genuine dependencies can be ported.
           ! grep -Eq ' [Tt] (GetEmptyEntity|GetEmptyEntityByKind|LoadRoomEntityList|LoadRoomEntity|sub_0804AF0C)$' e29-linked-symbols.txt
-          echo 'E30.10: original CreateAuxPlayerEntity LINKED and tested against the real ARM9 auxiliary pool; gameplay remains blocked'
+          test -s platform/dsi-engine/build/dsi_entity_search_probe_e30.o
+          grep -Eq ' T DsiEntitySearchProbeE30_Run$' e29-linked-symbols.txt
+          for symbol in EntityHasDuplicateID FindEntityByID FindEntity FindNextDuplicateID; do
+            grep -Eq " T ${symbol}$" e30-original-allocator-symbols.txt
+            grep -Eq " T ${symbol}$" e29-linked-symbols.txt
+          done
+          ! grep -Eq ' [Tt] (GetEmptyEntity|GetEmptyEntityByKind|LoadRoomEntityList|LoadRoomEntity|sub_0804AF0C)$' e29-linked-symbols.txt
+          echo 'E30.11: original ID/type/duplicate search family LINKED and executed on native Link; gameplay spawns still blocked'
       - name: Upload build diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: E30-10-Build-Log
+          name: E30-11-Build-Log
           path: |
             e29-build.log
             e29-linked-symbols.txt
@@ -240,6 +249,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Picori-DSi-E30-10-Aux-Player-Original-NDS
+          name: Picori-DSi-E30-11-Original-Search-Family-NDS
           path: platform/dsi-engine/tmc-dsi-engine-e29.nds
           if-no-files-found: error

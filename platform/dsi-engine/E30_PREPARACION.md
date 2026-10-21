@@ -519,3 +519,34 @@ No se crearon comportamientos Zelda alternativos.
 - `U:OK` solo acredita la ejecución real del asignador original de
   auxiliares sobre un pool comprobado previamente vacío. No se crea
   jugador auxiliar permanente; el GameTask UPDATE sigue bloqueado.
+
+## E30.11 — Búsquedas completas ORIGINALES ejecutadas en ARM9
+
+El usuario confirmó `U:OK` y `err:0` en la E30.10; respaldo
+congelado en `e30-10-ci-pass`.
+
+E30.11 añade al ejecutable ARM9 **cuatro funciones originales**
+sin cambios a sus cuerpos (`src/entity.c`):
+`FindEntityByID`, `FindEntity`, `FindNextDuplicateID` y
+`EntityHasDuplicateID`. No se usan stubs falsos para estas
+funciones. El diagnóstico comprueba las búsquedas en las listas
+REALES de Link, incluido el rechazo de resultados equivocados,
+y verifica que los contadores y enlaces no cambian.
+
+En host también se comprueban duplicados en dos NPCs de prueba
+usando las listas y `AppendEntityToList` originales. **Estos
+NPCs son exclusivamente datos de pruebas en PC, nunca incluidos
+en la lógica de la NDS.**
+
+El nuevo estado `S:OK` aparecerá en la línea
+`sz:240x160 a:22 r:15 U:OK S:OK`, conservando
+`GameTask: ROOM PREFIX F:OK R:OK`, `ROOM SCREEN:DISPLAYED A:OK M:OK`
+y `err:0` esperados. Ninguna rutina nueva ejecuta
+`LoadRoomEntity`, `InitializeEntities` ni actualizaciones de NPC.
+
+**Advertencia de alcance:** esto integra infraestructura auténtica,
+pero **no desbloquea por sí solo la creación real de entidades**.
+El siguiente corte imprescindible es cerrar `GetEmptyEntity`
+junto a sus servicios auténticos de reciclaje/borrado, y
+`StartCutscene`/`ResolveCollisionLayer` para las ramas
+relevantes de `LoadRoomEntity`, sin recrearlos.
