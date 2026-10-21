@@ -47,6 +47,7 @@
 #include "dsi_room_tiles.h"
 #include "dsi_room_preview.h"
 #include "dsi_room_resources.h"
+#include "dsi_room_properties_e30.h"
 #include "dsi_entity_lists.h"
 #include "dsi_player_preflight.h"
 #include "dsi_entity_state_e29.h"
@@ -275,6 +276,12 @@ int main(void) {
                  * This prepares data only; no entities are spawned. */
                 bool entity_data_ok = room_ok &&
                     DsiEntityLists_PrepareEU(&room_metadata);
+                /* E30.1: copy original 8 ROM property words into ARM9 RAM.
+                 * This does NOT install raw GBA pointers in RoomResInfo,
+                 * call any Thumb callbacks or run InitializeEntities. */
+                bool properties_ok = room_ok && room_refs_ok && entity_data_ok &&
+                    DsiRoomPropertiesE30_PrepareEU(&room_metadata);
+
                 /* E29: original save + ROM preflight only.
                  * InitializePlayer() is NOT called on DSi yet. */
                 bool list_memory_ok = DsiEntityState_EmptyValid();
@@ -363,7 +370,9 @@ int main(void) {
                 iprintf("\x1b[11;0HRoom tiles: %s %lu B   ", tile_ok ? "OK" : "BLOCKED",
                         (unsigned long)(tile_stats.tileset.uncompressed_bytes +
                                         tile_stats.tiles.uncompressed_bytes));
-                iprintf("\x1b[12;0HRoom ROM: %s       ", room_ok ? "VERIFIED" : "BLOCKED");
+                iprintf("\x1b[12;0HRoom ROM: %-8s P:%s ",
+                        room_ok ? "VERIFIED" : "BLOCKED",
+                        properties_ok ? "OK" : "--");
                 if (room_ok) {
                     iprintf("\x1b[13;0Hsize: %ux%u area:22 room:15   ",
                             room_metadata.width, room_metadata.height);

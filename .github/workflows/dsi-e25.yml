@@ -1,4 +1,4 @@
-name: Build Zelda Minish Cap DSi E29.7 / E30 Gate
+name: Build Zelda Minish Cap DSi E30.1 (Original ROM Room Properties)
 on:
   workflow_dispatch:
   push:
@@ -53,8 +53,10 @@ jobs:
         run: sh platform/dsi-engine/tests/run_e30_gate.sh
       - name: E29.8 original Thumb sprite-layer port
         run: sh platform/dsi-engine/tests/run_sprite_layer_e29.sh
+      - name: E30.1 original EU room property snapshot and bounds
+        run: sh platform/dsi-engine/tests/run_room_properties_e30.sh
   nds:
-    name: Build E29.8 ARM9 with authentic Link initialization
+    name: Build E30.1 ARM9 with original ROM property snapshot
     needs: host-check
     runs-on: ubuntu-latest
     container:
@@ -133,12 +135,14 @@ jobs:
           grep -Eq ' T DsiPlayerState_Reset$' e29-linked-symbols.txt
           test -s platform/dsi-engine/build/dsi_e30_gate.o
           arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf | grep -Eq ' T DsiE30Gate_Blockers$'
-          echo 'E29.7: native gate installed; E30 remains BLOCKED until genuine original player/spatial dependencies are ported'
+          test -s platform/dsi-engine/build/dsi_room_properties_e30.o
+          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf | grep -Eq ' T DsiRoomPropertiesE30_PrepareEU$'
+          echo 'E30.1: property ROM snapshot compiled and linked; original callbacks and GameTask UPDATE remain blocked'
       - name: Upload build diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: E29-8-Build-Log
+          name: E30-1-Build-Log
           path: |
             e29-build.log
             e29-linked-symbols.txt
@@ -153,6 +157,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Picori-DSi-E29-8-Original-Link-NDS
+          name: Picori-DSi-E30-1-Original-Properties-NDS
           path: platform/dsi-engine/tmc-dsi-engine-e29.nds
           if-no-files-found: error

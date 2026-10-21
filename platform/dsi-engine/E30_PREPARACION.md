@@ -77,3 +77,23 @@ faltan propiedades reales de sala, ejecución completa de
 `InitializeEntities()` y la validación del sprite/layer nativo en melonDS.
 Hasta resolverlo, `GameTask` permanece intencionalmente en modo seguro,
 sin `GAMEMAIN_UPDATE`.
+
+## E30.1 — Fuente de propiedades de habitación ORIGINAL (lectura segura)
+
+- `dsi_room_properties_e30.c` usa `DsiRoomMetadata.properties_address`
+  resuelto por el motor de tablas original (área 0x22, habitación 0x15).
+  Copia exactamente las ocho entradas de 32 bits a RAM ARM9.
+- Valida origen ROM EU, legibilidad de cada dirección no nula y que las
+  propiedades 0/1 coincidan con los dos bancos de entidades que ya se
+  verificaron en E28. Clasifica direcciones Thumb (bit 0) como *datos de
+  origen*, NUNCA como callbacks ejecutables en DSi.
+- Los valores de GBA no se guardan en `RoomResInfo.properties`: todavía
+  falta materializar propiedades nativas y las tablas de callbacks/guiones
+  originales. El gate `DSI_E30_BLOCK_PROPERTIES` debe seguir bloqueado.
+- Los cambios son atómicos: una lectura defectuosa conserva el snapshot
+  anterior. La prueba host usa bytes sintéticos y prueba corrupción,
+  alineación, direcciones inválidas y fallas de lectura.
+
+**Este paso no activa `InitializeEntities()` ni `GameTask UPDATE`,
+ni sustituye scripts. La pantalla seguirá con habitación y Link invisible
+hasta que se porte el renderizado real de las entidades.**
