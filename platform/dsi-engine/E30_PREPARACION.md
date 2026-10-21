@@ -453,3 +453,25 @@ faltan sus dependencias. Sin NPC persistentes ni movimiento.
 `GetEmptyManager` original retorna un slot válido sin tocar Link.
 Se mantienen `GameTask: ROOM PREFIX F:OK R:OK`, `N:OK`, `P:OK B:OK`
 y `err:0` esperados.
+
+## E30.9 — Resultado CI y criterios melonDS
+
+- **E30.8 ya validada** en melonDS por el usuario con
+  `ROOM SCREEN: DISPLAYED A:OK`, `GameTask: ROOM PREFIX F:OK R:OK`
+  y `err:0`.
+- Estado anterior congelado en rama `e30-8-ci-pass`.
+- CI **PASS**, pruebas host y compilación ARM9 de
+  `GetEmptyManager` **auténtica enlazada al ELF**:
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39582696185
+- NDS experimental E30.9:
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39582696185/artifacts/12338650136
+- **Pendiente de ejecución real en melonDS**. Verificar:
+  `TMC / DSi ENGINE E30.9`,
+  `ROOM SCREEN:DISPLAYED A:OK M:OK`,
+  `InitRoom original: PASS N:OK`,
+  `Link original: LINKED L:OK C:OK`,
+  `Room ROM: VERIFIED P:OK B:OK`,
+  `GameTask: ROOM PREFIX F:OK R:OK` y `err:0`.
+- `M:OK` sólo acredita búsqueda read-only de un slot original de
+  manager. **No permite activar `LoadRoomEntity` ni las llamadas
+  `StartCutscene`/hardware GBA**, que siguen pendientes de portar.
