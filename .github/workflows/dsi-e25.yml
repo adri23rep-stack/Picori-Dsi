@@ -1,4 +1,4 @@
-name: Build Zelda Minish Cap DSi E30.3 (Native Original Room Properties)
+name: Build Zelda Minish Cap DSi E30.4 (Original Room Entity Loader Source)
 on:
   workflow_dispatch:
   push:
@@ -59,8 +59,10 @@ jobs:
         run: sh platform/dsi-engine/tests/run_room_property_data_e30.sh
       - name: E30.3 attach safe original room property banks
         run: sh platform/dsi-engine/tests/run_room_property_native_e30.sh
+      - name: E30.4 authentic room entity list traversal with source banks
+        run: sh platform/dsi-engine/tests/run_original_room_entity_list_e30.sh
   nds:
-    name: Build E30.3 ARM9 with native original room property pointers
+    name: Build E30.4 ARM9 original room entity code (not executed)
     needs: host-check
     runs-on: ubuntu-latest
     container:
@@ -147,12 +149,22 @@ jobs:
           test -s platform/dsi-engine/build/dsi_room_property_native_e30.o
           arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf | grep -Eq ' T DsiRoomPropertyNativeE30_Attach$'
           arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf | grep -Eq ' T DsiRoomPropertyNativeE30_Ready$'
-          echo 'E30.3: original room property bank pointers attached; callbacks, entities and GameTask UPDATE remain BLOCKED'
+          test -s platform/dsi-engine/build/dsi_room_entity_list_core_e30.o
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_room_entity_list_core_e30.o > e30-original-room-list-symbols.txt
+          grep -Eq ' T LoadRoomEntityList$' e30-original-room-list-symbols.txt
+          grep -Eq ' U LoadRoomEntity$' e30-original-room-list-symbols.txt
+          test -s platform/dsi-engine/build/dsi_room_entity_spawn_core_e30.o
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_room_entity_spawn_core_e30.o > e30-original-room-spawn-symbols.txt
+          grep -Eq ' T LoadRoomEntity$' e30-original-room-spawn-symbols.txt
+          # The loader cannot be activated until genuine allocator, room
+          # registration, sprite and scripts are ported. Do not silently add
+          # fabricated Nintendo DS implementations to bypass this gate.
+          echo 'E30.4: ORIGINAL LoadRoomEntityList/LoadRoomEntity compiled for ARM9, intentionally NOT executed'
       - name: Upload build diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: E30-3-Build-Log
+          name: E30-4-Build-Log
           path: |
             e29-build.log
             e29-linked-symbols.txt
@@ -162,11 +174,13 @@ jobs:
             e29-hitbox-storage-symbols.txt
             e29-original-player-utils-symbols.txt
             e29-original-player-init-symbols.txt
+            e30-original-room-list-symbols.txt
+            e30-original-room-spawn-symbols.txt
           if-no-files-found: ignore
       - name: Upload experimental NDS
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Picori-DSi-E30-3-Native-Room-Properties-NDS
+          name: Picori-DSi-E30-4-Original-Loader-Audit-NDS
           path: platform/dsi-engine/tmc-dsi-engine-e29.nds
           if-no-files-found: error

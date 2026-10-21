@@ -171,3 +171,30 @@ otras habitaciones y doble instalación. El reset solo retira
 **NDS E30.3:** https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39567279884/artifacts/12329673108
 
 **Pendiente:** prueba en melonDS con ROM EU, `InitRoom original: PASS N:OK`, `Link original: LINKED L:OK C:OK`, `Room ROM: VERIFIED P:OK B:OK`, `err:0`. No hay movimiento ni sprites del jugador.
+
+## E30.4 — ORIGINAL LoadRoomEntityList + LoadRoomEntity compilados en ARM9
+
+La fuente base permanece **`src/room.c` intacta**. El generador
+`generate_room_entity_core_e30.sh` extrae literalmente los dos cuerpos
+originales, compilándolos para devkitARM en secciones independientes:
+
+- `LoadRoomEntityList`: recorre cada `EntityData` hasta el terminador
+  original `kind=0xff` y llama al original `LoadRoomEntity`.
+- `LoadRoomEntity`: permanece **solo compilada en objeto**, sin invocar
+  ni forzar su enlace al ejecutable hasta tener `GetEmptyEntityByKind`,
+  `DeepFindEntityByID`, `RegisterRoomEntity`, resolución de scripts,
+  colisiones y otros servicios originales.
+
+La prueba host sí ejecuta `LoadRoomEntityList` desde la **estructura real**
+`RoomResInfo.properties[0/1]` preparada por E30.3. Su único límite
+simulado es la función de *spawn* `LoadRoomEntity`: un observador para
+comprobar el orden de las llamadas, nunca incluido en el .nds.
+
+En ARM9 se compilan ambos cuerpos y CI audita sus símbolos y las
+dependencias pendientes; **no se ejecuta `LoadRoomEntityList` ni se
+generan NPC**. El diagnóstico visible E30.3 no cambiará, salvo el
+título E30.4. E30 sigue sin `GameTask UPDATE` y sin dibujar Link.
+
+**Prohibido:** crear un `LoadRoomEntity` falso para facilitar el enlace.
+La próxima etapa deberá cerrar las dependencias con funciones auténticas
+de `src/entity.c`, `src/room.c` y el port ya existente.
