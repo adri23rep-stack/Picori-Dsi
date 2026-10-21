@@ -475,3 +475,28 @@ y `err:0` esperados.
 - `M:OK` sólo acredita búsqueda read-only de un slot original de
   manager. **No permite activar `LoadRoomEntity` ni las llamadas
   `StartCutscene`/hardware GBA**, que siguen pendientes de portar.
+
+## E30.10 — Asignador original de jugadores auxiliares, compilado y ejecutado
+
+E30.9 confirmado por el usuario en melonDS: `M:OK`, `A:OK`,
+`F:OK R:OK`, `N:OK`, `P:OK B:OK`, `err:0`.
+
+E30.10 extrae **sin alterar ningún cuerpo** la función
+`src/entity.c::CreateAuxPlayerEntity()`, enlazándola al ELF ARM9
+y ejecutándola dos veces después de los controles previos.
+La función auténtica busca un `GenericEntity` auxiliar cuyo campo
+`prev` esté vacío y, en builds PC_PORT, limpia ese slot.
+El puente confirma **antes** de llamar que los siete slots ya
+están completamente vacíos: no borra nada que el juego utilice.
+No se registra un nuevo Link ni una entidad auxiliar permanente.
+
+En host se prueba también el agotamiento original de los siete slots
+y la recuperación del primero libre, restaurando todo después.
+El marcador `U:OK` aparece en la misma línea que `size`,
+`a:22` y `r:15`. Se preservan `F:OK R:OK A:OK M:OK`
+y `err:0`.
+
+**Importante:** E30.10 NO cierra la etapa de gameplay y
+no activa `LoadRoomEntity`. Los servicios auténticos de borrado,
+scripts, resolución de colisiones, sprites y bucle aún faltan.
+No se crearon comportamientos Zelda alternativos.

@@ -53,6 +53,7 @@
 #include "dsi_room_registry_probe_e30.h"
 #include "dsi_room_spawn_audit_e30.h"
 #include "dsi_manager_pool_probe_e30.h"
+#include "dsi_aux_player_probe_e30.h"
 #include "dsi_entity_lists.h"
 #include "dsi_player_preflight.h"
 #include "dsi_entity_state_e29.h"
@@ -142,7 +143,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E30.9\n");
+    iprintf("TMC / DSi ENGINE E30.10\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -384,6 +385,10 @@ int main(void) {
                  * Never allocates/spawns a manager or calls Zelda callbacks. */
                 bool manager_pool_ok = spawn_audit_ok &&
                     DsiManagerPoolProbeE30_Run();
+                /* E30.10: call ORIGINAL src/entity.c auxiliary allocator
+                 * with a verified pristine slot. No auxiliary player spawn. */
+                bool aux_player_ok = manager_pool_ok &&
+                    DsiAuxPlayerProbeE30_Run();
                 iprintf("\x1b[10;0HInitRoom original: %-6s N:%s",
                         original_room_ok ? "PASS" : "PENDING",
                         native_props_ok ? "OK" : "--");
@@ -414,8 +419,10 @@ int main(void) {
                         properties_ok ? "OK" : "--",
                         property_banks_ok ? "OK" : "--");
                 if (room_ok) {
-                    iprintf("\x1b[13;0Hsize: %ux%u area:22 room:15   ",
-                            room_metadata.width, room_metadata.height);
+                    iprintf("\x1b[13;0Hsize:%ux%u a:%02X r:%02X U:%s   ",
+                            room_metadata.width, room_metadata.height,
+                            room_metadata.area, room_metadata.room,
+                            aux_player_ok ? "OK" : "--");
                     iprintf("\x1b[14;0Hentity lists: %u + %u    ",
                             room_metadata.entity_counts[0], room_metadata.entity_counts[1]);
                 }

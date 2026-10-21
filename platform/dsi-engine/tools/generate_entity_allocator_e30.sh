@@ -22,6 +22,9 @@ mkdir -p "$(dirname "$ALLOC")" "$(dirname "$REG")"
     for FN in 'Entity* GetEmptyEntity() {' 'Manager* GetEmptyManager(void) {'; do
       awk -v signature="$FN" 'index($0, signature)==1 {active=1;found=1} active {print} active && /^}$/ {exit} END {if(!found)exit 1}' "$ENTITY_SRC"
     done
+    # E30.10: original auxiliary player allocator is independent of the
+    # normal entity recycle/delete path, so ARM9 can link it safely.
+    awk '/^Entity\* CreateAuxPlayerEntity\(void\) \{/ {active=1;found=1} active {print} active && /^}$/ {exit} END {if(!found)exit 1}' "$ENTITY_SRC"
     awk '/^typedef void\* \(\*Getter\)\(void\);/ {print;found=1;exit} END {if(!found)exit 1}' "$ENTITY_SRC"
     awk '/^void\* GetEmptyEntityByKind\(u32 kind\) \{/ {active=1;found=1} active {print} active && /^}$/ {exit} END {if(!found)exit 1}' "$ENTITY_SRC"
     # Genuine duplicate/entity ID search from src/entity.c, with its
