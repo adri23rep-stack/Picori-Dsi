@@ -52,6 +52,7 @@
 #include "dsi_room_property_native_e30.h"
 #include "dsi_room_registry_probe_e30.h"
 #include "dsi_room_spawn_audit_e30.h"
+#include "dsi_manager_pool_probe_e30.h"
 #include "dsi_entity_lists.h"
 #include "dsi_player_preflight.h"
 #include "dsi_entity_state_e29.h"
@@ -141,7 +142,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E30.8\n");
+    iprintf("TMC / DSi ENGINE E30.9\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -378,6 +379,11 @@ int main(void) {
                  * EntityData. Never executes LoadRoomEntity or GBA scripts. */
                 bool spawn_audit_ok = registry_probe_ok &&
                     DsiRoomSpawnAuditE30_Run();
+                /* E30.9: original src/entity.c GetEmptyManager executes
+                 * on ARM9 only to inspect the native original manager pool.
+                 * Never allocates/spawns a manager or calls Zelda callbacks. */
+                bool manager_pool_ok = spawn_audit_ok &&
+                    DsiManagerPoolProbeE30_Run();
                 iprintf("\x1b[10;0HInitRoom original: %-6s N:%s",
                         original_room_ok ? "PASS" : "PENDING",
                         native_props_ok ? "OK" : "--");
@@ -392,9 +398,10 @@ int main(void) {
                         prefix_ok ? "ROOM PREFIX" : "BLOCKED",
                         DsiGameNative_OriginalEntityLookupReady() ? "OK" : "--",
                         registry_probe_ok ? "OK" : "--");
-                iprintf("\x1b[9;0HROOM SCREEN: %-9s A:%s ",
+                iprintf("\x1b[9;0HROOM SCREEN:%-9s A:%s M:%s",
                         scene_ok ? "DISPLAYED" : "BLOCKED",
-                        spawn_audit_ok ? "OK" : "--");
+                        spawn_audit_ok ? "OK" : "--",
+                        manager_pool_ok ? "OK" : "--");
                 iprintf("\x1b[17;0Horg:%u/%u/%u init:%u d:%u e:%u  ",
                         native->transition_ticks, native->init_ticks,
                         native->room_prefix_ticks, native->original_room_calls,

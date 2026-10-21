@@ -1,4 +1,4 @@
-name: Build Zelda Minish Cap DSi E30.8 (Original Spawn Chain Host & ROM Audit)
+name: Build Zelda Minish Cap DSi E30.9 (Original Manager Pool and Entity Placement)
 on:
   workflow_dispatch:
   push:
@@ -69,8 +69,12 @@ jobs:
         run: sh platform/dsi-engine/tests/run_room_spawn_chain_e30.sh
       - name: E30.8 actual original room bank branch inventory
         run: sh platform/dsi-engine/tests/run_room_spawn_audit_e30.sh
+      - name: E30.9 original manager pool in native Zelda RAM
+        run: sh platform/dsi-engine/tests/run_manager_pool_probe_e30.sh
+      - name: E30.9 original entity coordinates and enemy captain flags
+        run: sh platform/dsi-engine/tests/run_entity_placement_e30.sh
   nds:
-    name: Build E30.8 ARM9 original spawn-branch ROM audit
+    name: Build E30.9 ARM9 original manager pool lookup
     needs: host-check
     runs-on: ubuntu-latest
     container:
@@ -169,7 +173,7 @@ jobs:
           grep -Eq ' U Port_ResolveRegionData$' e30-original-room-list-symbols.txt
           # Original loader/spawner is only in build/*.o until dependency closure.
           ! grep -Eq ' [Tt] (LoadRoomEntityList|LoadRoomEntity)$' e29-linked-symbols.txt
-          grep -aq 'TMC / DSi ENGINE E30.8' platform/dsi-engine/tmc-dsi-engine-e29.elf
+          grep -aq 'TMC / DSi ENGINE E30.9' platform/dsi-engine/tmc-dsi-engine-e29.elf
           # The loader cannot be activated until genuine allocator, room
           # registration, sprite and scripts are ported. Do not silently add
           # fabricated Nintendo DS implementations to bypass this gate.
@@ -190,7 +194,7 @@ jobs:
           grep -Eq ' T DsiRoomRegistryProbeE30_Run$' e29-linked-symbols.txt
           grep -Eq ' [RrDTt] gEntityListLUT$' e30-original-allocator-symbols.txt
           # No incomplete allocations/spawns may enter the final ARM9 ELF.
-          ! grep -Eq ' [Tt] (GetEmptyEntity|GetEmptyManager|GetEmptyEntityByKind|LoadRoomEntityList|LoadRoomEntity)$' e29-linked-symbols.txt
+          ! grep -Eq ' [Tt] (GetEmptyEntity|GetEmptyEntityByKind|LoadRoomEntityList|LoadRoomEntity)$' e29-linked-symbols.txt
           test -s platform/dsi-engine/build/dsi_room_entity_params_core_e30.o
           arm-none-eabi-nm platform/dsi-engine/build/dsi_room_entity_params_core_e30.o > e30-original-spawn-params-symbols.txt
           grep -Eq ' T sub_0804AF0C$' e30-original-spawn-params-symbols.txt
@@ -198,12 +202,16 @@ jobs:
           test -s platform/dsi-engine/build/dsi_room_spawn_audit_e30.o
           grep -Eq ' T DsiRoomSpawnAuditE30_Run$' e29-linked-symbols.txt
           ! grep -Eq ' [Tt] (LoadRoomEntityList|LoadRoomEntity|sub_0804AF0C)$' e29-linked-symbols.txt
-          echo 'E30.8: ROM entity branches audited on ARM9; original spawn helper compiled, scripts/collision still blocked'
+          grep -Eq ' T GetEmptyManager$' e29-linked-symbols.txt
+          grep -Eq ' T DsiManagerPoolProbeE30_Run$' e29-linked-symbols.txt
+          test -s platform/dsi-engine/build/dsi_manager_pool_probe_e30.o
+          ! grep -Eq ' [Tt] (GetEmptyEntity|GetEmptyEntityByKind|LoadRoomEntityList|LoadRoomEntity|sub_0804AF0C)$' e29-linked-symbols.txt
+          echo 'E30.9: genuine GetEmptyManager LINKED on ARM9, read-only manager pool checked; original entity placement host tested, no spawn enabled'
       - name: Upload build diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: E30-8-Build-Log
+          name: E30-9-Build-Log
           path: |
             e29-build.log
             e29-linked-symbols.txt
@@ -223,6 +231,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Picori-DSi-E30-8-Original-Spawn-Audit-NDS
+          name: Picori-DSi-E30-9-Native-Manager-Pool-NDS
           path: platform/dsi-engine/tmc-dsi-engine-e29.nds
           if-no-files-found: error

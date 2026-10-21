@@ -422,3 +422,34 @@ renderizado original. Nunca saltar este bloqueo.
   `A:OK` únicamente certifica lectura/clasificación segura de la
   fuente original EU; NO crea NPC. El siguiente hito requiere
   cerrar scripts, `ResolveCollisionLayer`, asignación y OAM.
+
+## E30.9 — Pool original de managers en ARM9 y coordenadas originales en host
+
+Validación E30.8 por el usuario en melonDS: `ROOM SCREEN:
+DISPLAYED A:OK`, `GameTask: ROOM PREFIX F:OK R:OK`,
+`N:OK`, `P:OK B:OK`, `err:0`.
+
+`GetEmptyManager()` desde **`src/entity.c`** original se enlaza
+ahora en el ELF real de ARM9 (antes solo objeto) y se ejecuta dos
+veces contra el pool original de 32 managers; se verifica que
+ambas lecturas devuelven el mismo slot libre, sin reservarlo,
+alterar contadores, crear manager, borrar entidades ni modificar
+a Link. La prueba exige los bloques A y R de E30.7/E30.8.
+
+Nueva prueba host ejecuta el **`sub_0804AF0C()` auténtico** extraído
+literalmente de `src/room.c` para las ramas sin scripts:
+- flags `0x00`: posiciones = ROM locales + `origin_x/y`;
+- flags `0x20`: original marca `EM_FLAG_CAPTAIN` y añade origen;
+- flags `0x10`: no modifica posición.
+
+`0x40` script sigue fuera de pruebas y fuera del ARM9; cualquier
+intento host de llamar scripts/deletion hace fallar la prueba.
+`GetEmptyEntity`, `GetEmptyEntityByKind`, `LoadRoomEntity` y
+`sub_0804AF0C` permanecen sin enlazar al juego completo, pues
+faltan sus dependencias. Sin NPC persistentes ni movimiento.
+
+**Marcador nuevo** de validación en melonDS:
+`ROOM SCREEN:DISPLAYED A:OK M:OK`, indicando M:OK solo cuando
+`GetEmptyManager` original retorna un slot válido sin tocar Link.
+Se mantienen `GameTask: ROOM PREFIX F:OK R:OK`, `N:OK`, `P:OK B:OK`
+y `err:0` esperados.

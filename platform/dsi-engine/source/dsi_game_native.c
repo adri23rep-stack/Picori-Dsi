@@ -16,6 +16,7 @@
 #include "dsi_room_property_native_e30.h"
 #include "dsi_room_registry_probe_e30.h"
 #include "dsi_room_spawn_audit_e30.h"
+#include "dsi_manager_pool_probe_e30.h"
 #endif
 #ifdef TMC_DSI_E28_ORIGINAL_INITROOM
 #include "dsi_area_headers.h"
@@ -115,6 +116,7 @@ void DsiGameNative_Reset(void) {
     DsiE30Gate_Reset();
     DsiRoomPropertiesE30_Reset();
     /* Detach before invalidating property source banks. */
+    DsiManagerPoolProbeE30_Reset();
     DsiRoomSpawnAuditE30_Reset();
     DsiRoomRegistryProbeE30_Reset();
     DsiRoomPropertyNativeE30_Reset();
