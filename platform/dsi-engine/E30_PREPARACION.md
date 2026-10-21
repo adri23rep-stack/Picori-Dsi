@@ -402,3 +402,23 @@ del enlace ejecutable**: todavía requiere `StartCutscene`,
 Para ejecutar una entidad real hacen falta resolver punteros/scripts
 y `ResolveCollisionLayer` sin stubs de gameplay, además del
 renderizado original. Nunca saltar este bloqueo.
+
+## E30.8 — CI final y validación pendiente
+
+- E30.7 pasó en melonDS con `F:OK R:OK` y `err:0`; se conservó
+  como respaldo en rama `e30-7-ci-pass`.
+- E30.8 pasó pruebas host de cadena ORIGINAL
+  `LoadRoomEntityList -> LoadRoomEntity -> GetEmptyEntityByKind ->
+  RegisterRoomEntity`, incluyendo rechazo de duplicados. Las
+  operaciones de scripts y colisión NO están conectadas en ARM9.
+- Compilación ARM9 y auditorías: **PASS**.
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39581328681
+- Descargar NDS experimental:
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39581328681/artifacts/12336159535
+- **Prueba pendiente en melonDS:** `TMC / DSi ENGINE E30.8`,
+  `ROOM SCREEN: DISPLAYED A:OK`, `InitRoom PASS N:OK`,
+  `Link original: LINKED L:OK C:OK`, `Room ROM VERIFIED P:OK B:OK`,
+  `GameTask: ROOM PREFIX F:OK R:OK` y `err:0`.
+  `A:OK` únicamente certifica lectura/clasificación segura de la
+  fuente original EU; NO crea NPC. El siguiente hito requiere
+  cerrar scripts, `ResolveCollisionLayer`, asignación y OAM.
