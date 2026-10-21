@@ -47,6 +47,8 @@ jobs:
         run: sh platform/dsi-engine/tests/run_collision_state_e29.sh
       - name: E29.6 original interaction reset and active-item RAM
         run: sh platform/dsi-engine/tests/run_player_interaction_e29.sh
+      - name: E29.7 genuine complete player initialization chain on host
+        run: sh platform/dsi-engine/tests/run_player_chain_e29.sh
   nds:
     name: Build E29.6 ARM9 with original interaction reset
     needs: host-check
@@ -101,6 +103,13 @@ jobs:
           arm-none-eabi-nm platform/dsi-engine/build/dsi_collision_state_e29.o > e29-hitbox-storage-symbols.txt
           grep -Eq ' B gUnk_03003C70$' e29-hitbox-storage-symbols.txt
           grep -Eq ' B gUnk_02018EA0$' e29-hitbox-storage-symbols.txt
+          # E29.7: compile the *original* InitializePlayer for ARM9,
+          # even though native sprite-layer service has not yet been ported.
+          test -s platform/dsi-engine/build/gameUtils.o
+          arm-none-eabi-nm platform/dsi-engine/build/gameUtils.o > e29-original-player-init-symbols.txt
+          grep -Eq ' T InitializePlayer$' e29-original-player-init-symbols.txt
+          # Missing sprite service must NOT be hidden behind a silent runtime stub.
+          arm-none-eabi-nm -u platform/dsi-engine/build/gameUtils.o | grep -Eq ' U UpdateSpriteForCollisionLayer$'
           test -s platform/dsi-engine/build/playerUtils.o
           arm-none-eabi-nm platform/dsi-engine/build/playerUtils.o > e29-original-player-utils-symbols.txt
           grep -Eq ' T ResetPossibleInteraction$' e29-original-player-utils-symbols.txt
@@ -125,6 +134,7 @@ jobs:
             e29-collision-symbols.txt
             e29-hitbox-storage-symbols.txt
             e29-original-player-utils-symbols.txt
+            e29-original-player-init-symbols.txt
           if-no-files-found: ignore
       - name: Upload experimental NDS
         if: success()

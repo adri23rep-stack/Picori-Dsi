@@ -233,3 +233,24 @@ https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39528402176/artifacts
 `InitRoom original: PASS`, `Link preflight: READY L:OK C:OK`, sin regresiones
 ni errores. Este preflight ahora también verifica la memoria de interacción.
 No hay jugador creado; E29.5 sigue como respaldo anterior probado por CI.
+
+## E29.7 — Prueba de cadena COMPLETA original (solo host)
+
+La prueba `run_player_chain_e29.sh` extrae sin reescribir los cuerpos de
+`InitializePlayer()`, `AppendEntityToList()`, `RegisterPlayerHitbox()` y
+`ResetPossibleInteraction()` desde `src/`, y los enlaza **juntos** sobre
+las variables nativas. Comprueba que la propia inicialización original crea
+una única entidad de jugador, enlaza la lista y registra su hitbox.
+
+La única función de juego deliberadamente simulada **en host** es
+`UpdateSpriteForCollisionLayer()`: la implementación auténtica del
+sprite/layer todavía no está enlazada en DSi. En ARM9 no se instala
+ningún sustituto. El CI comprueba la referencia pendiente en el objeto de
+`gameUtils.c`. El enlazador puede eliminar `InitializePlayer()` del ELF
+porque todavía no existe una llamada segura a ella en DSi.
+
+**No se ha terminado E29**: falta enlazar el sprite/layer real, ejecutar
+`InitializePlayer` en ARM9 dentro de `InitializeEntities` original,
+completar `RoomResInfo.properties` y las cargas reales de habitación;
+probar en melonDS. No activar E30 antes de registrar Link y validar
+listas, hitbox y gráficos en hardware.
