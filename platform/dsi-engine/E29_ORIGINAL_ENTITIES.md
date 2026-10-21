@@ -207,3 +207,21 @@ No introducir sustitutos que aparenten jugabilidad.
 casa sigue visible, `InitRoom original: PASS`,
 `Link preflight: READY L:OK C:OK` y `e:0`.
 READY no significa que Link se haya creado ni que ya pueda moverse.
+
+## E29.6 — Interacciones originales de Link (parcial)
+
+- `dsi_player_state_e29.c` reserva `gPossibleInteraction` y `gActiveItems`
+  con sus tipos auténticos de `include/player.h` en RAM ARM9.
+- El arranque ahora llama `ResetPossibleInteraction()` **directamente desde
+  `src/playerUtils.c`**, sin copiar ni sustituir la lógica original.
+- El valor nulo `gNoInteraction` también procede de `src/playerUtils.c`.
+- `DsiPlayerState_Ready()` comprueba que los datos de interacción y objetos
+  activos estén realmente inicializados. Un error bloquea el preflight.
+- Las pruebas host aíslan hardware, extrayendo la función y constante reales;
+  el ELF ARM9 debe enlazar los símbolos originales.
+- `InitializePlayer()` sigue sin ejecutarse. Falta resolver
+  `UpdateSpriteForCollisionLayer()` y dependencias gráficas auténticas.
+  **Sin Link visible ni movimiento nuevo.** La casa E25/E29 permanece de prueba.
+
+**Estado:** pendiente verificar CI y melonDS con ROM EU. El hito E29 no está
+completo; E29.5 sigue siendo el respaldo anterior.

@@ -51,6 +51,7 @@
 #include "dsi_player_preflight.h"
 #include "dsi_entity_state_e29.h"
 #include "dsi_collision_state_e29.h"
+#include "dsi_player_state_e29.h"
 #include "dsi_area_headers.h"
 #include "port_gba_mem.h"
 
@@ -277,8 +278,10 @@ int main(void) {
                  * InitializePlayer() is NOT called on DSi yet. */
                 bool list_memory_ok = DsiEntityState_EmptyValid();
                 bool collision_memory_ok = DsiCollisionState_EmptyValid();
+                bool interaction_memory_ok = DsiPlayerState_Ready();
                 bool player_preflight_ok = entity_data_ok && room_refs_ok &&
-                    list_memory_ok && collision_memory_ok && DsiPlayerPreflight_Ready();
+                    list_memory_ok && collision_memory_ok && interaction_memory_ok &&
+                    DsiPlayerPreflight_Ready();
                 iprintf("\x1b[15;0HLink preflight: %-7s L:%s C:%s",
                         player_preflight_ok ? "READY" : "BLOCKED",
                         list_memory_ok ? "OK" : "ERR",
