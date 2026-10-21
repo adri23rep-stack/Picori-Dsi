@@ -43,6 +43,8 @@ jobs:
         run: sh platform/dsi-engine/tests/run_player_preflight_e29.sh
       - name: E29.4b entity pool + real src/entity.c operations
         run: sh platform/dsi-engine/tests/run_entity_state_e29.sh
+      - name: E29.5 original player collision list
+        run: sh platform/dsi-engine/tests/run_collision_state_e29.sh
   nds:
     name: Build E29.4b ARM9 with original entity memory
     needs: host-check
@@ -85,7 +87,88 @@ jobs:
           grep -Eq ' T InitDefaultPriority$' e29-original-entity-symbols.txt
           grep -Eq ' T SetEntityPriority$' e29-original-entity-symbols.txt
           grep -Eq ' T AppendEntityToList$' e29-original-entity-symbols.txt
-          test -s platform/dsi-engine/build/dsi_entity_state_e29.o
+          test -s platform/dsi-engine/build/dsi_collision_core_e29.o
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_collision_core_e29.o > e29-collision-symbols.txt
+          grep -Eq ' T RegisterPlayerHitbox
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_entity_state_e29.o > e29-native-entity-storage-symbols.txt
+          grep -Eq ' B gEntityLists$' e29-native-entity-storage-symbols.txt
+          grep -Eq ' B gEntities$' e29-native-entity-storage-symbols.txt
+          grep -Eq ' T DsiEntityState_Reset$' e29-native-entity-storage-symbols.txt
+          echo 'E29.4b: authentic entity RAM storage and source functions verified'
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E29-4b-Build-Log
+          path: |
+            e29-build.log
+            e29-linked-symbols.txt
+            e29-original-entity-symbols.txt
+            e29-native-entity-storage-symbols.txt
+            e29-collision-symbols.txt
+            e29-hitbox-storage-symbols.txt
+          if-no-files-found: ignore
+      - name: Upload NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E29-4b-Native-Entities-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
+          if-no-files-found: error
+ e29-collision-symbols.txt
+          test -s platform/dsi-engine/build/dsi_collision_state_e29.o
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_collision_state_e29.o > e29-hitbox-storage-symbols.txt
+          grep -Eq ' B gUnk_03003C70
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_entity_state_e29.o > e29-native-entity-storage-symbols.txt
+          grep -Eq ' B gEntityLists$' e29-native-entity-storage-symbols.txt
+          grep -Eq ' B gEntities$' e29-native-entity-storage-symbols.txt
+          grep -Eq ' T DsiEntityState_Reset$' e29-native-entity-storage-symbols.txt
+          echo 'E29.4b: authentic entity RAM storage and source functions verified'
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E29-4b-Build-Log
+          path: |
+            e29-build.log
+            e29-linked-symbols.txt
+            e29-original-entity-symbols.txt
+            e29-native-entity-storage-symbols.txt
+          if-no-files-found: ignore
+      - name: Upload NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E29-4b-Native-Entities-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
+          if-no-files-found: error
+ e29-hitbox-storage-symbols.txt
+          grep -Eq ' B gUnk_02018EA0
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_entity_state_e29.o > e29-native-entity-storage-symbols.txt
+          grep -Eq ' B gEntityLists$' e29-native-entity-storage-symbols.txt
+          grep -Eq ' B gEntities$' e29-native-entity-storage-symbols.txt
+          grep -Eq ' T DsiEntityState_Reset$' e29-native-entity-storage-symbols.txt
+          echo 'E29.4b: authentic entity RAM storage and source functions verified'
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E29-4b-Build-Log
+          path: |
+            e29-build.log
+            e29-linked-symbols.txt
+            e29-original-entity-symbols.txt
+            e29-native-entity-storage-symbols.txt
+          if-no-files-found: ignore
+      - name: Upload NDS
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E29-4b-Native-Entities-NDS
+          path: platform/dsi-engine/tmc-dsi-engine-e29.nds
+          if-no-files-found: error
+ e29-hitbox-storage-symbols.txt
+                    test -s platform/dsi-engine/build/dsi_entity_state_e29.o
           arm-none-eabi-nm platform/dsi-engine/build/dsi_entity_state_e29.o > e29-native-entity-storage-symbols.txt
           grep -Eq ' B gEntityLists$' e29-native-entity-storage-symbols.txt
           grep -Eq ' B gEntities$' e29-native-entity-storage-symbols.txt
