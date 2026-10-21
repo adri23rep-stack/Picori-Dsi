@@ -39,3 +39,21 @@ E29.6 Actions PASS: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/3
 
 E29.7 introduce prueba encadenada en host; requiere resultado Actions.
 **Nunca confundir host PASS ni .nds creado con Link visible.**
+
+## E30 gate (implementado, pero bloqueado a propósito)
+
+`dsi_e30_gate.c` solo revisa memoria **real** del motor: estado de
+`GameTask`, sala, entidad de Link, lista, cámara, hitbox, interacción,
+propiedades de habitación, finalización genuina de `InitializeEntities()`
+y sprite/layer. No existe ninguna simulación de `GameTask` alternativa.
+
+La fuente `src/game.c` notifica al gate **únicamente al terminar la función
+original `InitializeEntities`**; actualmente no puede ocurrir debido al
+arranque seguro. Mientras no se porte `UpdateSpriteForCollisionLayer`,
+el bloqueo `DSI_E30_BLOCK_SPRITE_LAYER` es obligatorio.
+
+La prueba `run_e30_gate.sh` verifica que incluso con variables ideales
+en el test **E30 siga rechazado**. La guarda se reinicia en el arranque
+y se compila en ARM9 sin habilitar ninguna actualización de juego.
+
+**No confundir gate creado con E29 completado o E30 listo para ejecutar.**

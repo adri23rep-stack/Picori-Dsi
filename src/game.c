@@ -5,6 +5,9 @@
  * @brief Game task
  */
 #include "game.h"
+#ifdef TMC_DSI_E30_PREP
+#include "dsi_e30_gate.h"
+#endif
 #ifdef TMC_DSI_E28_ORIGINAL_INITROOM
 #include "dsi_area_headers.h"
 #include "dsi_room_resources.h"
@@ -496,6 +499,11 @@ static void InitializeEntities(void) {
     UpdateScrollVram();
     sub_0805BB74(-1);
     UpdatePlayerRoomStatus();
+#ifdef TMC_DSI_E30_PREP
+    /* Telemetry ONLY: reached after the genuine InitializeEntities() ends.
+     * A partial GBA port cannot falsely claim this milestone. */
+    DsiE30Gate_OriginalEntitiesCompleted();
+#endif
 }
 
 static void sub_08051D98(void) {

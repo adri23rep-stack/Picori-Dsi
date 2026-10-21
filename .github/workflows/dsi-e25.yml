@@ -1,4 +1,4 @@
-name: Build Zelda Minish Cap DSi E29.6 (Original Player Interaction)
+name: Build Zelda Minish Cap DSi E29.7 / E30 Gate
 on:
   workflow_dispatch:
   push:
@@ -49,6 +49,8 @@ jobs:
         run: sh platform/dsi-engine/tests/run_player_interaction_e29.sh
       - name: E29.7 genuine complete player initialization chain on host
         run: sh platform/dsi-engine/tests/run_player_chain_e29.sh
+      - name: E30 original-engine readiness gate (must stay blocked)
+        run: sh platform/dsi-engine/tests/run_e30_gate.sh
   nds:
     name: Build E29.6 ARM9 with original interaction reset
     needs: host-check
@@ -120,7 +122,9 @@ jobs:
           grep -Eq ' B gPossibleInteraction$' e29-linked-symbols.txt
           grep -Eq ' B gActiveItems$' e29-linked-symbols.txt
           grep -Eq ' T DsiPlayerState_Reset$' e29-linked-symbols.txt
-          echo 'E29.6: genuine player interaction reset linked on ARM9'
+          test -s platform/dsi-engine/build/dsi_e30_gate.o
+          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf | grep -Eq ' T DsiE30Gate_Blockers$'
+          echo 'E29.7: native gate installed; E30 remains BLOCKED until genuine original player/spatial dependencies are ported'
       - name: Upload build diagnostics
         if: always()
         uses: actions/upload-artifact@v4

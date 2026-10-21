@@ -9,6 +9,7 @@
 #include "dsi_entity_state_e29.h"
 #include "dsi_collision_state_e29.h"
 #include "dsi_player_state_e29.h"
+#include "dsi_e30_gate.h"
 #endif
 #ifdef TMC_DSI_E28_ORIGINAL_INITROOM
 #include "dsi_area_headers.h"
@@ -90,6 +91,7 @@ void DsiGameNative_Reset(void) {
     DsiCollisionState_Reset();
     /* E29.6: the unmodified playerUtils.c interaction reset. */
     DsiPlayerState_Reset();
+    DsiE30Gate_Reset();
 #endif
     memset(&sStats, 0, sizeof(sStats));
     sAllowRoomTick = false;
