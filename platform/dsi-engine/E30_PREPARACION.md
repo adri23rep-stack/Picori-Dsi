@@ -133,4 +133,9 @@ se espera `Room ROM: VERIFIED P:OK B:OK` y el resto de E30.1 sin cambios.
 - Validación host: coincidencia byte-a-byte, alineación de `EntityData`,
   terminadores, cambio de sala, datos corruptos, snapshot anterior estable.
 - Validación ARM9: objeto nativo y símbolos presentes en ELF.
-- Prueba de ejecución en melonDS y confirmación de `B:OK` pendiente.
+- Prueba host E30.2 y compilación ARM9: **PASS**.
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39566359126
+- Artefacto NDS E30.2:
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39566359126/artifacts/12330361089
+- **Pendiente:** confirmar en melonDS `B:OK`, Link `LINKED L:OK C:OK`,
+  InitRoom PASS y `err:0`. Sin esto no declarar ejecución validada.
