@@ -97,3 +97,16 @@ sin `GAMEMAIN_UPDATE`.
 **Este paso no activa `InitializeEntities()` ni `GameTask UPDATE`,
 ni sustituye scripts. La pantalla seguirá con habitación y Link invisible
 hasta que se porte el renderizado real de las entidades.**
+
+## Rama de trabajo y bloqueo seguro
+
+La rama activa de E30 es `e30-original-room-properties`. 
+La versión E29.8 probada anteriormente queda conservada como
+`e29-8-ci-pass` en el commit `cf29b734` (Actions PASS).
+
+Desde E30.1 el guard `DsiE30Gate_Blockers()` exige **dos etapas**
+para aceptar propiedades: snapshot ROM original válido y misma habitación;
+luego el despacho nativo realmente verificado más
+`RoomResInfo.properties` materializado. El primer requisito ya tiene
+código y pruebas; el segundo sigue **bloqueado a propósito**.
+El test host verifica ambos casos y nunca habilita `GameTask UPDATE`.

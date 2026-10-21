@@ -3,6 +3,7 @@
  */
 #include "dsi_e30_gate.h"
 #include "dsi_game_native.h"
+#include "dsi_room_properties_e30.h"
 #include "main.h"
 #include "game.h"
 #include "area.h"
@@ -21,9 +22,11 @@ u8 gEntCount;
 static DsiGameNativeStats stats;
 static bool collisionOK;
 static bool interactionOK;
+static DsiRoomPropertiesE30 mockProperties;
 const DsiGameNativeStats *DsiGameNative_Status(void) { return &stats; }
 bool DsiCollisionState_PlayerRegistered(void) { return collisionOK; }
 bool DsiPlayerState_Ready(void) { return interactionOK; }
+const DsiRoomPropertiesE30 *DsiRoomPropertiesE30_Current(void) { return &mockProperties; }
 int main(void) {
     unsigned failures;
     DsiE30Gate_Reset();
@@ -57,8 +60,14 @@ int main(void) {
     gArea.pCurrentRoomInfo=&gArea.currentRoomInfo;
     gArea.currentRoomInfo.properties=(void*)1;
     DsiE30Gate_OriginalEntitiesCompleted();
+    mockProperties.valid=true;
+    mockProperties.area=0x22;
+    mockProperties.room=0x15;
+    /* A real ROM snapshot is STILL not enough to execute callbacks. */
     failures=DsiE30Gate_Blockers();
-    /* Even with idealized state, missing sprite-layer service blocks E30. */
+    assert(failures == (DSI_E30_BLOCK_PROPERTIES | DSI_E30_BLOCK_SPRITE_LAYER));
+    mockProperties.native_dispatch_ready=true; /* test-only idealized future */
+    failures=DsiE30Gate_Blockers();
     assert(failures == DSI_E30_BLOCK_SPRITE_LAYER);
     assert(!DsiE30Gate_Ready());
     gEntCount=0;

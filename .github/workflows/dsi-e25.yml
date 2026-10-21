@@ -2,7 +2,7 @@ name: Build Zelda Minish Cap DSi E30.1 (Original ROM Room Properties)
 on:
   workflow_dispatch:
   push:
-    branches: [main, e26-original-engine, e27-native-memory, e28-original-initroom, e29-original-entities]
+    branches: [main, e26-original-engine, e27-native-memory, e28-original-initroom, e29-original-entities, e30-original-room-properties]
     paths:
       - 'platform/dsi-engine/**'
       - 'platform/dsi/source/**'

@@ -6,6 +6,7 @@
 #include "dsi_game_native.h"
 #include "dsi_player_state_e29.h"
 #include "dsi_collision_state_e29.h"
+#include "dsi_room_properties_e30.h"
 #include "main.h"
 #include "game.h"
 #include "room.h"
@@ -21,6 +22,7 @@ unsigned DsiE30Gate_Blockers(void) {
     const DsiGameNativeStats *st = DsiGameNative_Status();
     Entity *link = &gPlayerEntity.base;
     LinkedList *list = &gEntityLists[1];
+    const DsiRoomPropertiesE30 *source = DsiRoomPropertiesE30_Current();
     if (!st || st->room_prefix_ticks != 1u || st->original_room_calls != 1u ||
         st->errors || gRoomControls.area != 0x22u || gRoomControls.room != 0x15u)
         blocked |= DSI_E30_BLOCK_ROOM;
@@ -40,7 +42,14 @@ unsigned DsiE30Gate_Blockers(void) {
         blocked |= DSI_E30_BLOCK_HITBOX;
     if (!DsiPlayerState_Ready())
         blocked |= DSI_E30_BLOCK_INTERACTION;
-    if (!gArea.pCurrentRoomInfo || !gArea.pCurrentRoomInfo->properties)
+    /* E30.1 snapshot proves ROM bytes were copied, NOT that the engine may
+     * invoke GBA callbacks. Require both the actual native room wiring and
+     * a later explicit validation of dispatch, not a fabricated pointer. */
+    if (!source || !source->valid ||
+        source->area != gRoomControls.area ||
+        source->room != gRoomControls.room ||
+        !source->native_dispatch_ready ||
+        !gArea.pCurrentRoomInfo || !gArea.pCurrentRoomInfo->properties)
         blocked |= DSI_E30_BLOCK_PROPERTIES;
     if (!sOriginalEntitiesComplete)
         blocked |= DSI_E30_BLOCK_ENTITIES_INIT;
