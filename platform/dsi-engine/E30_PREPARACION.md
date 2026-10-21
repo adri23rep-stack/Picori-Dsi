@@ -550,3 +550,24 @@ El siguiente corte imprescindible es cerrar `GetEmptyEntity`
 junto a sus servicios auténticos de reciclaje/borrado, y
 `StartCutscene`/`ResolveCollisionLayer` para las ramas
 relevantes de `LoadRoomEntity`, sin recrearlos.
+
+## E30.11 — CI y criterios finales de aceptación
+
+- E30.10 validada en melonDS por el usuario con `U:OK`, `err:0` y todos los
+  indicadores previos; respaldo en rama `e30-10-ci-pass`.
+- GitHub Actions host y ARM9 **PASS**, incluyendo 4 símbolos auténticos
+  `EntityHasDuplicateID`, `FindEntityByID`, `FindEntity`,
+  `FindNextDuplicateID` **enlazados en ELF ARM9**:
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39650505542
+- NDS experimental:
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39650505542/artifacts/12370300574
+- **Pendiente de melonDS:** esperar `TMC / DSi ENGINE E30.11`,
+  `sz:240x160 a:22 r:15 U:OK S:OK`,
+  `ROOM SCREEN:DISPLAYED A:OK M:OK`,
+  `InitRoom original: PASS N:OK`,
+  `Link original: LINKED L:OK C:OK`,
+  `Room ROM: VERIFIED P:OK B:OK`,
+  `GameTask: ROOM PREFIX F:OK R:OK` y `err:0`.
+  `S:OK` es la búsqueda original sobre Link existente, no una prueba
+  de NPCs originales ejecutándose en el bucle. En caso de `S:--`, no
+  avanzar a creación real hasta identificar el bloqueo.
