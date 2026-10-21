@@ -351,3 +351,19 @@ crear NPC reales.
 **Diagnóstico E30.7:** `GameTask: ROOM PREFIX F:OK R:OK` o `R:--` (sin ocultar `ROOM SCREEN`).
 `err:0`, `F:OK`, `N:OK`, `B:OK` y `P:OK` deben conservarse.
 CI debe verificar ejecución host y símbolo nativo auténtico.
+
+## E30.7 — CI final y aceptación melonDS
+
+- Compilación final con pruebas host y ARM9: **PASS**.
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39578401136
+- Artefacto `.nds` E30.7:
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39578401136/artifacts/12335202171
+- Respaldo E30.6: rama `e30-6-ci-pass`.
+- **Pendiente**: validar en melonDS `TMC / DSi ENGINE E30.7`,
+  `InitRoom original: PASS N:OK`,
+  `Link original: LINKED L:OK C:OK`,
+  `Room ROM: VERIFIED P:OK B:OK`,
+  `GameTask: ROOM PREFIX F:OK R:OK` y `err:0`.
+  La casa seguirá sin personajes dibujados, sin NPC permanentes ni
+  actualización del motor. Un `R:--` indica que no pasó la prueba
+  transaccional; no avanzar al spawn original hasta depurarlo.
