@@ -500,3 +500,22 @@ y `err:0`.
 no activa `LoadRoomEntity`. Los servicios auténticos de borrado,
 scripts, resolución de colisiones, sprites y bucle aún faltan.
 No se crearon comportamientos Zelda alternativos.
+
+## E30.10 — Prueba completa y aceptación en melonDS
+
+- E30.9 validada por el usuario: `A:OK M:OK F:OK R:OK`, `err:0`.
+- Respaldo de código E30.9: `e30-9-ci-pass`.
+- Pruebas originales en host y devkitARM: **CI PASS**:
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39647189869
+- Archivo experimental `.nds` E30.10:
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39647189869/artifacts/12368261418
+- **Pendiente prueba en melonDS**: verificar `TMC / DSi ENGINE E30.10`,
+  la línea `size:... a:22 r:15 U:OK`,
+  `ROOM SCREEN:DISPLAYED A:OK M:OK`,
+  `InitRoom original: PASS N:OK`,
+  `Link original: LINKED L:OK C:OK`,
+  `Room ROM: VERIFIED P:OK B:OK`,
+  `GameTask: ROOM PREFIX F:OK R:OK` y `err:0`.
+- `U:OK` solo acredita la ejecución real del asignador original de
+  auxiliares sobre un pool comprobado previamente vacío. No se crea
+  jugador auxiliar permanente; el GameTask UPDATE sigue bloqueado.
