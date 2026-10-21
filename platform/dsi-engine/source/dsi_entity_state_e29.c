@@ -46,3 +46,17 @@ bool DsiEntityState_EmptyValid(void) {
     }
     return true;
 }
+
+/* E29.8 ARM9 telemetry adapter for PC_PORT instrumentation embedded in
+ * the literal original AppendEntityToList body. This does NOT allocate or
+ * modify entities, list links, priorities or any gameplay behavior.
+ * Host tests provide their own logger; DSi records the actual call. */
+#ifdef ARM9
+volatile unsigned gDsiE29OriginalListAppends;
+void Port_LogListOp(const char* operation, void* entity, unsigned kind,
+                    unsigned id, unsigned listIndex, void* list) {
+    (void)operation; (void)entity; (void)kind; (void)id;
+    (void)listIndex; (void)list;
+    ++gDsiE29OriginalListAppends;
+}
+#endif
