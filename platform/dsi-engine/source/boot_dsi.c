@@ -50,6 +50,7 @@
 #include "dsi_room_properties_e30.h"
 #include "dsi_room_property_data_e30.h"
 #include "dsi_room_property_native_e30.h"
+#include "dsi_room_registry_probe_e30.h"
 #include "dsi_entity_lists.h"
 #include "dsi_player_preflight.h"
 #include "dsi_entity_state_e29.h"
@@ -139,7 +140,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E30.6\n");
+    iprintf("TMC / DSi ENGINE E30.7\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -367,6 +368,11 @@ int main(void) {
                 bool native_props_ok = link_native && property_banks_ok &&
                     original_room_ok &&
                     DsiRoomPropertyNativeE30_Attach(&room_metadata);
+                /* E30.7 read-only outcome: genuine RegisterRoomEntity is
+                 * exercised against a disposable, ORIGINAL native pool slot,
+                 * and immediately rolled back. This is NOT an NPC spawn. */
+                bool registry_probe_ok = native_props_ok &&
+                    DsiRoomRegistryProbeE30_Run();
                 iprintf("\x1b[10;0HInitRoom original: %-6s N:%s",
                         original_room_ok ? "PASS" : "PENDING",
                         native_props_ok ? "OK" : "--");
@@ -380,6 +386,8 @@ int main(void) {
                 iprintf("\x1b[16;0HGameTask: %-11s F:%s",
                         prefix_ok ? "ROOM PREFIX" : "BLOCKED",
                         DsiGameNative_OriginalEntityLookupReady() ? "OK" : "--");
+                iprintf("\x1b[9;0HRegistry original: %s   ",
+                        registry_probe_ok ? "PASS" : "BLOCKED");
                 iprintf("\x1b[17;0Horg:%u/%u/%u init:%u d:%u e:%u  ",
                         native->transition_ticks, native->init_ticks,
                         native->room_prefix_ticks, native->original_room_calls,

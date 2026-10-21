@@ -1,4 +1,4 @@
-name: Build Zelda Minish Cap DSi E30.6 (Native Original Entity Lookup)
+name: Build Zelda Minish Cap DSi E30.7 (Genuine Room Registry Probe)
 on:
   workflow_dispatch:
   push:
@@ -63,8 +63,10 @@ jobs:
         run: sh platform/dsi-engine/tests/run_original_room_entity_list_e30.sh
       - name: E30.6 authentic entity allocation, registration and duplicate lookup
         run: sh platform/dsi-engine/tests/run_entity_allocator_e30.sh
+      - name: E30.7 transactional original room registry in native entity pool
+        run: sh platform/dsi-engine/tests/run_registry_probe_e30.sh
   nds:
-    name: Build E30.6 ARM9 original entity duplicate lookup linked
+    name: Build E30.7 ARM9 genuine room registry diagnostic
     needs: host-check
     runs-on: ubuntu-latest
     container:
@@ -163,7 +165,7 @@ jobs:
           grep -Eq ' U Port_ResolveRegionData$' e30-original-room-list-symbols.txt
           # Original loader/spawner is only in build/*.o until dependency closure.
           ! grep -Eq ' [Tt] (LoadRoomEntityList|LoadRoomEntity)$' e29-linked-symbols.txt
-          grep -aq 'TMC / DSi ENGINE E30.6' platform/dsi-engine/tmc-dsi-engine-e29.elf
+          grep -aq 'TMC / DSi ENGINE E30.7' platform/dsi-engine/tmc-dsi-engine-e29.elf
           # The loader cannot be activated until genuine allocator, room
           # registration, sprite and scripts are ported. Do not silently add
           # fabricated Nintendo DS implementations to bypass this gate.
@@ -180,15 +182,17 @@ jobs:
           test -s platform/dsi-engine/build/dsi_room_entity_register_core_e30.o
           arm-none-eabi-nm platform/dsi-engine/build/dsi_room_entity_register_core_e30.o > e30-original-registry-symbols.txt
           grep -Eq ' T RegisterRoomEntity$' e30-original-registry-symbols.txt
+          grep -Eq ' T RegisterRoomEntity$' e29-linked-symbols.txt
+          grep -Eq ' T DsiRoomRegistryProbeE30_Run$' e29-linked-symbols.txt
           grep -Eq ' [RrDTt] gEntityListLUT$' e30-original-allocator-symbols.txt
           # No incomplete allocations/spawns may enter the final ARM9 ELF.
-          ! grep -Eq ' [Tt] (GetEmptyEntity|GetEmptyManager|GetEmptyEntityByKind|RegisterRoomEntity|LoadRoomEntityList|LoadRoomEntity)$' e29-linked-symbols.txt
-          echo 'E30.6: genuine DeepFindEntityByID LINKED on ARM9 and exercised for Link; allocator/spawn remain absent'
+          ! grep -Eq ' [Tt] (GetEmptyEntity|GetEmptyManager|GetEmptyEntityByKind|LoadRoomEntityList|LoadRoomEntity)$' e29-linked-symbols.txt
+          echo 'E30.7: genuine RegisterRoomEntity LINKED and probed transactionally on ARM9; gameplay spawn stays blocked'
       - name: Upload build diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: E30-6-Build-Log
+          name: E30-7-Build-Log
           path: |
             e29-build.log
             e29-linked-symbols.txt
@@ -207,6 +211,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Picori-DSi-E30-6-Native-Entity-Lookup-NDS
+          name: Picori-DSi-E30-7-Original-Room-Registry-NDS
           path: platform/dsi-engine/tmc-dsi-engine-e29.nds
           if-no-files-found: error

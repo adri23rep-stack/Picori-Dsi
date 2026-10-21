@@ -322,3 +322,32 @@ https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39577117676/artifacts
 `GameTask: ROOM PREFIX F:OK`, `err:0`. Si `F:--`,
 `BLOCKED` o error, no habilitar el siguiente escalón. Sigue sin
 haber NPC visibles ni movimiento: la búsqueda no ejecuta spawns.
+
+## E30.7 — Registro original ejecutado en ARM9 (prueba transaccional)
+
+El usuario confirmó E30.6 en melonDS con `F:OK` y `err:0`.
+E30.7 **enlaza al ELF ARM9 la función auténtica**
+`src/room.c::RegisterRoomEntity()` y la ejecuta sobre el pool
+`gEntities[]` del motor, utilizando los `AppendEntityToList()` y
+`DeepFindEntityByID()` originales. La función diagnóstica de
+plataforma crea un registro **sintético SOLO para pruebas** y lo
+elimina de la lista al instante. **No es una nueva rutina de
+spawn**, no crea un NPC permanente ni cambia a Link.
+
+La prueba de E30.7 exige que antes exista Link auténtico
+y que `RoomResInfo.properties[0/1]` estén conectados a
+bancos originales; después:
+- crea un único registro efímero de prueba con el registro original;
+- comprueba su lista, prioridad y `DeepFindEntityByID` real;
+- restaura la lista 7, limpia su slot y vuelve a dejar
+  `gEntCount=1`, `gManagerCount=0`;
+- verifica que Link no cambió y que el registro temporal desapareció.
+
+No ejecuta `LoadRoomEntity()` ni `InitializeEntities()`, no corre
+scripts de GBA ni mueve o dibuja personajes. Las funciones originales
+de asignación/sprite/colisión siguen pendientes de enlazarse para
+crear NPC reales.
+
+**Diagnóstico E30.7:** `Registry original: PASS` o `BLOCKED`.
+`err:0`, `F:OK`, `N:OK`, `B:OK` y `P:OK` deben conservarse.
+CI debe verificar ejecución host y símbolo nativo auténtico.
