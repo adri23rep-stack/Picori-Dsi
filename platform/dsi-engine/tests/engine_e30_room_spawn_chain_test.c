@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 
+RoomControls gRoomControls;
 RoomTransition gRoomTransition;
 PlayerEntity gPlayerEntity;
 PriorityHandler gPriorityHandler;
