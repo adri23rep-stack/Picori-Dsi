@@ -163,7 +163,7 @@ jobs:
           grep -Eq ' U Port_ResolveRegionData$' e30-original-room-list-symbols.txt
           # Original loader/spawner is only in build/*.o until dependency closure.
           ! grep -Eq ' [Tt] (LoadRoomEntityList|LoadRoomEntity)$' e29-linked-symbols.txt
-          grep -aq 'TMC / DSi ENGINE E30.4' platform/dsi-engine/tmc-dsi-engine-e29.elf
+          grep -aq 'TMC / DSi ENGINE E30.5' platform/dsi-engine/tmc-dsi-engine-e29.elf
           # The loader cannot be activated until genuine allocator, room
           # registration, sprite and scripts are ported. Do not silently add
           # fabricated Nintendo DS implementations to bypass this gate.
