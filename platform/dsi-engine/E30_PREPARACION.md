@@ -214,3 +214,17 @@ objetos ARM9 hasta resolver las dependencias y no se fuerza un
 La pantalla muestra ahora **E30.4** en el título para diferenciar la
 compilación, pero los resultados de habitación y de Link deben
 mantenerse idénticos a E30.3. No hay NPC nuevos ni movimiento.
+
+## E30.4 — Compilación final
+
+- GitHub Actions final **PASS** (tests host, devkitARM y auditoría de
+  dependencias sin falsos loaders):
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39568748309
+- NDS: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39568748309/artifacts/12330917807
+- El título en la consola inferior ahora es `TMC / DSi ENGINE E30.4`.
+  Las líneas `InitRoom original: PASS N:OK`,
+  `Link original: LINKED L:OK C:OK`,
+  `Room ROM: VERIFIED P:OK B:OK` y
+  `GameTask: ROOM PREFIX` deben continuar sin cambio.
+- **Pendiente melonDS**: comprobar diagnóstico y `err:0` en el .nds.
+  La etapa no crea NPC ni dibuja a Link; eso sigue bloqueado.
