@@ -49,9 +49,15 @@ static bool map_layer(MapLayer* map,uint32_t base,const DsiRoomMetadata* room) {
     /* Original 32-bit MapLayer field offsets, read through the bounded bus.
      * Copy the fields separately: host pointer sizes must not affect offsets. */
     memset(map,0,sizeof *map);
+    /* E35: restore the original GBA RAM collision/action maps (map.h).
+     * E31 left these fields zero, making all future collision tests empty. */
     if(!DsiGbaBus_Read(base+4,map->mapData,sizeof map->mapData) ||
-       !DsiGbaBus_Read(base+0x5004,map->tileTypes,sizeof map->tileTypes) ||
-       !DsiGbaBus_Read(base+0x7004,map->subTiles,sizeof map->subTiles))return false;
+       !DsiGbaBus_Read(base+0x2004u,map->collisionData,sizeof map->collisionData) ||
+       !DsiGbaBus_Read(base+0x3004u,map->mapDataOriginal,sizeof map->mapDataOriginal) ||
+       !DsiGbaBus_Read(base+0x5004u,map->tileTypes,sizeof map->tileTypes) ||
+       !DsiGbaBus_Read(base+0x6004u,map->tileIndices,sizeof map->tileIndices) ||
+       !DsiGbaBus_Read(base+0x7004u,map->subTiles,sizeof map->subTiles) ||
+       !DsiGbaBus_Read(base+0xb004u,map->actTiles,sizeof map->actTiles))return false;
     unsigned count=(room->width/16u)*(room->height/16u);
     for(unsigned i=0;i<count;i++) {
         unsigned index=map->mapData[i];

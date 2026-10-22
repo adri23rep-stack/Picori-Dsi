@@ -48,6 +48,7 @@
 #include "dsi_room_spawn_e31.h"
 #include "dsi_room_object_tick_e33.h"
 #include "dsi_room_bed_gfx_e34.h"
+#include "dsi_collision_audit_e35.h"
 #include "dsi_room_maps.h"
 #include "dsi_room_tiles.h"
 #include "dsi_room_preview.h"
@@ -356,17 +357,6 @@ int main(void) {
                     }
                 }
                 native = DsiGameNative_Status();
-                /* E34: compose a genuine EU ROM BedCover frame over the
-                 * original room, only if E33 initialized the real object.
-                 * On invalid ROM gfx or OAM data keep the verified room. */
-                bool bed_gfx_ok = scene_ok && DsiRoomObjectE33_Ready() &&
-                    DsiRoomBedGfxE34_Draw(&room_metadata, mainFrame,
-                                            DSI_RENDER_W);
-                if (bed_gfx_ok)
-                    dmaCopy(mainFrame, bgGetGfxPtr(mainBg), sizeof(mainFrame));
-                iprintf("\x1b[9;0HROOM: %-8s BED:%s ",
-                        scene_ok ? "DISPLAY" : "BLOCKED",
-                        bed_gfx_ok ? "ROM" : "--");
                 /* E28: Only the actual original InitRoom()/InitAllRoomResInfo()
                  * can fill gArea after the E24 transition. Verify the active
                  * room pointer and metadata, not an independent imitation. */
@@ -422,6 +412,18 @@ int main(void) {
                  * No managers/Link physics, scripts or fake movement. */
                 bool native_bed_ok = persistent_room &&
                     DsiRoomObjectE33_Tick();
+                /* E35: E34 had painted BEFORE the real bed existed.
+                 * Render original ROM frame only AFTER original BedCover action0. */
+                bool bed_gfx_ok = scene_ok && native_bed_ok &&
+                    DsiRoomBedGfxE34_Draw(&room_metadata,mainFrame,DSI_RENDER_W);
+                if(bed_gfx_ok)
+                    dmaCopy(mainFrame,bgGetGfxPtr(mainBg),sizeof(mainFrame));
+                bool collision_audit_ok = persistent_room &&
+                    DsiCollisionAuditE35_Run(room_metadata.width,room_metadata.height);
+                iprintf("\x1b[12;0HBed:%s Collision:%s N:%u ",
+                        bed_gfx_ok?"ROM":"--",
+                        collision_audit_ok?"DATA":"--",
+                        DsiCollisionAuditE35_NonzeroTiles());
 
                 /* Read-only ORIGINAL scheduler check, never update entities. */
                 Entity *bed_for_priority = persistent_room ?

@@ -123,3 +123,14 @@ for path,names in {
 }.items():
  for n in names: obj+=fn(path,n)
 (out/'dsi_room_objects_e33.c').write_text(obj)
+
+# E35: original Thumb-to-C collision tile lookup port, extracted literally.
+collision='''/* Original port/port_linked_stubs.c GBA ARM collision translations. */
+#include "entity.h"
+#include "room.h"
+#include "map.h"
+'''
+for name in ['GetCollisionDataAtTilePos','GetCollisionDataAtWorldCoords',
+             'GetCollisionDataAtEntity','GetCollisionDataRelativeTo']:
+ collision+=fn('port/port_linked_stubs.c',name)
+(out/'dsi_collision_lookup_e35.c').write_text(collision)
