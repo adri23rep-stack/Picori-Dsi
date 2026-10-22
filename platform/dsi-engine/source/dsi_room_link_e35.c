@@ -12,25 +12,27 @@
 #include <string.h>
 static TmcLinkSprite sLinkRom;
 static bool sLoaded;
-static unsigned sErrors;
+static unsigned sErrors,sReason;
+unsigned DsiRoomLinkE35_Reason(void) {return sReason;}
 unsigned DsiRoomLinkE35_Errors(void) { return sErrors; }
 bool DsiRoomLinkE35_Draw(const DsiRoomMetadata *room,TmcRomReader *rom,
                          uint16_t *out,size_t stride) {
+    sReason=0;
     if (!room || !rom || !out || stride!=256u ||
         rom->region!=TMC_ROM_REGION_EUROPE ||
         room->area!=0x22u || room->room!=0x15u ||
         !DsiRoomSpawnE31_Ready() ||
         gPlayerEntity.base.kind!=PLAYER ||
-        gPlayerEntity.base.next==NULL) return false;
+        gPlayerEntity.base.next==NULL) {sReason=1;return false;}
     const Entity *player=&gPlayerEntity.base;
     /* Always use the game engine's world position. Never keep separate
      * demo coordinates for Link. All graphics remain external ROM data. */
     const int px=player->x.HALF.HI-room->map_x;
     const int py=player->y.HALF.HI-room->map_y;
     if(px<-32 || py<-32 || px>(int)room->width+32 ||
-       py>(int)room->height+32) { ++sErrors; return false; }
+       py>(int)room->height+32) { sReason=2;++sErrors; return false; }
     if(!sLoaded) {
-        if(!TmcLink_Load(&sLinkRom,rom)) { ++sErrors; return false; }
+        if(!TmcLink_Load(&sLinkRom,rom)) { sReason=3;++sErrors; return false; }
         sLoaded=true;
     }
     /* Until the original animation state machine is live, the original

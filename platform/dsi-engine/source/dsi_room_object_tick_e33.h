@@ -6,4 +6,6 @@ bool DsiRoomObjectE33_Tick(void);
 bool DsiRoomObjectE33_Ready(void);
 unsigned DsiRoomObjectE33_Ticks(void);
 unsigned DsiRoomObjectE33_Errors(void);
+/* E38: stable cause of blocked authentic bed tick, zero when successful. */
+unsigned DsiRoomObjectE33_Reason(void);
 #endif

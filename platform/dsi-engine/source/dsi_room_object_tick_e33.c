@@ -13,9 +13,10 @@
 #include "script.h"
 #include <stdlib.h>
 static Entity* sBed;
-static unsigned sTicks,sErrors;
+static unsigned sTicks,sErrors,sReason;
+unsigned DsiRoomObjectE33_Reason(void) {return sReason;}
 void DsiRoomObjectE33_Reset(void) {
-    sBed=NULL; sTicks=sErrors=0;
+    sBed=NULL; sTicks=sErrors=sReason=0;
 }
 bool DsiRoomObjectE33_Ready(void) {
     return sTicks>0 && sErrors==0 && sBed!=NULL &&
@@ -34,28 +35,30 @@ void __wrap_ExecuteScript(Entity* e, ScriptExecutionContext* ctx) {
     abort();
 }
 bool DsiRoomObjectE33_Tick(void) {
-    if (!DsiRoomSpawnE31_Ready() || sErrors) return false;
+    if (!DsiRoomSpawnE31_Ready() || sErrors) {sReason=1;return false;}
     if (gMain.task!=TASK_GAME || gMain.state!=GAMETASK_MAIN ||
         gMain.substate!=GAMEMAIN_CHANGEROOM ||
         gRoomControls.area!=0x22 || gRoomControls.room!=0x15 ||
         gEntCount!=2 || gManagerCount!=3 ||
         gPlayerEntity.base.kind!=PLAYER) {
-        ++sErrors; return false;
+        sReason=2;++sErrors; return false;
     }
     Entity* bed=DeepFindEntityByID(OBJECT, BED_COVER);
     if (!bed || bed->type!=1 || (bed->flags&(ENT_DELETED|ENT_SCRIPTED)) ||
         bed->action>1 || (sBed && sBed!=bed)) {
+        sReason=!bed?3:(bed->type!=1?4:((bed->flags&(ENT_DELETED|ENT_SCRIPTED))?5:((bed->action>1)?6:7)));
         ++sErrors; return false;
     }
     sBed=bed;
-    if (EntityDisabled(bed)) return DsiRoomObjectE33_Ready();
+    if (EntityDisabled(bed)) {sReason=8;return DsiRoomObjectE33_Ready();}
     /* Authentic src/object/bedCover.c action dispatch and animation setup. */
     BedCover(bed);
     if (bed->action!=1 || bed->spriteSettings.draw!=1 ||
         bed->frameIndex!=1 || bed->kind!=OBJECT ||
         gEntCount!=2 || gManagerCount!=3) {
-        ++sErrors; return false;
+        sReason=9;++sErrors; return false;
     }
+    sReason=0;
     ++sTicks;
     return true;
 }

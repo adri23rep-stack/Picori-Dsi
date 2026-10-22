@@ -8,4 +8,5 @@
 bool DsiRoomLinkE35_Draw(const DsiRoomMetadata *room,TmcRomReader *rom,
                          uint16_t *out,size_t stride);
 unsigned DsiRoomLinkE35_Errors(void);
+unsigned DsiRoomLinkE35_Reason(void);
 #endif

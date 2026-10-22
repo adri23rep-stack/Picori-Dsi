@@ -50,6 +50,7 @@
 #include "dsi_room_bed_gfx_e34.h"
 #include "dsi_room_link_e35.h"
 #include "dsi_room_collision_e36.h"
+#include "dsi_room_geometry_e38.h"
 #include "dsi_room_maps.h"
 #include "dsi_room_tiles.h"
 #include "dsi_room_preview.h"
@@ -151,7 +152,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E37\n");
+    iprintf("TMC / DSi ENGINE E38\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -358,17 +359,6 @@ int main(void) {
                     }
                 }
                 native = DsiGameNative_Status();
-                /* E34: compose a genuine EU ROM BedCover frame over the
-                 * original room, only if E33 initialized the real object.
-                 * On invalid ROM gfx or OAM data keep the verified room. */
-                bool bed_gfx_ok = scene_ok && DsiRoomObjectE33_Ready() &&
-                    DsiRoomBedGfxE34_Draw(&room_metadata, mainFrame,
-                                            DSI_RENDER_W);
-                if (bed_gfx_ok)
-                    dmaCopy(mainFrame, bgGetGfxPtr(mainBg), sizeof(mainFrame));
-                iprintf("\x1b[9;0HROOM: %-8s BED:%s ",
-                        scene_ok ? "DISPLAY" : "BLOCKED",
-                        bed_gfx_ok ? "ROM" : "--");
                 /* E28: Only the actual original InitRoom()/InitAllRoomResInfo()
                  * can fill gArea after the E24 transition. Verify the active
                  * room pointer and metadata, not an independent imitation. */
@@ -417,13 +407,28 @@ int main(void) {
                  * entity creation or synthetic Zelda update loop. */
                 bool search_original_ok = aux_player_ok &&
                     DsiEntitySearchProbeE30_Run();
-                bool persistent_room = search_original_ok && tile_ok && map_ok &&
+                /* E38: authentic InitRoom geometry must be bound BEFORE
+                 * original LoadRoomEntity computes entity world positions. */
+                bool original_geometry_ok = search_original_ok &&
+                    DsiRoomGeometryE38_BindBeforeSpawn(&room_metadata);
+                bool persistent_room = original_geometry_ok && tile_ok && map_ok &&
                     DsiRoomSpawnE31_Load(&room_metadata);
                 /* E33: first genuine original room OBJECT frame dispatch.
                  * The real BedCover function initializes the actual bed.
                  * No managers/Link physics, scripts or fake movement. */
                 bool native_bed_ok = persistent_room &&
                     DsiRoomObjectE33_Tick();
+                /* E34: compose a genuine EU ROM BedCover frame over the
+                 * original room, only if E33 initialized the real object.
+                 * On invalid ROM gfx or OAM data keep the verified room. */
+                bool bed_gfx_ok = scene_ok && DsiRoomObjectE33_Ready() &&
+                    DsiRoomBedGfxE34_Draw(&room_metadata, mainFrame,
+                                            DSI_RENDER_W);
+                if (bed_gfx_ok)
+                    dmaCopy(mainFrame, bgGetGfxPtr(mainBg), sizeof(mainFrame));
+                iprintf("\x1b[9;0HROOM: %-8s BED:%s ",
+                        scene_ok ? "DISPLAY" : "BLOCKED",
+                        bed_gfx_ok ? "ROM" : "--");
                 /* E35: The rendered Link is the ACTUAL original
                  * InitializePlayer entity, not a fake position or new actor.
                  * Pixels/frames are fetched from the user's EU ROM only.
@@ -493,9 +498,10 @@ int main(void) {
                 if (scene_ok) {
                     iprintf("\x1b[14;0HLive entities:%u managers:%u ",gEntCount,gManagerCount);
                 }
-                iprintf("\x1b[16;0HBed object: %-7s O:%u ",
+                iprintf("\x1b[16;0HBed:%-7s T:%u E:%u",
                         native_bed_ok ? "ACTIVE" : "BLOCKED",
-                        DsiRoomObjectE33_Ticks());
+                        DsiRoomObjectE33_Ticks(),
+                        DsiRoomObjectE33_Reason());
             } else {
                 iprintf("\x1b[15;0HGame RAM: BLOCKED     ");
             }
@@ -511,6 +517,25 @@ int main(void) {
          * in this live block, and keep all output within rows 18..23. */
         if ((++frames % 8) == 0) {
             char line[64];
+            if (DsiRoomGeometryE38_Ready() && DsiRoomSpawnE31_Ready()) {
+                snprintf(line,sizeof(line),"Link x:%d y:%d rom:%u",
+                         (int)gPlayerEntity.base.x.HALF.HI,
+                         (int)gPlayerEntity.base.y.HALF.HI,
+                         DsiRoomLinkE35_Reason());
+                iprintf("\x1b[18;0H%-31.31s",line);
+                Entity *diagBed=DeepFindEntityByID(OBJECT,BED_COVER);
+                snprintf(line,sizeof(line),"Bed f:%02X a:%u x:%d y:%d",
+                         diagBed?diagBed->flags:0xffu,
+                         diagBed?diagBed->action:0xffu,
+                         diagBed?(int)diagBed->x.HALF.HI:-1,
+                         diagBed?(int)diagBed->y.HALF.HI:-1);
+                iprintf("\x1b[19;0H%-31.31s",line);
+                snprintf(line,sizeof(line),"geom:%u col:%u linkerr:%u",
+                         DsiRoomGeometryE38_Ready(),
+                         DsiRoomCollisionE36_Ready(),
+                         DsiRoomLinkE35_Errors());
+                iprintf("\x1b[20;0H%-31.31s",line);
+            } else {
             snprintf(line, sizeof(line), "H:%03X N:%03X task:%u s:%u",
                      gInput.heldKeys, gInput.newKeys, gMain.task, gMain.state);
             iprintf("\x1b[18;0H%-31.31s", line);
@@ -519,6 +544,7 @@ int main(void) {
             snprintf(line, sizeof(line), "pal:%u alpha:%u",
                      live.palette_updates, live.alpha_updates);
             iprintf("\x1b[20;0H%-31.31s", line);
+            }
             snprintf(line, sizeof(line), "OAM:%u sprites:%u",
                      DsiTitleSprites_Count(), gDsiTitleSpriteStats.draw_calls);
             iprintf("\x1b[21;0H%-31.31s", line);
