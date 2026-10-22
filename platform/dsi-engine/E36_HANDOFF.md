@@ -17,3 +17,21 @@ dependency closure visible for the next stage. We never bypass the original
 
 All previous E30-E35 host regressions remain, E36 adds a source compilation
 smoke test. User's own EU GBA ROM is required externally. Not playable yet.
+
+## E36 proof / last known passing checkpoint
+
+- Passing source commit: `fb59e51d16bce4c598dbb7b3a958ccd694be9888`
+- CI run: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39720548219
+- All host regressions E30-E36: SUCCESS.
+- ARM9 compile/link and `PlayerInit`/`PlayerNormal` source object: SUCCESS.
+- NDS download: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39720548219/artifacts/12400843331
+- Build log + E36 player undefined-symbol closure:
+  https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39720548219/artifacts/12400643852
+
+**Immediate next tasks:** consume `e36-player-unresolved.txt`,
+compile/link original animation manager and collision movement dependencies,
+bind the original complete `DoPlayerAction` dispatcher rather than calling
+individual action routines out of order, and render Link's original ROM
+sprite in the room. Gate real gameplay on both original collision tables
+and source player lifecycle. Do not call this playable until Link actually
+moves with solid walls/room transitions under melonDS/DSi testing.
