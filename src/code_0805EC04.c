@@ -138,7 +138,7 @@ void UpdatePlayerInput(void) {
     gPlayerState.playerInput.newInput = state & prevState;
     // Calculate the direction from the currently held input.
     gPlayerState.direction = gUnk_08109202[(state & INPUT_ANY_DIRECTION) >> 8];
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
     /* Reborn parity: 360° left-stick movement.
      *
      * When the user is holding the left analog stick past the deadzone

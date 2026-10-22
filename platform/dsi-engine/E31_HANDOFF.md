@@ -4,6 +4,24 @@ Base: `65b9b365f60ea27dfeae10f55cfc65529b871ff4`, branch
 `e30-original-room-properties`. Work: `e31-native-entity-lifecycle`.
 Keep the base branch unchanged. This is NOT yet playable.
 
+## E31.1 original player input
+
+The generator now also selects InitPlayerMacro, UpdatePlayerInput,
+ConvInputToState and the original direction table from src/code_0805EC04.c.
+The native frame loop polls this input path only after persistent room load.
+It honors controlMode; it NEVER enables player control or moves Link itself.
+Desktop-only analog-stick overrides/logging are excluded for TMC_DSI at their
+source guard, without fake analog callbacks or changes to the GBA input logic.
+Host sanitizer test covers all 1024 GBA key combinations, direction conflicts,
+press/hold/release edges, disabled/resume modes and macro duration/jump/end.
+The original IGNORE macro wait-counter underflow is explicitly preserved and
+tested, not silently rewritten. Scripts must eventually provide valid native
+macro pointers; there is no raw GBA pointer resolver in this milestone.
+ROM integration test also verifies input polling does not move Link or override
+disabled control. Run: E31_SANITIZE=1 sh platform/dsi-engine/tests/run_input_e31.sh
+and the existing run_room_spawn_e31.sh with the user's complete EU ROM.
+E31.1 CI result pending at this checkpoint; prior E31.0 build evidence below.
+
 Implemented: original entity deletion/recycling and its real resource cleanup,
 script-context allocation/free, manager deletion, native globals, heap init,
 original collision-layer lookup and packed-map row expansion. A guarded loader

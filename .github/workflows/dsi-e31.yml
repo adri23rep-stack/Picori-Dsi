@@ -21,6 +21,8 @@ jobs:
           sh -e /tmp/e30-regressions.sh
       - name: Original entity lifecycle with memory sanitizers
         run: E31_SANITIZE=1 sh platform/dsi-engine/tests/run_lifecycle_e31.sh
+      - name: Original player input with memory sanitizers
+        run: E31_SANITIZE=1 sh platform/dsi-engine/tests/run_input_e31.sh
   nds:
     needs: host
     runs-on: ubuntu-latest
@@ -40,7 +42,7 @@ jobs:
           make -C platform/dsi-engine > e31-build.log 2>&1 || { cat e31-build.log; exit 1; }
           cat e31-build.log
           arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf > e31-symbols.txt
-          for symbol in InitRoom InitializePlayer GetEmptyEntity GetEmptyEntityByKind LoadRoomEntity LoadRoomEntityList DeleteEntity ClearAllDeletedEntities DeleteManager EraseAllEntities UnloadGFXSlots UnloadOBJPalette UnloadCutsceneData StartCutscene ResolveCollisionLayer sub_0807C8B0 DsiRoomSpawnE31_Load; do
+          for symbol in InitRoom InitializePlayer GetEmptyEntity GetEmptyEntityByKind LoadRoomEntity LoadRoomEntityList DeleteEntity ClearAllDeletedEntities DeleteManager EraseAllEntities UnloadGFXSlots UnloadOBJPalette UnloadCutsceneData StartCutscene ResolveCollisionLayer sub_0807C8B0 DsiRoomSpawnE31_Load UpdatePlayerInput DsiRoomSpawnE31_PollInput; do
             grep -Eq " [Tt] ${symbol}$" e31-symbols.txt || { echo "Missing ELF symbol: $symbol"; exit 1; }
           done
           # ClearDeletedEntity is inlined into allocator/cleanup callers; its

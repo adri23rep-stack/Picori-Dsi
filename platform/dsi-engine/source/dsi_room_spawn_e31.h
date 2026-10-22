@@ -4,4 +4,5 @@
 bool DsiRoomSpawnE31_Load(const DsiRoomMetadata* room);
 bool DsiRoomSpawnE31_Ready(void);
 unsigned DsiRoomSpawnE31_Errors(void);
+void DsiRoomSpawnE31_PollInput(void);
 #endif

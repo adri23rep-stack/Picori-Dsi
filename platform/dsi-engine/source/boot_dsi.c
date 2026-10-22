@@ -145,7 +145,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E31.0\n");
+    iprintf("TMC / DSi ENGINE E31.1\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -213,6 +213,7 @@ int main(void) {
         uint16_t gbaKeys = (uint16_t)(~keysHeld()) & 0x03FFu;
         gba_write16(0x04000130u, gbaKeys);
         ReadKeyInput();
+        DsiRoomSpawnE31_PollInput();
         /* SELECT exits diagnostics. START must reach Zelda's TitleTask. */
         if (gInput.newKeys & 0x04u) break;
         if (render_ok && !title_fault && !handoff_reported &&

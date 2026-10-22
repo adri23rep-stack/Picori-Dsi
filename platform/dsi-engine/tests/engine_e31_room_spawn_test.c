@@ -16,7 +16,12 @@
 #include <stdio.h>
 #include <string.h>
 extern void ClearAllDeletedEntities(void);
+Input gInput;
+PlayerState gPlayerState;
 int main(int argc,char**argv){
+    gInput.heldKeys=A_BUTTON|DPAD_RIGHT;
+    gPlayerState.controlMode=CONTROL_ENABLED;
+    DsiRoomSpawnE31_PollInput();assert(!gPlayerState.playerInput.heldInput);
     assert(argc==2);TmcRomReader reader;memset(&reader,0,sizeof reader);
     assert(TmcRom_Open(&reader,argv[1]));assert(reader.region==TMC_ROM_REGION_EUROPE);
     DsiGbaBus_Init();DsiGbaBus_AttachRom(&reader);DsiTitleAssets_Enable(true,2);
@@ -38,6 +43,15 @@ int main(int argc,char**argv){
     assert(!DsiRoomPropertyDataE30_AllowNativeCopy(bank0+room.entity_counts[0],sizeof *bank0));
     assert(!DsiRoomPropertyDataE30_AllowNativeCopy((void*)(uintptr_t)room.entity_list_addresses[0],sizeof *bank0));
     assert(DsiRoomSpawnE31_Load(&room));assert(DsiRoomSpawnE31_Ready());
+    s32 x=gPlayerEntity.base.x.WORD,y=gPlayerEntity.base.y.WORD;
+    DsiRoomSpawnE31_PollInput();
+    assert(gPlayerState.playerInput.heldInput&INPUT_RIGHT);
+    assert(gPlayerState.playerInput.newInput&INPUT_INTERACT);
+    DsiRoomSpawnE31_PollInput();assert(!gPlayerState.playerInput.newInput);
+    gPlayerState.controlMode=CONTROL_DISABLED;DsiRoomSpawnE31_PollInput();
+    assert(!gPlayerState.playerInput.heldInput);
+    assert(gPlayerState.controlMode==CONTROL_DISABLED);
+    assert(gPlayerEntity.base.x.WORD==x&&gPlayerEntity.base.y.WORD==y);
     assert(gEntCount==2&&gManagerCount==3);
     Entity* bed=DeepFindEntityByID(OBJECT,0x4f);assert(bed&&bed->type==1);
     assert(bed->x.HALF.HI==room.map_x+0x58 && bed->y.HALF.HI==room.map_y+8);

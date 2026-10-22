@@ -22,6 +22,12 @@ void sub_0807C8B0(u16*,u32,u32);
 void DsiE31_UnsupportedTile(void) { ++sErrors; abort(); }
 unsigned DsiRoomSpawnE31_Errors(void) { return sErrors; }
 bool DsiRoomSpawnE31_Ready(void) { return sReady && !sErrors; }
+/* Input translation only. Never force CONTROL_ENABLED or dispatch movement.
+ * Original InitializePlayer/cutscenes remain the owners of controlMode. */
+void DsiRoomSpawnE31_PollInput(void) {
+    extern void UpdatePlayerInput(void);
+    if(DsiRoomSpawnE31_Ready())UpdatePlayerInput();
+}
 /* This resolver accepts only complete, validated native bank records.
  * In particular 0x08xxxxxx and arbitrary native pointers are never accepted. */
 const void* Port_ResolveRegionData(const void* data) {

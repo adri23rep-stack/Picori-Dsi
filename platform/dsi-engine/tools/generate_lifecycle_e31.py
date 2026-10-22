@@ -37,12 +37,14 @@ extern LinkedList2 gUnk_03003C70[16];
 extern ScriptExecutionContext gScriptExecutionContextArray[32];
 extern ScriptExecutionContext gPlayerScriptExecutionContext;
 void InitScriptExecutionContext(ScriptExecutionContext*, Script*);
+u32 ConvInputToState(u32);
 '''
+s+=array('src/code_0805EC04.c','gUnk_08109202')
 for p,names in {
  'src/vram.c':['UnloadGFXSlots'],
  'src/color.c':['UnloadOBJPalette','sub_0801D244'],
  'src/physics.c':['UnloadOBJPalette2','UnloadHitbox'],
- 'src/code_0805EC04.c':['sub_0805EC60'],
+ 'src/code_0805EC04.c':['sub_0805EC60','InitPlayerMacro','UpdatePlayerInput','ConvInputToState'],
  'src/collision.c':['sub_08017744'],
  'src/enemyUtils.c':['Port_IsEntityInPool','EnemyDetachFX'],
  'src/script.c':['InitScriptData','CreateScriptExecutionContext','DestroyScriptExecutionContext','StartCutscene','InitScriptForEntity','UnloadCutsceneData','InitScriptExecutionContext'],
