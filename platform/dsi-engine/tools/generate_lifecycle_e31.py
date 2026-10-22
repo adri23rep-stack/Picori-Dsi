@@ -136,3 +136,18 @@ for name in ['GetCollisionDataAtTilePos','GetCollisionDataAtWorldCoords',
              'GetCollisionDataAtEntity','GetCollisionDataRelativeTo']:
  collision+=fn('port/port_linked_stubs.c',name)
 (out/'dsi_collision_lookup_e35.c').write_text(collision)
+
+# E36: compile the actual 3DS-port PlayerInit/PlayerNormal bodies from
+# src/player.c, unedited.  This dependency closure is not yet linked to
+# DoPlayerAction: original animations, collision and scripts remain missing.
+player_src=(root/'src/player.c').read_text()
+anchor='bool32 CheckInitPauseMenu(void) {'
+if anchor not in player_src:
+ raise SystemExit('Missing src/player.c header+prototypes')
+player=player_src[:player_src.index(anchor)]
+for name in ['PlayerInit','PlayerNormal']:
+ player+=fn('src/player.c',name)
+# Keep both original functions in the relocatable TU for symbol/dependency
+# audits. They are intentionally GC'd at final ARM9 link until proven safe.
+player+='\n__attribute__((used)) static PlayerEntityAction* const sE36OriginalPlayerRoots[] = { PlayerInit, PlayerNormal };\n'
+(out/'dsi_original_player_actions_e36.c').write_text(player)
