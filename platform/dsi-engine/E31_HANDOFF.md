@@ -19,10 +19,17 @@ The user's EU ROM yielded 3 managers + bed at original coordinates, layer 1,
 Link health intact, valid lists, successful cleanup, no bus errors.
 No melonDS/hardware execution has been performed in this session.
 
-Current integration checkpoint: ARM9 build not run yet. Before calling this
-ready, expand native MemCopy source allowlist to include verified EntityData
-banks (RegisterRoomEntity copies manager records), update CI for E31 symbols,
-run regressions, push, and wait for Actions to compile the .nds.
+Native MemCopy now permits exact verified EntityData records (manager registry
+copies), rejecting partial/misaligned/raw GBA sources. Boundary tests pass.
+Actions run 39701888621 passed all preserved host regressions and E31 ASan/UBSan;
+ARM9 linked and produced the NDS. Its post-build symbol gate incorrectly required
+the out-of-line ClearDeletedEntity in the optimized ELF. E31 CI now checks that
+function in the allocator object and its ClearAllDeletedEntities caller in the
+ELF, retaining real implementation evidence without disabling optimization.
+Await the latest branch Actions run for the downloadable NDS and build evidence.
+EU ROM test repeated successfully with ASan/UBSan after checking input is the
+full 16,777,216 bytes. A transient truncated local ROM was re-materialized; do not
+change engine logic to accommodate a truncated input.
 
 Local workspace is a selected-file snapshot, not a clone of full git history.
 Remote commits must preserve the upstream tree and replace only changed files.

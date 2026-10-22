@@ -40,9 +40,13 @@ jobs:
           make -C platform/dsi-engine > e31-build.log 2>&1 || { cat e31-build.log; exit 1; }
           cat e31-build.log
           arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf > e31-symbols.txt
-          for symbol in InitRoom InitializePlayer GetEmptyEntity GetEmptyEntityByKind LoadRoomEntity LoadRoomEntityList DeleteEntity ClearDeletedEntity DeleteManager EraseAllEntities UnloadGFXSlots UnloadOBJPalette UnloadCutsceneData StartCutscene ResolveCollisionLayer sub_0807C8B0 DsiRoomSpawnE31_Load; do
-            grep -Eq " [Tt] ${symbol}$" e31-symbols.txt
+          for symbol in InitRoom InitializePlayer GetEmptyEntity GetEmptyEntityByKind LoadRoomEntity LoadRoomEntityList DeleteEntity ClearAllDeletedEntities DeleteManager EraseAllEntities UnloadGFXSlots UnloadOBJPalette UnloadCutsceneData StartCutscene ResolveCollisionLayer sub_0807C8B0 DsiRoomSpawnE31_Load; do
+            grep -Eq " [Tt] ${symbol}$" e31-symbols.txt || { echo "Missing ELF symbol: $symbol"; exit 1; }
           done
+          # ClearDeletedEntity is inlined into allocator/cleanup callers; its
+          # out-of-line section is garbage-collected in the optimized ELF.
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_entity_allocator_core_e30.o > e31-allocator-symbols.txt
+          grep -Eq ' [Tt] ClearDeletedEntity$' e31-allocator-symbols.txt
           arm-none-eabi-size platform/dsi-engine/tmc-dsi-engine-e29.elf | tee e31-size.txt
           cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E31.nds
           sha256sum Picori_DSi_E31.nds > Picori_DSi_E31.sha256
@@ -53,8 +57,9 @@ jobs:
           path: |
             e31-build.log
             e31-symbols.txt
+            e31-allocator-symbols.txt
             e31-size.txt
-            platform/dsi-engine/tmc-dsi-engine-e29.map
+            platform/dsi-engine/build/*.map
       - uses: actions/upload-artifact@v4
         with:
           name: Picori-DSi-E31-NDS
