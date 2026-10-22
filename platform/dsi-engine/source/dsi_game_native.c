@@ -3,6 +3,7 @@
  * Never dispatch active gameplay or persistent save handlers.
  */
 #include "dsi_game_native.h"
+#include "dsi_room_object_tick_e33.h"
 #include "dsi_game_transition.h"
 #include "dsi_game_bootstrap.h"
 #ifdef TMC_DSI_E29_ENTITY_CORE
@@ -113,6 +114,7 @@ void __wrap_MemFill32(u32 value, void* dest, u32 size) {
 }
 
 void DsiGameNative_Reset(void) {
+    DsiRoomObjectE33_Reset();
 #ifdef TMC_DSI_E29_ENTITY_CORE
     /* Allocate/reset ORIGINAL game entity pool and 9 self-sentinel lists.
      * Does not spawn Link or advance any entity tick. */

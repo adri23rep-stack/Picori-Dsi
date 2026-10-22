@@ -46,6 +46,7 @@
 #include "dsi_game_native.h"
 #include "dsi_room_probe.h"
 #include "dsi_room_spawn_e31.h"
+#include "dsi_room_object_tick_e33.h"
 #include "dsi_room_maps.h"
 #include "dsi_room_tiles.h"
 #include "dsi_room_preview.h"
@@ -147,7 +148,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E32\n");
+    iprintf("TMC / DSi ENGINE E33\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -400,6 +401,12 @@ int main(void) {
                     DsiEntitySearchProbeE30_Run();
                 bool persistent_room = search_original_ok && tile_ok && map_ok &&
                     DsiRoomSpawnE31_Load(&room_metadata);
+                /* E33: first genuine original room OBJECT frame dispatch.
+                 * The real BedCover function initializes the actual bed.
+                 * No managers/Link physics, scripts or fake movement. */
+                bool native_bed_ok = persistent_room &&
+                    DsiRoomObjectE33_Tick();
+
                 /* Read-only ORIGINAL scheduler check, never update entities. */
                 Entity *bed_for_priority = persistent_room ?
                     DeepFindEntityByID(OBJECT, 0x4fu) : NULL;
@@ -449,6 +456,8 @@ int main(void) {
                 if (scene_ok) {
                     iprintf("\x1b[14;0HLive entities:%u managers:%u ",gEntCount,gManagerCount);
                 }
+                iprintf("\x1b[10;0HRoom bed original: %-7s ",
+                        native_bed_ok ? "ACTIVE" : "BLOCKED");
             } else {
                 iprintf("\x1b[15;0HGame RAM: BLOCKED     ");
             }

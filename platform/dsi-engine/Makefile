@@ -9,7 +9,7 @@ STAGE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
 ROOT_DIR := $(abspath $(STAGE_DIR)/../..)
 include $(DEVKITARM)/ds_rules
 
-GAME_TITLE := TMC DSi Engine E32
+GAME_TITLE := TMC DSi Engine E33
 GAME_SUBTITLE1 := Original game source
 GAME_SUBTITLE2 := Original Link / EU ROM
 TARGET := tmc-dsi-engine-e29
@@ -23,7 +23,7 @@ CFLAGS := -std=gnu11 -O2 -g -w -ffunction-sections -fdata-sections -fno-strict-a
 CXXFLAGS := $(CFLAGS) -fno-exceptions -fno-rtti
 ASFLAGS := -g $(ARCH)
 LDFLAGS := -specs=ds_arm9.specs $(ARCH) -Wl,-Map,$(notdir $*.map) -Wl,--gc-sections \
-  -Wl,--wrap=LoadGfxGroup -Wl,--wrap=LoadPaletteGroup -Wl,--wrap=DispReset -Wl,--wrap=MemClear -Wl,--wrap=zMallocInit -Wl,--wrap=MessageInitialize -Wl,--wrap=SetFade -Wl,--wrap=EraseAllEntities -Wl,--wrap=InitRoom -Wl,--wrap=MemFill32
+  -Wl,--wrap=LoadGfxGroup -Wl,--wrap=LoadPaletteGroup -Wl,--wrap=DispReset -Wl,--wrap=MemClear -Wl,--wrap=zMallocInit -Wl,--wrap=MessageInitialize -Wl,--wrap=SetFade -Wl,--wrap=EraseAllEntities -Wl,--wrap=InitRoom -Wl,--wrap=ExecuteScript -Wl,--wrap=MemFill32
 LIBS := -lfat -lnds9
 LIBDIRS := $(LIBNDS) $(PORTLIBS)
 
@@ -42,7 +42,7 @@ export DEPSDIR := $(STAGE_DIR)/$(BUILD)
 # ORIGINAL GameMain_InitRoom using src/game.c with DSi-only compile guards.
 # The remaining room/graphics/entity/save systems are NOT implemented.
 # The real screen stays on the title; this is not a playable build.
-CFILES := dsi_priority_e32.c dsi_lifecycle_services_e31.c dsi_lifecycle_state_e31.c dsi_layer_resolve_e31.c dsi_room_spawn_e31.c dsi_entity_search_probe_e30.c dsi_aux_player_probe_e30.c dsi_manager_pool_probe_e30.c dsi_room_spawn_audit_e30.c dsi_room_entity_params_core_e30.c dsi_room_registry_probe_e30.c dsi_room_entity_register_core_e30.c dsi_entity_allocator_core_e30.c dsi_room_entity_list_core_e30.c dsi_room_entity_spawn_core_e30.c dsi_room_property_native_e30.c dsi_room_property_data_e30.c dsi_room_properties_e30.c dsi_entity_core_e29.c dsi_entity_state_e29.c dsi_collision_core_e29.c dsi_collision_state_e29.c dsi_sprite_layer_e29.c dsi_player_state_e29.c dsi_e30_gate.c areaMetadata.c message.c dsi_area_headers.c dsi_room_resources.c dsi_entity_lists.c dsi_player_preflight.c dsi_room_preview.c gameUtils.c fade.c game.c playerUtils.c save.c dsi_game_native.c dsi_room_tiles.c dsi_room_maps.c dsi_room_probe.c dsi_game_bootstrap.c dsi_game_transition.c boot_dsi.c main.c common.c flags.c title.c tmc_rom_stream.c dsi_gba_bus.c dsi_engine_state.c dsi_rom_refs.c dsi_title_trace.c dsi_title_assets.c dsi_gba_renderer.c dsi_title_composite.c dsi_title_live.c dsi_title_sprites.c dsi_title_object_gfx.c dsi_title_entities.c dsi_title_runner.c dsi_file_select_probe.c dsi_file_select_palette.c fileselect.c titleScreenObject.c objectDefinitions.c
+CFILES := dsi_room_objects_e33.c dsi_room_object_tick_e33.c dsi_priority_e32.c dsi_lifecycle_services_e31.c dsi_lifecycle_state_e31.c dsi_layer_resolve_e31.c dsi_room_spawn_e31.c dsi_entity_search_probe_e30.c dsi_aux_player_probe_e30.c dsi_manager_pool_probe_e30.c dsi_room_spawn_audit_e30.c dsi_room_entity_params_core_e30.c dsi_room_registry_probe_e30.c dsi_room_entity_register_core_e30.c dsi_entity_allocator_core_e30.c dsi_room_entity_list_core_e30.c dsi_room_entity_spawn_core_e30.c dsi_room_property_native_e30.c dsi_room_property_data_e30.c dsi_room_properties_e30.c dsi_entity_core_e29.c dsi_entity_state_e29.c dsi_collision_core_e29.c dsi_collision_state_e29.c dsi_sprite_layer_e29.c dsi_player_state_e29.c dsi_e30_gate.c areaMetadata.c message.c dsi_area_headers.c dsi_room_resources.c dsi_entity_lists.c dsi_player_preflight.c dsi_room_preview.c gameUtils.c fade.c game.c playerUtils.c save.c dsi_game_native.c dsi_room_tiles.c dsi_room_maps.c dsi_room_probe.c dsi_game_bootstrap.c dsi_game_transition.c boot_dsi.c main.c common.c flags.c title.c tmc_rom_stream.c dsi_gba_bus.c dsi_engine_state.c dsi_rom_refs.c dsi_title_trace.c dsi_title_assets.c dsi_gba_renderer.c dsi_title_composite.c dsi_title_live.c dsi_title_sprites.c dsi_title_object_gfx.c dsi_title_entities.c dsi_title_runner.c dsi_file_select_probe.c dsi_file_select_palette.c fileselect.c titleScreenObject.c objectDefinitions.c
 export LD := $(CC)
 export OFILES := $(CFILES:.c=.o)
 export INCLUDE := -I$(STAGE_DIR)/source -I$(ROOT_DIR) -I$(ROOT_DIR)/include \

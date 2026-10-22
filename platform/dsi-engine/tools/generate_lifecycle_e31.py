@@ -100,3 +100,22 @@ for name in [
 # Call through to original static frame priority update. No Zelda dispatcher.
 priority+='\nvoid DsiPriorityE32_Tick(void) { UpdatePriority(); }\n'
 (out/'dsi_priority_e32.c').write_text(priority)
+
+# E33: selected exact bodies from ORIGINAL object/physics source, no new AI.
+obj='''/* Original engine object, allocation and placement functions. */
+#include "entity.h"
+#include "object.h"
+#include "physics.h"
+#include "script.h"
+'''
+bed=(root/'src/object/bedCover.c').read_text()
+anchor='\\nvoid BedCover(BedCoverEntity* this) {'
+if anchor not in bed: raise SystemExit('Original BedCover layout changed')
+obj+=bed[:bed.index(anchor)]+'\\n'
+for path,names in {
+ 'src/objectUtils.c':['CreateObject','CreateObjectWithParent'],
+ 'src/physics.c':['PositionRelative','CopyPosition'],
+ 'src/object/bedCover.c':['BedCover','sub_080928C8','nullsub_119','sub_08092930','sub_08092940','sub_08092958'],
+}.items():
+ for n in names: obj+=fn(path,n)
+(out/'dsi_room_objects_e33.c').write_text(obj)
