@@ -115,7 +115,7 @@ obj+=bed[:bed.index(anchor)]+'\n'
 # The title renderer still owns its old title-only CreateObject symbol.
 # Rename only the exported symbol of this EXACT original object allocator,
 # preserving its original body and calls in native gameplay.
-obj+='#define CreateObject DsiRoomE33_CreateObject\\n'
+obj+='#define CreateObject DsiRoomE33_CreateObject\n'
 for path,names in {
  'src/objectUtils.c':['CreateObject','CreateObjectWithParent'],
  'src/physics.c':['PositionRelative','CopyPosition'],
