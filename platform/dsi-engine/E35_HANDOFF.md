@@ -25,3 +25,16 @@ if all entries are zero.
 Movement/PlayerNormal, animation, room scripts, camera and exits are NOT
 implemented or enabled yet. Never treat nonzero map bytes as proof of
 collision behavior. Real melonDS/hardware visual testing remains required.
+
+## Passing CI checkpoint
+
+Passing code commit: `4f86c641db4a3b7021a62a869a532d44b626b220`.
+GitHub Actions: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39719997129
+- Host regressions E30-E35 (ASan/UBSan): success.
+- Native ARM9 compile, provenance and link: success.
+- NDS: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39719997129/artifacts/12400387383
+- Logs: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39719997129/artifacts/12400232736
+
+Not tested in melonDS or DSi. In particular, nonzero collision tile readback
+must not be confused with verified collision physics. Full playable state
+remains blocked on the original Player action/sprite update dispatcher.
