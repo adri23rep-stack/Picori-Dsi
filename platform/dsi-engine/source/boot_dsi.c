@@ -48,6 +48,9 @@
 #include "dsi_room_probe.h"
 #include "dsi_room_spawn_e31.h"
 #include "dsi_room_object_tick_e33.h"
+#include "dsi_room_archway_e39.h"
+#include "dsi_room_archway_gfx_e39.h"
+#include "dsi_room_link_origin_e39.h"
 #include "dsi_room_bed_gfx_e34.h"
 #include "dsi_room_link_e35.h"
 #include "dsi_room_collision_e36.h"
@@ -153,7 +156,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E38\n");
+    iprintf("TMC / DSi ENGINE E39\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -224,8 +227,8 @@ int main(void) {
         DsiRoomSpawnE31_PollInput();
         /* E33 room tick: original bed action1, gated by native entity
          * state and EntityDisabled; never invent player movement. */
-        if (DsiRoomObjectE33_Ready())
-            (void)DsiRoomObjectE33_Tick();
+        if (DsiRoomArchwayE39_Ready())
+            (void)DsiRoomArchwayE39_Tick();
         /* SELECT exits diagnostics. START must reach Zelda's TitleTask. */
         if (gInput.newKeys & 0x04u) break;
         if (render_ok && !title_fault && !handoff_reported &&
@@ -378,7 +381,11 @@ int main(void) {
                     initialized->tiles != NULL;
                 /* E29.8: invoke AUTHENTIC InitializePlayer only after the
                  * EU ROM and original room checks. Never run GameTask UPDATE. */
-                bool link_native = original_room_ok && player_preflight_ok &&
+                /* E39: original saved-status local point is converted to
+                 * world coordinates before the genuine InitializePlayer(). */
+                bool link_origin_ok = original_room_ok && player_preflight_ok &&
+                    DsiRoomLinkOriginE39_BindBeforeInitializePlayer(&room_metadata);
+                bool link_native = link_origin_ok &&
                     DsiGameNative_BootOriginalPlayer();
                 /* E30.3: attach only original property 0/1 (EntityData) to
                  * the original RoomResInfo AFTER original InitRoom and Link.
@@ -417,19 +424,19 @@ int main(void) {
                 /* E33: first genuine original room OBJECT frame dispatch.
                  * The real BedCover function initializes the actual bed.
                  * No managers/Link physics, scripts or fake movement. */
-                bool native_bed_ok = persistent_room &&
-                    DsiRoomObjectE33_Tick();
+                bool native_arch_ok = persistent_room &&
+                    DsiRoomArchwayE39_Tick();
                 /* E34: compose a genuine EU ROM BedCover frame over the
                  * original room, only if E33 initialized the real object.
                  * On invalid ROM gfx or OAM data keep the verified room. */
-                bool bed_gfx_ok = scene_ok && DsiRoomObjectE33_Ready() &&
-                    DsiRoomBedGfxE34_Draw(&room_metadata, mainFrame,
-                                            DSI_RENDER_W);
-                if (bed_gfx_ok)
+                bool arch_gfx_ok = scene_ok && DsiRoomArchwayE39_Ready() &&
+                    DsiRoomArchwayGfxE39_Draw(&room_metadata, mainFrame,
+                                              DSI_RENDER_W);
+                if (arch_gfx_ok)
                     dmaCopy(mainFrame, bgGetGfxPtr(mainBg), sizeof(mainFrame));
                 iprintf("\x1b[9;0HROOM: %-8s BED:%s ",
                         scene_ok ? "DISPLAY" : "BLOCKED",
-                        bed_gfx_ok ? "ROM" : "--");
+                        arch_gfx_ok ? "ROM" : "--");
                 /* E35: The rendered Link is the ACTUAL original
                  * InitializePlayer entity, not a fake position or new actor.
                  * Pixels/frames are fetched from the user's EU ROM only.
@@ -451,12 +458,11 @@ int main(void) {
 
 
                 /* Read-only ORIGINAL scheduler check, never update entities. */
-                Entity *bed_for_priority = persistent_room ?
-                    DeepFindEntityByID(OBJECT, 0x4fu) : NULL;
-                bool priority_core_ok = persistent_room && bed_for_priority &&
+                Entity *arch_for_priority = persistent_room ?
+                    DeepFindEntityByID(OBJECT, ARCHWAY) : NULL;
+                bool priority_core_ok = persistent_room && arch_for_priority &&
                     AnyPrioritySet() &&
-                    !EntityDisabled(&gPlayerEntity.base) &&
-                    !EntityDisabled(bed_for_priority);
+                    !EntityDisabled(&gPlayerEntity.base);
                 iprintf("\x1b[10;0HInitRoom original: %-6s N:%s",
                         original_room_ok ? "PASS" : "PENDING",
                         native_props_ok ? "OK" : "--");
@@ -499,10 +505,10 @@ int main(void) {
                 if (scene_ok) {
                     iprintf("\x1b[14;0HLive entities:%u managers:%u ",gEntCount,gManagerCount);
                 }
-                iprintf("\x1b[16;0HBed:%-7s T:%u E:%u",
-                        native_bed_ok ? "ACTIVE" : "BLOCKED",
-                        DsiRoomObjectE33_Ticks(),
-                        DsiRoomObjectE33_Reason());
+                iprintf("\x1b[16;0HArch:%-7s T:%u E:%u",
+                        native_arch_ok ? "ACTIVE" : "BLOCKED",
+                        DsiRoomArchwayE39_Ticks(),
+                        DsiRoomArchwayE39_Reason());
             } else {
                 iprintf("\x1b[15;0HGame RAM: BLOCKED     ");
             }
@@ -524,17 +530,17 @@ int main(void) {
                          (int)gPlayerEntity.base.y.HALF.HI,
                          DsiRoomLinkE35_Reason());
                 iprintf("\x1b[18;0H%-31.31s",line);
-                Entity *diagBed=DeepFindEntityByID(OBJECT,BED_COVER);
-                snprintf(line,sizeof(line),"Bed f:%02X a:%u x:%d y:%d",
-                         diagBed?diagBed->flags:0xffu,
-                         diagBed?diagBed->action:0xffu,
-                         diagBed?(int)diagBed->x.HALF.HI:-1,
-                         diagBed?(int)diagBed->y.HALF.HI:-1);
+                Entity *diagArch=DeepFindEntityByID(OBJECT,ARCHWAY);
+                snprintf(line,sizeof(line),"Arc f:%02X a:%u x:%d y:%d",
+                         diagArch?diagArch->flags:0xffu,
+                         diagArch?diagArch->action:0xffu,
+                         diagArch?(int)diagArch->x.HALF.HI:-1,
+                         diagArch?(int)diagArch->y.HALF.HI:-1);
                 iprintf("\x1b[19;0H%-31.31s",line);
-                snprintf(line,sizeof(line),"geom:%u col:%u linkerr:%u",
-                         DsiRoomGeometryE38_Ready(),
+                snprintf(line,sizeof(line),"org:%u col:%u linkR:%u",
+                         DsiRoomLinkOriginE39_Ready(),
                          DsiRoomCollisionE36_Ready(),
-                         DsiRoomLinkE35_Errors());
+                         DsiRoomLinkE35_Reason());
                 iprintf("\x1b[20;0H%-31.31s",line);
             } else {
             snprintf(line, sizeof(line), "H:%03X N:%03X task:%u s:%u",
