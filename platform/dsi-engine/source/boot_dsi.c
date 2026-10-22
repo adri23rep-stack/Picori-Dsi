@@ -48,6 +48,7 @@
 #include "dsi_room_spawn_e31.h"
 #include "dsi_room_object_tick_e33.h"
 #include "dsi_room_bed_gfx_e34.h"
+#include "dsi_room_link_e35.h"
 #include "dsi_room_maps.h"
 #include "dsi_room_tiles.h"
 #include "dsi_room_preview.h"
@@ -149,7 +150,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E34\n");
+    iprintf("TMC / DSi ENGINE E35\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -422,6 +423,18 @@ int main(void) {
                  * No managers/Link physics, scripts or fake movement. */
                 bool native_bed_ok = persistent_room &&
                     DsiRoomObjectE33_Tick();
+                /* E35: The rendered Link is the ACTUAL original
+                 * InitializePlayer entity, not a fake position or new actor.
+                 * Pixels/frames are fetched from the user's EU ROM only.
+                 * Do not dispatch PlayerNormal/physics until ported. */
+                bool link_rom_gfx_ok = persistent_room && link_native &&
+                    DsiRoomLinkE35_Draw(&room_metadata, &reader, mainFrame,
+                                        DSI_RENDER_W);
+                if (link_rom_gfx_ok)
+                    dmaCopy(mainFrame, bgGetGfxPtr(mainBg), sizeof(mainFrame));
+                iprintf("\x1b[18;0HLink ROM sprite: %-8s",
+                        link_rom_gfx_ok ? "VISIBLE" : "BLOCKED");
+
 
                 /* Read-only ORIGINAL scheduler check, never update entities. */
                 Entity *bed_for_priority = persistent_room ?
