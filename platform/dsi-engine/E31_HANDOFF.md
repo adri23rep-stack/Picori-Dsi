@@ -26,7 +26,12 @@ ARM9 linked and produced the NDS. Its post-build symbol gate incorrectly require
 the out-of-line ClearDeletedEntity in the optimized ELF. E31 CI now checks that
 function in the allocator object and its ClearAllDeletedEntities caller in the
 ELF, retaining real implementation evidence without disabling optimization.
-Await the latest branch Actions run for the downloadable NDS and build evidence.
+Verified build: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39702314321
+at code commit f67a7c2855c61c5f06bd178f3725ebf58f48e1ec: both host and nds jobs
+SUCCESS, including object/ELF symbol gates. Download Picori-DSi-E31-NDS for the
+NDS + SHA256 and E31-build-evidence for compiler log, symbols and linker map.
+ARM9 ELF size: text 190252, data 9924, BSS 791568 bytes (total 991744).
+Build success does not establish gameplay, emulator or physical DSi success.
 EU ROM test repeated successfully with ASan/UBSan after checking input is the
 full 16,777,216 bytes. A transient truncated local ROM was re-materialized; do not
 change engine logic to accommodate a truncated input.
