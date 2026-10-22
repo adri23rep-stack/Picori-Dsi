@@ -49,6 +49,7 @@
 #include "dsi_room_object_tick_e33.h"
 #include "dsi_room_bed_gfx_e34.h"
 #include "dsi_room_link_e35.h"
+#include "dsi_room_collision_e36.h"
 #include "dsi_room_maps.h"
 #include "dsi_room_tiles.h"
 #include "dsi_room_preview.h"
@@ -150,7 +151,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E35\n");
+    iprintf("TMC / DSi ENGINE E36\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -434,6 +435,13 @@ int main(void) {
                     dmaCopy(mainFrame, bgGetGfxPtr(mainBg), sizeof(mainFrame));
                 iprintf("\x1b[18;0HLink ROM sprite: %-8s",
                         link_rom_gfx_ok ? "VISIBLE" : "BLOCKED");
+                /* E36: execute the REAL src/playerUtils.c boundary collision
+                 * marker on both original 64x64 MapLayers. It cannot yet
+                 * replace the full interior tile-collision build. */
+                bool collision_border_ok = persistent_room &&
+                    DsiRoomCollisionE36_Prepare(&room_metadata);
+                iprintf("\x1b[19;0HRoom wall border:%s",
+                        collision_border_ok ? "ORIGINAL" : "BLOCKED");
 
 
                 /* Read-only ORIGINAL scheduler check, never update entities. */
