@@ -1,4 +1,6 @@
 #include "dsi_room_spawn_e31.h"
+#include "dsi_room_collision_e36.h"
+#include "dsi_room_collision_e41.h"
 #include "dsi_room_property_native_e30.h"
 #include "dsi_room_property_data_e30.h"
 #include "dsi_room_properties_e30.h"
@@ -43,6 +45,25 @@ int main(int argc,char**argv){
     assert(!DsiRoomPropertyDataE30_AllowNativeCopy(bank0+room.entity_counts[0],sizeof *bank0));
     assert(!DsiRoomPropertyDataE30_AllowNativeCopy((void*)(uintptr_t)room.entity_list_addresses[0],sizeof *bank0));
     assert(DsiRoomSpawnE31_Load(&room));assert(DsiRoomSpawnE31_Ready());
+    assert(DsiRoomCollisionE36_Prepare(&room));
+    assert(DsiRoomCollisionE41_Prepare(&room));
+    assert(DsiRoomCollisionE41_Ready());
+    unsigned walls=0,empty=0;
+    for(unsigned l=0;l<2;l++) {
+        MapLayer* m=l?&gMapTop:&gMapBottom;
+        assert(!memcmp(m->mapData,m->mapDataOriginal,sizeof m->mapData));
+        for(unsigned i=0;i<4096;i++) {
+            unsigned tile=m->mapData[i];u8 collision,act;
+            unsigned type=tile<0x4000?m->tileTypes[tile]:tile-0x4000;
+            assert(DsiGbaBus_Read((tile<0x4000?0x080b35a8:0x080b70cf)+type,&collision,1));
+            assert(DsiGbaBus_Read((tile<0x4000?0x080b2ec8:0x080b7038)+type,&act,1));
+            unsigned col=i%64,row=i/64;
+            if(col==room.width/16 || col==63 || row==room.height/16 || row==63)collision=255;
+            assert(m->collisionData[i]==collision);assert(m->actTiles[i]==act);
+            if(col<room.width/16&&row<room.height/16) {if(collision)walls++;else empty++;}
+        }
+    }
+    assert(walls&&empty);printf("E41 ROM: %u blocking, %u empty interior cells; both full layers exact\n",walls,empty);
     s32 x=gPlayerEntity.base.x.WORD,y=gPlayerEntity.base.y.WORD;
     DsiRoomSpawnE31_PollInput();
     assert(gPlayerState.playerInput.heldInput&INPUT_RIGHT);

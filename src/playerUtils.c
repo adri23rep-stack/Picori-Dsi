@@ -83,7 +83,11 @@ extern ItemBehavior* (*const gCreateItemsFuncs[])(Item);
 
 extern void UnregisterInteractTile(u32, u32);
 
+#ifdef TMC_DSI_E41_COLLISION
+extern u8 gMapTileTypeToCollisionData[]; /* Loaded from the user's ROM. */
+#else
 extern const u8 gMapTileTypeToCollisionData[]; // collisionData for tileType?
+#endif
 
 extern u8 gUpdateVisibleTiles;
 
@@ -180,9 +184,17 @@ void sub_0807C5F4(u16*, u16*);
 void sub_0807C5B0(void);
 
 // collisions for tiles < 0x4000
+#ifdef TMC_DSI_E41_COLLISION
+extern u8 gMapTileTypeToCollisionData[];
+#else
 extern const u8 gMapTileTypeToCollisionData[];
+#endif
 // collisions for tiles > 0x4000
+#ifdef TMC_DSI_E41_COLLISION
+extern u8 gMapSpecialTileToCollisionData[];
+#else
 extern const u8 gMapSpecialTileToCollisionData[];
+#endif
 
 extern u16 gUnk_080B77C0[];
 

@@ -55,6 +55,7 @@
 #include "dsi_room_bed_gfx_e34.h"
 #include "dsi_room_link_e35.h"
 #include "dsi_room_collision_e36.h"
+#include "dsi_room_collision_e41.h"
 #include "dsi_room_geometry_e38.h"
 #include "dsi_room_maps.h"
 #include "dsi_room_tiles.h"
@@ -157,7 +158,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E40\n");
+    iprintf("TMC / DSi ENGINE E41\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -463,8 +464,10 @@ int main(void) {
                  * replace the full interior tile-collision build. */
                 bool collision_border_ok = persistent_room &&
                     DsiRoomCollisionE36_Prepare(&room_metadata);
+                bool collision_interior_ok = collision_border_ok &&
+                    DsiRoomCollisionE41_Prepare(&room_metadata);
                 iprintf("\x1b[19;0HRoom wall border:%s",
-                        collision_border_ok ? "ORIGINAL" : "BLOCKED");
+                        collision_interior_ok ? "FULL" : (collision_border_ok ? "BORDER" : "BLOCKED"));
 
 
                 /* Read-only ORIGINAL scheduler check, never update entities. */

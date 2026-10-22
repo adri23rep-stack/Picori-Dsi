@@ -1,0 +1,112 @@
+name: Build Picori DSi E41 original interior collision
+on:
+  workflow_dispatch:
+  push:
+    branches: [e41-original-interior-collision]
+    paths: ['platform/dsi-engine/**', 'platform/dsi/source/**', 'src/**', 'include/**', 'port/**', '.github/workflows/dsi-e41.yml']
+permissions:
+  contents: read
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preserve E30 regressions
+        run: |
+          set -eu
+          sed -n '/^  host-check:/,/^  nds:/p' .github/workflows/dsi-e25.yml |
+            sed -n 's/^        run: sh /sh /p' > /tmp/e30-regressions.sh
+          test "$(wc -l < /tmp/e30-regressions.sh)" -ge 25
+          sh -e /tmp/e30-regressions.sh
+      - name: E31 lifecycle
+        run: E31_SANITIZE=1 sh platform/dsi-engine/tests/run_lifecycle_e31.sh
+      - name: E31 input
+        run: E31_SANITIZE=1 sh platform/dsi-engine/tests/run_input_e31.sh
+      - name: E32 original priority
+        run: E32_SANITIZE=1 sh platform/dsi-engine/tests/run_priority_e32.sh
+      - name: E33 original room object dispatch
+        run: E33_SANITIZE=1 sh platform/dsi-engine/tests/run_objects_e33.sh
+      - name: E34 genuine EU BedCover sprite definition
+        run: E34_SANITIZE=1 sh platform/dsi-engine/tests/run_gfx_metadata_e34.sh
+      - name: E35 original Link ROM sprite source and bounds
+        run: E35_SANITIZE=1 sh platform/dsi-engine/tests/run_link_rom_e35.sh
+      - name: E37 original ROM room geometry and boundary regression
+        run: E36_SANITIZE=1 sh platform/dsi-engine/tests/run_border_e36.sh
+      - name: E38 real InitRoom pre-spawn geometry and original map offsets
+        run: E38_SANITIZE=1 sh platform/dsi-engine/tests/run_geometry_e38.sh
+      - name: E39 source-authentic archway and restored player world origin
+        run: E39_SANITIZE=1 sh platform/dsi-engine/tests/run_archway_origin_e39.sh
+      - name: E41 original Archway gfx quarantine and renderer fidelity
+        run: E40_SANITIZE=1 sh platform/dsi-engine/tests/run_sprite_policy_e40.sh
+      - name: E41 original full collision and act-tile construction
+        run: E41_SANITIZE=1 sh platform/dsi-engine/tests/run_collision_e41.sh
+  nds:
+    needs: host
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:20260610
+    env:
+      DEVKITPRO: /opt/devkitpro
+      DEVKITARM: /opt/devkitpro/devkitARM
+      LIBNDS: /opt/devkitpro/libnds
+      PORTLIBS: /opt/devkitpro/portlibs/nds
+    steps:
+      - uses: actions/checkout@v4
+      - name: ARM9 binary and original function provenance
+        run: |
+          set -eu
+          export PATH="$DEVKITARM/bin:$PATH"
+          make -C platform/dsi-engine > e41-build.log 2>&1 || { cat e41-build.log; exit 1; }
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_priority_e32.o > e41-priority-symbols.txt
+          for symbol in EntityDisabled AnyPrioritySet SetMinPriority ResetEntityPriority RequestPriority RequestPriorityDuration SetPriorityTimer RevokePriority ClearEventPriority SetRoomReloadPriority DsiPriorityE32_Tick; do
+            grep -Eq " [Tt] ${symbol}$" e41-priority-symbols.txt || { echo "Missing original: $symbol"; exit 1; }
+          done
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_room_objects_e33.o > e41-objects-symbols.txt
+          for symbol in BedCover DsiRoomE33_CreateObject CreateObjectWithParent PositionRelative CopyPosition; do
+            grep -Eq " [Tt] ${symbol}$" e41-objects-symbols.txt || { echo "Missing original room object function: $symbol"; exit 1; }
+          done
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_room_bed_gfx_e34.o > e41-bed-gfx-symbols.txt
+          grep -Eq ' [Tt] DsiRoomBedGfxE34_Draw$' e41-bed-gfx-symbols.txt
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_room_link_e35.o > e41-link-symbols.txt
+          grep -Eq ' [Tt] DsiRoomLinkE35_Draw$' e41-link-symbols.txt
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_room_collision_e36.o > e41-border-symbols.txt
+          grep -Eq ' [Tt] DsiRoomCollisionE36_Prepare$' e41-border-symbols.txt
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_room_geometry_e38.o > e41-geometry-symbols.txt
+          grep -Eq ' [Tt] DsiRoomGeometryE38_BindBeforeSpawn$' e41-geometry-symbols.txt
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_room_archway_e39.o > e41-archway-symbols.txt
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_room_link_origin_e39.o > e41-origin-symbols.txt
+          grep -Eq ' [Tt] DsiRoomArchwayE39_Tick$' e41-archway-symbols.txt
+          grep -Eq ' [Tt] DsiRoomLinkOriginE39_BindBeforeInitializePlayer$' e41-origin-symbols.txt
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_room_sprite_policy_e40.o > e41-render-policy-symbols.txt
+          grep -Eq ' [Tt] DsiRoomSpritePolicyE40_AllowPreview$' e41-render-policy-symbols.txt
+          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf > e41-elf-symbols.txt
+          for symbol in EntityDisabled AnyPrioritySet Archway DsiRoomArchwayE39_Tick DsiRoomArchwayGfxE39_Draw DsiRoomLinkOriginE39_BindBeforeInitializePlayer DsiRoomSpritePolicyE40_AllowPreview DsiRoomLinkE35_Draw TmcLink_Load TmcLink_Draw DsiTitleSprites_UsePaletteBank DsiRoomCollisionE41_Prepare sub_0807BBE4 FillActTileForLayer DsiRoomSpawnE31_Load CreateCollisionDataBorderAroundRoom DsiRoomCollisionE36_Prepare DsiRoomGeometryE38_BindBeforeSpawn UpdatePlayerInput; do
+            grep -Eq " [Tt] ${symbol}$" e41-elf-symbols.txt || { echo "Missing linked: $symbol"; exit 1; }
+          done
+          arm-none-eabi-size platform/dsi-engine/tmc-dsi-engine-e29.elf > e41-size.txt
+          cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E41.nds
+          sha256sum Picori_DSi_E41.nds > Picori_DSi_E41.sha256
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: E41-build-evidence
+          path: |
+            e41-build.log
+            e41-priority-symbols.txt
+            e41-elf-symbols.txt
+            e41-objects-symbols.txt
+            e41-bed-gfx-symbols.txt
+            e41-link-symbols.txt
+            e41-border-symbols.txt
+            e41-geometry-symbols.txt
+            e41-archway-symbols.txt
+            e41-origin-symbols.txt
+            e41-render-policy-symbols.txt
+            e41-size.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E41-NDS
+          path: |
+            Picori_DSi_E41.nds
+            Picori_DSi_E41.sha256
+          if-no-files-found: error
