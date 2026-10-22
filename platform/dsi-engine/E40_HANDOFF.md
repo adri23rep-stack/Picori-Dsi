@@ -35,3 +35,23 @@ Changes:
 No melonDS execution in CI; request screenshot of E40. Do not promise
 actual playability: player action dispatch, sleep scripts, interior
 collision and room transitions still require native source integration.
+
+## Verificación de compilación E40 (22 oct 2026)
+
+- Commit del código probado: `739e7190e1e4efe5a5a0769f7e8efcb276b3b22c`.
+- CI completo: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39829385482
+- Host E30–E40: **PASS**, incluyendo regresiones, ASan/UBSan y orden de composición.
+- Compilación ARM9 con devkitPro: **PASS**; símbolos de rutina original y puerta de render comprobados.
+- NDS: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39829385482/artifacts/12448995094
+- Logs y símbolos: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39829385482/artifacts/12447769288
+
+### Para la siguiente captura
+
+- Comprobar que Link continúa visible en la misma cama.
+- Comprobar que desapareció la franja rosa y negra sobre la entrada.
+- `Arch: ACTIVE` significa que ejecutó la acción original.
+- `ROOM:DISPLAY ARCH:HOLD` es deliberado: la *vista gráfica experimental* del arco está suspendida.
+- La fila `a:<n> sub:<n> spawn:<n>` revela el estado original del jugador, útil para preparar el motor real de despertar.
+- Esto todavía no demuestra control jugable ni transición de habitación.
+
+No añadir gráficos creados a mano ni enlazar accidentalmente el compositor anterior en producción.
