@@ -54,7 +54,8 @@ jobs:
             grep -Eq " [Tt] ${symbol}$" e34-objects-symbols.txt || { echo "Missing original room object function: $symbol"; exit 1; }
           done
           arm-none-eabi-nm platform/dsi-engine/build/dsi_room_bed_gfx_e34.o > e34-bed-gfx-symbols.txt
-          grep -Eq ' [Tt] DsiRoomBedGfxE34_Draw
+          grep -Eq ' [Tt] DsiRoomBedGfxE34_Draw$' e34-bed-gfx-symbols.txt
+          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf > e34-elf-symbols.txt
           for symbol in EntityDisabled AnyPrioritySet BedCover DsiRoomObjectE33_Tick DsiRoomBedGfxE34_Draw DsiTitleSprites_UsePaletteBank DsiRoomSpawnE31_Load UpdatePlayerInput; do
             grep -Eq " [Tt] ${symbol}$" e34-elf-symbols.txt || { echo "Missing linked: $symbol"; exit 1; }
           done
@@ -71,31 +72,6 @@ jobs:
             e34-elf-symbols.txt
             e34-objects-symbols.txt
             e34-bed-gfx-symbols.txt
-            e34-size.txt
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E34-NDS
-          path: |
-            Picori_DSi_E34.nds
-            Picori_DSi_E34.sha256
-          if-no-files-found: error
- e34-bed-gfx-symbols.txt
-          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf > e34-elf-symbols.txt
-          for symbol in EntityDisabled AnyPrioritySet BedCover DsiRoomObjectE33_Tick DsiRoomSpawnE31_Load UpdatePlayerInput; do
-            grep -Eq " [Tt] ${symbol}$" e34-elf-symbols.txt || { echo "Missing linked: $symbol"; exit 1; }
-          done
-          arm-none-eabi-size platform/dsi-engine/tmc-dsi-engine-e29.elf > e34-size.txt
-          cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E34.nds
-          sha256sum Picori_DSi_E34.nds > Picori_DSi_E34.sha256
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: E34-build-evidence
-          path: |
-            e34-build.log
-            e34-priority-symbols.txt
-            e34-elf-symbols.txt
-            e34-objects-symbols.txt
             e34-size.txt
       - uses: actions/upload-artifact@v4
         with:
