@@ -43,6 +43,7 @@
 #include "dsi_game_transition.h"
 #include "dsi_game_native.h"
 #include "dsi_room_probe.h"
+#include "dsi_room_spawn_e31.h"
 #include "dsi_room_maps.h"
 #include "dsi_room_tiles.h"
 #include "dsi_room_preview.h"
@@ -144,7 +145,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E30.11\n");
+    iprintf("TMC / DSi ENGINE E31.0\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -390,10 +391,12 @@ int main(void) {
                  * with a verified pristine slot. No auxiliary player spawn. */
                 bool aux_player_ok = manager_pool_ok &&
                     DsiAuxPlayerProbeE30_Run();
-                /* E30.11: original src/entity.c ID/type searches, no
+                /* E31.0: original src/entity.c ID/type searches, no
                  * entity creation or synthetic Zelda update loop. */
                 bool search_original_ok = aux_player_ok &&
                     DsiEntitySearchProbeE30_Run();
+                bool persistent_room = search_original_ok && tile_ok && map_ok &&
+                    DsiRoomSpawnE31_Load(&room_metadata);
                 iprintf("\x1b[10;0HInitRoom original: %-6s N:%s",
                         original_room_ok ? "PASS" : "PENDING",
                         native_props_ok ? "OK" : "--");
@@ -405,7 +408,7 @@ int main(void) {
                 (void)e30Blocked; /* debugger trace; must stay blocked */
 
                 iprintf("\x1b[16;0HGameTask: %-11s F:%s R:%s",
-                        prefix_ok ? "ROOM PREFIX" : "BLOCKED",
+                        persistent_room ? "ENTITIES" : (prefix_ok ? "ROOM PREFIX" : "BLOCKED"),
                         DsiGameNative_OriginalEntityLookupReady() ? "OK" : "--",
                         registry_probe_ok ? "OK" : "--");
                 iprintf("\x1b[9;0HROOM SCREEN:%-9s A:%s M:%s",
@@ -433,9 +436,7 @@ int main(void) {
                             room_metadata.entity_counts[0], room_metadata.entity_counts[1]);
                 }
                 if (scene_ok) {
-                    iprintf("\x1b[14;0HRoom pixels:%lu E:%s  ",
-                            (unsigned long)room_draw_stats.colored_pixels,
-                            entity_data_ok ? "READY" : "BAD");
+                    iprintf("\x1b[14;0HLive entities:%u managers:%u ",gEntCount,gManagerCount);
                 }
             } else {
                 iprintf("\x1b[15;0HGame RAM: BLOCKED     ");

@@ -2480,8 +2480,17 @@ extern const u16 gUnk_080B7A3E[];
 u32 GetActTileForTileType(u32 tileType) {
     if (tileType < 0x4000)
         return GetMapTileTypeToActTile(tileType);
-    else
+    else {
+#ifdef TMC_DSI_E31_LIFECYCLE
+        /* E31 has no special-tile ROM table yet. Never invent its result.
+         * Native room preflight rejects these before any entity is spawned. */
+        extern void DsiE31_UnsupportedTile(void);
+        DsiE31_UnsupportedTile();
+        __builtin_unreachable();
+#else
         return gMapSpecialTileToActTile[tileType - 0x4000];
+#endif
+    }
 }
 
 /* ---------- CollisionData family ---------- */

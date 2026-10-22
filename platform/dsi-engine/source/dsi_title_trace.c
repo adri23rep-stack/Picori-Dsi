@@ -127,7 +127,15 @@ void __wrap_LoadPaletteGroup(u32 group) {
 }
 void ResetPaletteTable(u32 a1) { (void)a1; ++gDsiTitleTrace.unsupported_service_calls; }
 void ResetPalettes(void) { ++gDsiTitleTrace.unsupported_service_calls; }
+#ifdef TMC_DSI_E31_LIFECYCLE
+void __real_EraseAllEntities(void);
+void __wrap_EraseAllEntities(void) {
+    DsiTitleEntities_Clear();
+    if (gMain.task == TASK_GAME) __real_EraseAllEntities();
+}
+#else
 void EraseAllEntities(void) { DsiTitleEntities_Clear(); }
+#endif
 void UpdateEntities(void) { DsiTitleEntities_Update(); }
 void DrawEntities(void) { DsiTitleEntities_Draw(); }
 void DrawDirect(u32 s, u32 f) {

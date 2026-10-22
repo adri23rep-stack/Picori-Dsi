@@ -701,7 +701,9 @@ void ClearDeletedEntity(Entity* ent) {
         Port_LogEntityEvent("clear-del", (void*)ent, ent->kind, ent->id, ent->prev, ent->next);
     }
     /* Use memset directly — DmaClear32 uses port_DmaTransfer which may not work for native pointers */
-    memset(ent, 0, sizeof(GenericEntity));
+    /* Link is a separate PlayerEntity global, smaller than GenericEntity on
+     * some native hosts. Do not erase the next global when recycling Link. */
+    memset(ent, 0, ent == &gPlayerEntity.base ? sizeof(gPlayerEntity) : sizeof(GenericEntity));
 #else
     DmaClear32(3, ent, sizeof(GenericEntity));
 #endif

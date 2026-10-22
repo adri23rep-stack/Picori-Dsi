@@ -693,7 +693,7 @@ void* zMalloc(u32 size) {
             slotFound = FALSE;
 
             // Ensure that the candidate slot doesn't collide with heap offsets section
-            if (candidateSlotStartOffset >= (u8*)(2 + (u32)heapStartOffset + (numEntries << 2) + 4)) {
+            if (candidateSlotStartOffset >= (u8*)heapStartOffset + 2 + (numEntries << 2) + 4) {
                 slotFound = TRUE;
 
                 // Check if there is overlap with already allocated slots
@@ -746,7 +746,7 @@ void zFree(void* ptr) {
     s32 numEntries;
     u16* lastEntryPtr;
 
-    uVar1 = (int)ptr - (int)gzHeap;
+    uVar1 = (uintptr_t)ptr - (uintptr_t)gzHeap;
     if (uVar1 < 0x1000) {
         entryPtr = (u16*)gzHeap;
         numEntries = *entryPtr++;

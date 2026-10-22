@@ -76,7 +76,12 @@ void ClearArmosData(void) { ++sStats.deferred_services; }
 void ClearMenuSavestate(void) { ++sStats.deferred_services; }
 void ResetUI(void) { ++sStats.deferred_services; }
 void ResetTmpFlags(void) { ++sStats.deferred_services; }
+#ifdef TMC_DSI_E31_LIFECYCLE
+void __real_zMallocInit(void);
+void __wrap_zMallocInit(void) { __real_zMallocInit(); }
+#else
 void __wrap_zMallocInit(void) { ++sStats.deferred_services; }
+#endif
 void SetBGDefaults(void) { ++sStats.deferred_services; }
 void ClearTileMaps(void) { ++sStats.deferred_services; }
 void sub_0806FD8C(void) { ++sStats.deferred_services; }

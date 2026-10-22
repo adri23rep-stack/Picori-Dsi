@@ -39,6 +39,7 @@ mkdir -p "$(dirname "$ALLOC")" "$(dirname "$REG")"
     # Genuine duplicate/entity ID search from src/entity.c, with its
     # upstream PC_PORT bounded walker and real pool validity validator.
     awk '/^Entity\* DeepFindEntityByID\(u32 kind, u32 id\) \{/ {active=1;found=1} active {print} active && /^}$/ {exit} END {if(!found)exit 1}' "$ENTITY_SRC"
+    printf '%s\n' '#ifdef TMC_DSI_E31_LIFECYCLE' '#include "dsi_lifecycle_entity_e31.inc"' '#endif'
 } > "$ALLOC.tmp"
 {
     printf '%s\n' '/* Generated original src/room.c::RegisterRoomEntity. */'

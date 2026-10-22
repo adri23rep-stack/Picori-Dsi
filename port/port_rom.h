@@ -153,11 +153,16 @@ static inline void* Port_ResolveScript(u32 gba_addr) {
  * EntityData record itself lives.
  */
 static inline void* Port_ResolveEntityScript(const void* entityData, u32 spritePtr) {
+#ifdef TMC_DSI_E31_LIFECYCLE
+    extern void* DsiE31_ResolveEntityScript(const void*,u32);
+    return DsiE31_ResolveEntityScript(entityData,spritePtr);
+#else
     uintptr_t p = (uintptr_t)entityData;
     uintptr_t base = (uintptr_t)gRomData;
     if (gRomData && p >= base && p < base + gRomSize)
         return Port_ResolveRomData(spritePtr); /* ROM-native: no translation */
     return Port_ResolveScript(spritePtr);      /* compiled blob: USA-baseline */
+#endif
 }
 
 /**
