@@ -28,7 +28,8 @@ int main(void){
  for(unsigned i=256u*192u;i<256u*192u+8u;i++)assert(frame[i]==0x1290u);
  reset();
  TmcLink_Draw(&link,frame,256,256,192,5,14,0u,0u);
- assert(changed()==0u);
+ /* 8x8 object clips 3 columns at x<8 and 2 rows at y<16. */
+ assert(changed()==5u*6u);
  reset();
  TmcLink_Draw(&link,frame,256,256,192,128,100,50u,0u);
  TmcLink_Draw(&link,frame,256,256,192,128,100,0u,4u);
