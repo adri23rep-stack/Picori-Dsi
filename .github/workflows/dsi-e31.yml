@@ -1,0 +1,64 @@
+name: Build Picori DSi E31 native entity lifecycle
+on:
+  workflow_dispatch:
+  push:
+    branches: [e31-native-entity-lifecycle]
+    paths: ['platform/dsi-engine/**', 'platform/dsi/source/**', 'src/**', 'include/**', 'port/**', '.github/workflows/dsi-e31.yml']
+permissions:
+  contents: read
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preserve all E30.11 host regression checks
+        run: |
+          set -eu
+          # Reuse the exact ordered host commands from the preserved workflow.
+          sed -n '/^  host-check:/,/^  nds:/p' .github/workflows/dsi-e25.yml |
+            sed -n 's/^        run: sh /sh /p' > /tmp/e30-regressions.sh
+          test "$(wc -l < /tmp/e30-regressions.sh)" -ge 25
+          sh -e /tmp/e30-regressions.sh
+      - name: Original entity lifecycle with memory sanitizers
+        run: E31_SANITIZE=1 sh platform/dsi-engine/tests/run_lifecycle_e31.sh
+  nds:
+    needs: host
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:20260610
+    env:
+      DEVKITPRO: /opt/devkitpro
+      DEVKITARM: /opt/devkitpro/devkitARM
+      LIBNDS: /opt/devkitpro/libnds
+      PORTLIBS: /opt/devkitpro/portlibs/nds
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile ARM9 with libnds ARM7 support
+        run: |
+          set -eu
+          export PATH="$DEVKITARM/bin:$PATH"
+          make -C platform/dsi-engine > e31-build.log 2>&1 || { cat e31-build.log; exit 1; }
+          cat e31-build.log
+          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf > e31-symbols.txt
+          for symbol in InitRoom InitializePlayer GetEmptyEntity GetEmptyEntityByKind LoadRoomEntity LoadRoomEntityList DeleteEntity ClearDeletedEntity DeleteManager EraseAllEntities UnloadGFXSlots UnloadOBJPalette UnloadCutsceneData StartCutscene ResolveCollisionLayer sub_0807C8B0 DsiRoomSpawnE31_Load; do
+            grep -Eq " [Tt] ${symbol}$" e31-symbols.txt
+          done
+          arm-none-eabi-size platform/dsi-engine/tmc-dsi-engine-e29.elf | tee e31-size.txt
+          cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E31.nds
+          sha256sum Picori_DSi_E31.nds > Picori_DSi_E31.sha256
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: E31-build-evidence
+          path: |
+            e31-build.log
+            e31-symbols.txt
+            e31-size.txt
+            platform/dsi-engine/tmc-dsi-engine-e29.map
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E31-NDS
+          path: |
+            Picori_DSi_E31.nds
+            Picori_DSi_E31.sha256
+          if-no-files-found: error

@@ -79,6 +79,16 @@ bool DsiRoomPropertyDataE30_Bind(void) {
 
 bool DsiRoomPropertyDataE30_Ready(void) { return sources_match(&sActive); }
 
+/* RegisterRoomEntity copies exactly one manager record. Never whitelist a
+ * GBA address, a partial/misaligned record, a terminator or an unbound bank. */
+bool DsiRoomPropertyDataE30_AllowNativeCopy(const void* source, u32 size) {
+    if (size != sizeof(EntityData) || !sources_match(&sActive)) return false;
+    for (unsigned bank=0; bank<DSI_ENTITY_LIST_BANKS; ++bank)
+        for (unsigned i=0; i<sActive.count[bank]; ++i)
+            if (source == &sActive.records[bank][i]) return true;
+    return false;
+}
+
 const EntityData *DsiRoomPropertyDataE30_EntityBank(unsigned bank) {
     if (bank >= DSI_ENTITY_LIST_BANKS || !DsiRoomPropertyDataE30_Ready())
         return NULL;

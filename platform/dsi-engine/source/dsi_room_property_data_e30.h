@@ -15,4 +15,5 @@ bool DsiRoomPropertyDataE30_Ready(void);
 /* Pure read access; never call LoadRoomEntityList until engine is ported. */
 const EntityData *DsiRoomPropertyDataE30_EntityBank(unsigned bank);
 unsigned DsiRoomPropertyDataE30_Count(unsigned bank);
+bool DsiRoomPropertyDataE30_AllowNativeCopy(const void* source, u32 size);
 #endif

@@ -31,6 +31,12 @@ int main(int argc,char**argv){
     static MapDataDefinition fixture;info->tileSet=&fixture;info->map=&fixture;info->tiles=&fixture; /* test fixture: non-NULL resource identity */
     gPlayerEntity.base.kind=PLAYER;gPlayerEntity.base.health=24;AppendEntityToList(&gPlayerEntity.base,1);
     assert(DsiRoomPropertyNativeE30_Attach(&room));
+    const EntityData* bank0=DsiRoomPropertyDataE30_EntityBank(0);
+    assert(DsiRoomPropertyDataE30_AllowNativeCopy(bank0,sizeof *bank0));
+    assert(!DsiRoomPropertyDataE30_AllowNativeCopy((const char*)bank0+1,sizeof *bank0));
+    assert(!DsiRoomPropertyDataE30_AllowNativeCopy(bank0,2*sizeof *bank0));
+    assert(!DsiRoomPropertyDataE30_AllowNativeCopy(bank0+room.entity_counts[0],sizeof *bank0));
+    assert(!DsiRoomPropertyDataE30_AllowNativeCopy((void*)(uintptr_t)room.entity_list_addresses[0],sizeof *bank0));
     assert(DsiRoomSpawnE31_Load(&room));assert(DsiRoomSpawnE31_Ready());
     assert(gEntCount==2&&gManagerCount==3);
     Entity* bed=DeepFindEntityByID(OBJECT,0x4f);assert(bed&&bed->type==1);

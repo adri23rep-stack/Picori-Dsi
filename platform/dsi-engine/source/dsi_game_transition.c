@@ -6,8 +6,14 @@
 #include "game.h"
 #include "save.h"
 #include <stdint.h>
+#ifdef TMC_DSI_E31_LIFECYCLE
+#include "dsi_room_property_data_e30.h"
+#endif
 
 bool DsiGameTransition_AllowNativeCopy(const void* src, u32 size) {
+#ifdef TMC_DSI_E31_LIFECYCLE
+    if (DsiRoomPropertyDataE30_AllowNativeCopy(src, size)) return true;
+#endif
     uintptr_t p = (uintptr_t)src;
     uintptr_t start = (uintptr_t)&gSave.saved_status;
     if (p >= start && p - start <= sizeof(gSave.saved_status) &&
