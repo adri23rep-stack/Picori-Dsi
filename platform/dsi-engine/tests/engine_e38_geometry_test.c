@@ -14,7 +14,7 @@ Area gArea;
 RoomControls gRoomControls;
 Main gMain;
 PlayerEntity gPlayerEntity;
-u32 gEntCount,gManagerCount;
+u8 gEntCount,gManagerCount;
 int main(void) {
     DsiRoomMetadata room={0};
     room.area=0x22;room.room=0x15;room.width=240;room.height=160;
