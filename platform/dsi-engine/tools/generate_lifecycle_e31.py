@@ -130,6 +130,8 @@ collision='''/* Original port/port_linked_stubs.c GBA ARM collision translations
 #include "room.h"
 #include "map.h"
 '''
+for name in ['GetMapLayerForLayer','NormalizeTilePos','WorldToTilePos']:
+ collision+=fn('port/port_linked_stubs.c',name)
 for name in ['GetCollisionDataAtTilePos','GetCollisionDataAtWorldCoords',
              'GetCollisionDataAtEntity','GetCollisionDataRelativeTo']:
  collision+=fn('port/port_linked_stubs.c',name)
