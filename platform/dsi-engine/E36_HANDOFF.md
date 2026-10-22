@@ -21,3 +21,15 @@ and the actual GBA tile type->collision lookup tables. Do not enable
 `CONTROL_ENABLED`, `PlayerNormal` or position changes until this is
 complete, even though the ROM Link sprite is now visible in E35.
 Original save, scripts and managers still blocked. Needs melonDS test.
+
+## E36 passing CI / ARM9
+
+- Passing code commit: `c8f2947304240880635d51503a0a67d311446942`
+- Full workflow: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39720564777
+- E30-E36 host regressions incl. original collision routine with ASan/UBSan: PASS
+- devkitARM9 NDS link + original-symbol checks: PASS
+- NDS artifact: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39720564777/artifacts/12401126218
+- Build logs/symbol evidence: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39720564777/artifacts/12400933181
+
+Still no visual test in melonDS for E35/E36, and NO player movement.
+The collision marker only covers map outer boundaries, NOT interior walls.
