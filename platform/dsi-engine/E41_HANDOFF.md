@@ -24,7 +24,29 @@ writes, idempotence), run_room_spawn_e31.sh with the complete user's EU ROM.
 Real ROM test independently compares all 8192 collision and act entries to ROM
 plus original borders. Bedroom interior totals: 113 blocking, 187 empty cells.
 E40 graphic quarantine, original Archway, Link origin and static sprite retained.
-CI pending at first checkpoint; no melonDS/hardware test in this session.
+E41 CI passed: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39849021718
+Code commit: 795ab9c67c869c576cb81e46a0b1754961ab7c3f.
+No melonDS/hardware test in this session.
+
+## E41.1 / E42 pixel-collision dependency block
+
+Existing original GBA-to-C translations in port_linked_stubs.c now supply the
+collision query family, SelectPlayerCollisionTable, TileCollisionLookup and
+sub_080085CC (eight hitbox probes). Bodies are selected verbatim. Only data and
+address-resolver symbol names are bound to native DSi transport; no new rules.
+The seven 96-byte parameter banks are read from EU 0x08008374 (assets.json's
+USA 0x82dc + regional 0x98); all 40 16x16 masks use the region-correct packed
+pointer table PORT_COLLISION_SHAPE_PTRS_EU = 0x82d4 from port_config.h.
+No raw GBA pointer becomes a native address and no missing mask returns fake
+passability. A probe requires the actual gPlayerHitbox; this block does not
+install it early or move Link. The boot path only checks a pixel at Link's real
+position. PIXEL on row19 indicates data+original point lookup, NOT gameplay.
+
+Sanitizer tests pass for every byte-valued collision type, every pixel, seven
+parameter modes, invalid/missing masks, layer selection, world-origin hitbox
+offsets and all eight edge bits. Full EU ROM integration independently compared
+every bedroom pixel on both layers in eight player states against raw ROM masks.
+E41.1 CI pending at checkpoint; workflow retains E30-E41 regressions and adds E42.
 
 Next blockers: original PlayerInit/sleep/wake dispatch, animation/OAM pipeline,
 room callbacks/scripts/managers, original movement/collision queries, transitions.

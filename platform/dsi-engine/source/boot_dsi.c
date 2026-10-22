@@ -56,6 +56,7 @@
 #include "dsi_room_link_e35.h"
 #include "dsi_room_collision_e36.h"
 #include "dsi_room_collision_e41.h"
+#include "dsi_collision_probe_e42.h"
 #include "dsi_room_geometry_e38.h"
 #include "dsi_room_maps.h"
 #include "dsi_room_tiles.h"
@@ -158,7 +159,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E41\n");
+    iprintf("TMC / DSi ENGINE E41.1\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -466,8 +467,13 @@ int main(void) {
                     DsiRoomCollisionE36_Prepare(&room_metadata);
                 bool collision_interior_ok = collision_border_ok &&
                     DsiRoomCollisionE41_Prepare(&room_metadata);
+                u32 player_pixel_blocked=0;
+                bool collision_probe_ok = collision_interior_ok && DsiCollisionE42_Prepare() &&
+                    DsiCollisionE42_Point(&gPlayerEntity.base,
+                        gPlayerEntity.base.x.HALF.HI-gRoomControls.origin_x,
+                        gPlayerEntity.base.y.HALF.HI-gRoomControls.origin_y,&player_pixel_blocked);
                 iprintf("\x1b[19;0HRoom wall border:%s",
-                        collision_interior_ok ? "FULL" : (collision_border_ok ? "BORDER" : "BLOCKED"));
+                        collision_probe_ok ? "PIXEL" : (collision_interior_ok ? "FULL" : (collision_border_ok ? "BORDER" : "BLOCKED")));
 
 
                 /* Read-only ORIGINAL scheduler check, never update entities. */

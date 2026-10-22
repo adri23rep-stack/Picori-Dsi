@@ -1,6 +1,7 @@
 #include "dsi_room_spawn_e31.h"
 #include "dsi_room_collision_e36.h"
 #include "dsi_room_collision_e41.h"
+#include "dsi_collision_probe_e42.h"
 #include "dsi_room_property_native_e30.h"
 #include "dsi_room_property_data_e30.h"
 #include "dsi_room_properties_e30.h"
@@ -64,6 +65,38 @@ int main(int argc,char**argv){
         }
     }
     assert(walls&&empty);printf("E41 ROM: %u blocking, %u empty interior cells; both full layers exact\n",walls,empty);
+    assert(DsiCollisionE42_Prepare());
+    for(unsigned l=1;l<=2;l++)for(unsigned mode=0;mode<8;mode++) {
+        Entity probe={0};probe.collisionLayer=l;
+        gPlayerState.flags=0;gPlayerState.swim_state=0;gPlayerState.jump_status=0;
+        gPlayerState.heldObject=0;gPlayerState.attachedBeetleCount=0;gPlayerState.floor_type=0;
+        unsigned bank=mode;
+        if(mode==1)gPlayerState.flags=PL_MINISH;
+        if(mode==2){gPlayerState.flags=PL_MINISH;gPlayerState.swim_state=1;}
+        if(mode==3)gPlayerState.swim_state=1;
+        if(mode==4)gPlayerState.jump_status=1;
+        if(mode==5)gPlayerState.heldObject=1;
+        if(mode==6)gPlayerState.attachedBeetleCount=1;
+        if(mode==7){gPlayerState.swim_state=1;gPlayerState.floor_type=0x18;bank=3;}
+        MapLayer* m=l==2?&gMapTop:&gMapBottom;
+        for(unsigned py=0;py<room.height;py++)for(unsigned px=0;px<room.width;px++) {
+            unsigned c=m->collisionData[(py/16)*64+px/16],expected;
+            if(gPlayerState.swim_state&&gPlayerState.floor_type!=0x18&&c<16)c=15;
+            if(c==255)expected=1;
+            else if(c<16)expected=(c>>((py%16<8?2:0)+(px%16<8?1:0)))&1;
+            else {
+                u8 idx,ptr[4],bits[2];
+                assert(DsiGbaBus_Read(0x08008374+bank*96+c-16,&idx,1));
+                assert(DsiGbaBus_Read(0x080082d4+idx*4,ptr,4));
+                u32 address=ptr[0]|((u32)ptr[1]<<8)|((u32)ptr[2]<<16)|((u32)ptr[3]<<24);
+                assert(DsiGbaBus_Read(address+(py%16)*2,bits,2));
+                expected=((bits[0]|((u32)bits[1]<<8))>>(15-px%16))&1;
+            }
+            u32 actual=99;assert(DsiCollisionE42_Point(&probe,px,py,&actual));assert(actual==expected);
+        }
+    }
+    memset(&gPlayerState,0,sizeof gPlayerState);gPlayerState.controlMode=CONTROL_ENABLED;
+    puts("E42 ROM: every bedroom pixel on both layers matches original masks in 8 player states");
     s32 x=gPlayerEntity.base.x.WORD,y=gPlayerEntity.base.y.WORD;
     DsiRoomSpawnE31_PollInput();
     assert(gPlayerState.playerInput.heldInput&INPUT_RIGHT);

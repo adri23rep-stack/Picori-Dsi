@@ -7,6 +7,7 @@ TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT HUP INT TERM
 python3 "$ROOT/platform/dsi-engine/tools/generate_lifecycle_e31.py" "$ROOT" "$TMP"
 python3 "$ROOT/platform/dsi-engine/tools/generate_collision_e41.py" "$ROOT" "$TMP"
+python3 "$ROOT/platform/dsi-engine/tools/generate_collision_probe_e42.py" "$ROOT" "$TMP"
 sh "$ROOT/platform/dsi-engine/tools/generate_entity_core_e29.sh" "$ROOT/src/entity.c" "$TMP/core.c"
 sh "$ROOT/platform/dsi-engine/tools/generate_entity_allocator_e30.sh" "$ROOT/src/entity.c" "$ROOT/src/room.c" "$TMP/allocator.c" "$TMP/register.c"
 FLAGS='-DE31_ROOM_TEST -std=gnu11 -g -O1 -ffunction-sections -fdata-sections -fno-strict-aliasing -fwrapv -DPC_PORT -DTMC_DSI -DTMC_DSI_E31_LIFECYCLE -DNON_MATCHING -DUSE_HDMA -DEU -DENGLISH -DREVISION=0'
@@ -20,6 +21,8 @@ cc $FLAGS ${E31_SANITIZE:+-fsanitize=address,undefined -fno-omit-frame-pointer} 
  "$TMP/list.c" "$TMP/spawn.c" "$TMP/params.c" "$TMP/dsi_layer_resolve_e31.c" "$TMP/sprite.c" \
  "$ROOT/platform/dsi-engine/source/dsi_room_spawn_e31.c" \
  "$TMP/dsi_collision_core_e41.c" \
+ "$TMP/dsi_collision_probe_core_e42.c" \
+ "$ROOT/platform/dsi-engine/source/dsi_collision_probe_e42.c" "$ROOT/src/playerHitbox.c" \
  "$ROOT/platform/dsi-engine/source/dsi_room_collision_e36.c" \
  "$ROOT/platform/dsi-engine/source/dsi_room_collision_e41.c" \
  "$ROOT/platform/dsi-engine/source/dsi_room_property_native_e30.c" \
