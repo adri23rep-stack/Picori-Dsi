@@ -33,3 +33,18 @@ conversion, including bad-header and double-bind rejection. Full
 regression and native NDS build on GitHub Actions. Still NOT playable:
 original Link update/wakeup animation, interior collision, managers.
 Screenshot validation needed; no ROM images bundled.
+
+## E39 verified CI / artifact (2026-10-22)
+
+- Passing code commit: `cf87ef4c10b5f02728e74769689471d0fd999986`
+- Full CI: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39743991922
+- E30–E39 host tests incl. corrected object ID and saved-local-to-world coordinate transform: PASS.
+- Original src/object/archway.c compiled/linked ARM9, native symbols and NDS packaging: PASS.
+- NDS: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39743991922/artifacts/12410333242
+- ARM9 build logs and symbol evidence: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39743991922/artifacts/12410193550
+
+**MelonDS visual pending**. Inspect top room for sprite of original Link
+(start local 144,56) and Archway (ROM ID 0x4F). Console should no longer
+show missing "Bed" object; it should show `Arch: ACTIVE`, and room-local
+Link drawing should return a ROM sprite reason code of zero. Do not infer
+that an NDS CI success proves actual on-screen sprite pixels or playability.
