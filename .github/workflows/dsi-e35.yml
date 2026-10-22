@@ -1,0 +1,89 @@
+name: Build Picori DSi E35 collision map and native bed render
+on:
+  workflow_dispatch:
+  push:
+    branches: [e35-original-room-collision-and-draw]
+    paths: ['platform/dsi-engine/**', 'platform/dsi/source/**', 'src/**', 'include/**', 'port/**', '.github/workflows/dsi-e35.yml']
+permissions:
+  contents: read
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preserve E30 regressions
+        run: |
+          set -eu
+          sed -n '/^  host-check:/,/^  nds:/p' .github/workflows/dsi-e25.yml |
+            sed -n 's/^        run: sh /sh /p' > /tmp/e30-regressions.sh
+          test "$(wc -l < /tmp/e30-regressions.sh)" -ge 25
+          sh -e /tmp/e30-regressions.sh
+      - name: E31 lifecycle
+        run: E31_SANITIZE=1 sh platform/dsi-engine/tests/run_lifecycle_e31.sh
+      - name: E31 input
+        run: E31_SANITIZE=1 sh platform/dsi-engine/tests/run_input_e31.sh
+      - name: E32 original priority
+        run: E32_SANITIZE=1 sh platform/dsi-engine/tests/run_priority_e32.sh
+      - name: E33 original room object dispatch
+        run: E33_SANITIZE=1 sh platform/dsi-engine/tests/run_objects_e33.sh
+      - name: E34 genuine EU BedCover sprite definition
+        run: E34_SANITIZE=1 sh platform/dsi-engine/tests/run_gfx_metadata_e34.sh
+      - name: E35 original layer collision readback
+        run: E35_SANITIZE=1 sh platform/dsi-engine/tests/run_collision_e35.sh
+  nds:
+    needs: host
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:20260610
+    env:
+      DEVKITPRO: /opt/devkitpro
+      DEVKITARM: /opt/devkitpro/devkitARM
+      LIBNDS: /opt/devkitpro/libnds
+      PORTLIBS: /opt/devkitpro/portlibs/nds
+    steps:
+      - uses: actions/checkout@v4
+      - name: ARM9 binary and original function provenance
+        run: |
+          set -eu
+          export PATH="$DEVKITARM/bin:$PATH"
+          make -C platform/dsi-engine > e35-build.log 2>&1 || { cat e35-build.log; exit 1; }
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_priority_e32.o > e35-priority-symbols.txt
+          for symbol in EntityDisabled AnyPrioritySet SetMinPriority ResetEntityPriority RequestPriority RequestPriorityDuration SetPriorityTimer RevokePriority ClearEventPriority SetRoomReloadPriority DsiPriorityE32_Tick; do
+            grep -Eq " [Tt] ${symbol}$" e35-priority-symbols.txt || { echo "Missing original: $symbol"; exit 1; }
+          done
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_room_objects_e33.o > e35-objects-symbols.txt
+          for symbol in BedCover DsiRoomE33_CreateObject CreateObjectWithParent PositionRelative CopyPosition; do
+            grep -Eq " [Tt] ${symbol}$" e35-objects-symbols.txt || { echo "Missing original room object function: $symbol"; exit 1; }
+          done
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_room_bed_gfx_e34.o > e35-bed-gfx-symbols.txt
+          grep -Eq ' [Tt] DsiRoomBedGfxE34_Draw$' e35-bed-gfx-symbols.txt
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_collision_lookup_e35.o > e35-collision-symbols.txt
+          for symbol in GetCollisionDataAtTilePos GetCollisionDataAtWorldCoords GetCollisionDataAtEntity GetCollisionDataRelativeTo; do
+            grep -Eq " [Tt] ${symbol}$" e35-collision-symbols.txt || { echo "Missing original collision function: $symbol"; exit 1; }
+          done
+          arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf > e35-elf-symbols.txt
+          for symbol in EntityDisabled AnyPrioritySet BedCover DsiRoomObjectE33_Tick DsiRoomBedGfxE34_Draw DsiCollisionAuditE35_Run GetCollisionDataAtEntity DsiTitleSprites_UsePaletteBank DsiRoomSpawnE31_Load UpdatePlayerInput; do
+            grep -Eq " [Tt] ${symbol}$" e35-elf-symbols.txt || { echo "Missing linked: $symbol"; exit 1; }
+          done
+          arm-none-eabi-size platform/dsi-engine/tmc-dsi-engine-e29.elf > e35-size.txt
+          cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E35.nds
+          sha256sum Picori_DSi_E35.nds > Picori_DSi_E35.sha256
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: E35-build-evidence
+          path: |
+            e35-build.log
+            e35-priority-symbols.txt
+            e35-elf-symbols.txt
+            e35-objects-symbols.txt
+            e35-bed-gfx-symbols.txt
+            e35-collision-symbols.txt
+            e35-size.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E35-NDS
+          path: |
+            Picori_DSi_E35.nds
+            Picori_DSi_E35.sha256
+          if-no-files-found: error
