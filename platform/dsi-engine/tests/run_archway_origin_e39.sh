@@ -4,7 +4,7 @@ HERE=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
 ROOT=$(CDPATH='' cd -- "$HERE/../../.." && pwd)
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT HUP INT TERM
-FLAGS='-std=gnu11 -g -O1 -ffunction-sections -fdata-sections -fno-strict-aliasing -fwrapv -DPC_PORT -DTMC_DSI -DNON_MATCHING -DUSE_HDMA -DEU -DENGLISH -DREVISION=0'
+FLAGS='-std=gnu11 -g -O1 -ffunction-sections -fdata-sections -fno-strict-aliasing -fwrapv -DPC_PORT -DTMC_DSI -DTMC_DSI_E31_LIFECYCLE -DNON_MATCHING -DUSE_HDMA -DEU -DENGLISH -DREVISION=0'
 INC="-I$ROOT -I$ROOT/include -I$ROOT/port -I$ROOT/platform/dsi-engine/source"
 cc $FLAGS ${E39_SANITIZE:+-fsanitize=address,undefined -fno-omit-frame-pointer} $INC -include "$ROOT/include/region.h" \
  "$ROOT/platform/dsi-engine/source/dsi_room_link_origin_e39.c" \
