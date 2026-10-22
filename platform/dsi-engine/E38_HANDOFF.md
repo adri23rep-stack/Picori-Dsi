@@ -31,3 +31,18 @@ Still NOT first playable: unported original Link normal/wakeup/movement,
 interior collision and original game sprite/manager dispatch. Testing
 needed with same ROM in melonDS; compare E34 working build if regression.
 Never upload the ROM to GitHub.
+
+## E38 CI checkpoint
+
+- Passing native code: `d11e3509ee6dcae7d873eec2ca16a15eadc66287`
+- Full GitHub Actions workflow: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39732076425
+- All host E30–E38 regression tests: SUCCESS, E38 pre-spawn native-room metadata with sanitizers.
+- ARM9 build and original-symbol provenance: SUCCESS.
+- Prebuilt NDS: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39732076425/artifacts/12405905752
+- Build logs: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39732076425/artifacts/12405299880
+
+**For emulator testing:** if no Link or bed appears, capture lower screen lines
+16 and 18–20 and the entire upper room. The reason code lets next developer
+distinguish an upstream task/priority gate, ROM sprite stream rejection,
+or original-world-position mismatch. Do not assume a passing NDS means a
+visible/working sprite or functional movement.
