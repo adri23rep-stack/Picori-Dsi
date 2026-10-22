@@ -50,6 +50,7 @@
 #include "dsi_room_object_tick_e33.h"
 #include "dsi_room_archway_e39.h"
 #include "dsi_room_archway_gfx_e39.h"
+#include "dsi_room_sprite_policy_e40.h"
 #include "dsi_room_link_origin_e39.h"
 #include "dsi_room_bed_gfx_e34.h"
 #include "dsi_room_link_e35.h"
@@ -156,7 +157,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E39\n");
+    iprintf("TMC / DSi ENGINE E40\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -429,14 +430,23 @@ int main(void) {
                 /* E34: compose a genuine EU ROM BedCover frame over the
                  * original room, only if E33 initialized the real object.
                  * On invalid ROM gfx or OAM data keep the verified room. */
-                bool arch_gfx_ok = scene_ok && DsiRoomArchwayE39_Ready() &&
-                    DsiRoomArchwayGfxE39_Draw(&room_metadata, mainFrame,
+                /* E40: exact original Archway action stays ACTIVE. The
+                 * E39 experimental preview rendered magenta garbage over
+                 * the doorway in a real melonDS screenshot. Quarantine the
+                 * renderer until the original sprite VRAM/palette allocator
+                 * and OAM priority/compositing are actually ported. */
+                Entity *arch_for_visual = persistent_room ?
+                    DeepFindEntityByID(OBJECT,ARCHWAY) : NULL;
+                bool arch_gfx_ok = scene_ok &&
+                    DsiRoomSpritePolicyE40_AllowPreview(&room_metadata,
+                                                         arch_for_visual) &&
+                    DsiRoomArchwayGfxE39_Draw(&room_metadata,mainFrame,
                                               DSI_RENDER_W);
                 if (arch_gfx_ok)
                     dmaCopy(mainFrame, bgGetGfxPtr(mainBg), sizeof(mainFrame));
-                iprintf("\x1b[9;0HROOM: %-8s BED:%s ",
+                iprintf("\x1b[9;0HROOM:%-8s ARCH:%s",
                         scene_ok ? "DISPLAY" : "BLOCKED",
-                        arch_gfx_ok ? "ROM" : "--");
+                        arch_gfx_ok ? "ROM" : "HOLD");
                 /* E35: The rendered Link is the ACTUAL original
                  * InitializePlayer entity, not a fake position or new actor.
                  * Pixels/frames are fetched from the user's EU ROM only.
@@ -537,10 +547,10 @@ int main(void) {
                          diagArch?(int)diagArch->x.HALF.HI:-1,
                          diagArch?(int)diagArch->y.HALF.HI:-1);
                 iprintf("\x1b[19;0H%-31.31s",line);
-                snprintf(line,sizeof(line),"org:%u col:%u linkR:%u",
-                         DsiRoomLinkOriginE39_Ready(),
-                         DsiRoomCollisionE36_Ready(),
-                         DsiRoomLinkE35_Reason());
+                snprintf(line,sizeof(line),"a:%u sub:%u spawn:%u",
+                         gPlayerEntity.base.action,
+                         gPlayerEntity.base.subAction,
+                         gRoomTransition.player_status.spawn_type);
                 iprintf("\x1b[20;0H%-31.31s",line);
             } else {
             snprintf(line, sizeof(line), "H:%03X N:%03X task:%u s:%u",
@@ -555,6 +565,8 @@ int main(void) {
             snprintf(line, sizeof(line), "OAM:%u sprites:%u",
                      DsiTitleSprites_Count(), gDsiTitleSpriteStats.draw_calls);
             iprintf("\x1b[21;0H%-31.31s", line);
+            /* E40: original Zelda player action telemetry, especially
+             * sleeping/new-game state. No manual movement or animations. */
             snprintf(line, sizeof(line), "entity:%u upd:%u err:%u",
                      gDsiTitleEntityStats.alive, gDsiTitleEntityStats.updated,
                      gDsiTitleEntityStats.errors);

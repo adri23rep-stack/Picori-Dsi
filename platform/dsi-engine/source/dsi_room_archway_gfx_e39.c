@@ -50,7 +50,10 @@ bool DsiRoomArchwayGfxE39_Draw(const DsiRoomMetadata* room,
     uint32_t slots=(record>>24)&0x7fu;
     if (!slots || slots>32u) return fail();
     uint32_t bytes=slots*512u;
-    uint32_t src=EU_GFX_AND_PALETTES+(record&0x00ffffffu);
+    /* Source-derived rule: original src/vram.c::sub_080ADDD8 masks the
+     * packed GFX record by 0xFFFFFC before adding gGlobalGfxAndPalettes.
+     * The 2 low bits are loader flags, NOT file offset bytes. */
+    uint32_t src=EU_GFX_AND_PALETTES+(record&0x00fffffcu);
     if (!DsiRomRefs_IsRomSpan(src,4) ||
         !DsiGbaBus_IsWritable(EU_OBJ_VRAM,bytes)) return fail();
     if(record&1u) {
