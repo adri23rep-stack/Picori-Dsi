@@ -1,4 +1,4 @@
-name: Build Picori DSi E34 original BedCover ROM sprite
+name: Build Picori DSi E34 authentic BedCover ROM gfx
 on:
   workflow_dispatch:
   push:
@@ -26,7 +26,7 @@ jobs:
         run: E32_SANITIZE=1 sh platform/dsi-engine/tests/run_priority_e32.sh
       - name: E33 original room object dispatch
         run: E33_SANITIZE=1 sh platform/dsi-engine/tests/run_objects_e33.sh
-      - name: E34 authentic bed graphics definition
+      - name: E34 genuine EU BedCover sprite definition
         run: E34_SANITIZE=1 sh platform/dsi-engine/tests/run_gfx_metadata_e34.sh
   nds:
     needs: host
