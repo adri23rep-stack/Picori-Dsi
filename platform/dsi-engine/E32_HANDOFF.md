@@ -16,3 +16,16 @@ and manager callbacks (manager id 0x0a -> EzloHintManager_Main), scripts,
 sprite/OAM live renderer, collision and transitions. Do not fake the
 simulation, run unbound GBA callbacks, or label compiler PASS as playable.
 No ROM should be stored in GitHub. Validate in melonDS and DSi hardware.
+
+
+## Verified GitHub Actions (2026-10-21 / America/Monterrey)
+
+- Code commit: `2b545fd1c312be7665bc5c2a97214b12aefa4fb1`
+- Run: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39704427991
+- Host: SUCCESS — all prior E30 regressions, E31 lifecycle/input,
+  and E32 priority scheduler with ASan/UBSan.
+- ARM9: SUCCESS — native link and symbol provenance tests.
+- NDS artifact: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39704427991/artifacts/12393219364
+- Evidence artifact: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39704427991/artifacts/12394187201
+
+Not validated in melonDS or on physical DSi. Do not call this playable.
