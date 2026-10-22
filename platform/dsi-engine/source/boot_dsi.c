@@ -151,7 +151,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E36\n");
+    iprintf("TMC / DSi ENGINE E37\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");

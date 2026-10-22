@@ -2,6 +2,7 @@
 #define DSI_ROOM_COLLISION_E36_H
 #include <stdbool.h>
 #include "dsi_room_probe.h"
+void DsiRoomCollisionE36_Reset(void);
 bool DsiRoomCollisionE36_Prepare(const DsiRoomMetadata *room);
 bool DsiRoomCollisionE36_Ready(void);
 unsigned DsiRoomCollisionE36_Errors(void);
