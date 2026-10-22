@@ -98,5 +98,5 @@ for name in [
 ]:
  priority+=fn('src/entity.c',name)
 # Call through to original static frame priority update. No Zelda dispatcher.
-priority+='\\nvoid DsiPriorityE32_Tick(void) { UpdatePriority(); }\\n'
+priority+='\nvoid DsiPriorityE32_Tick(void) { UpdatePriority(); }\n'
 (out/'dsi_priority_e32.c').write_text(priority)
