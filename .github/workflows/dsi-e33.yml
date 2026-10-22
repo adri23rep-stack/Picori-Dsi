@@ -48,7 +48,7 @@ jobs:
             grep -Eq " [Tt] ${symbol}$" e33-priority-symbols.txt || { echo "Missing original: $symbol"; exit 1; }
           done
           arm-none-eabi-nm platform/dsi-engine/build/dsi_room_objects_e33.o > e33-objects-symbols.txt
-          for symbol in BedCover CreateObject CreateObjectWithParent PositionRelative CopyPosition; do
+          for symbol in BedCover DsiRoomE33_CreateObject CreateObjectWithParent PositionRelative CopyPosition; do
             grep -Eq " [Tt] ${symbol}$" e33-objects-symbols.txt || { echo "Missing original room object function: $symbol"; exit 1; }
           done
           arm-none-eabi-nm platform/dsi-engine/tmc-dsi-engine-e29.elf > e33-elf-symbols.txt
