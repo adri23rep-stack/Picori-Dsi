@@ -81,3 +81,22 @@ s+=fn('port/port_linked_stubs.c','ResolveCollisionLayer')
 s+=array('src/collision.c','gMapTileTypeToActTile')
 s+=fn('src/collision.c','GetMapTileTypeToActTile')
 (out/'dsi_layer_resolve_e31.c').write_text(s)
+
+# E32: extract the engine's literal entity priority rules.
+priority='''/* Generated from ORIGINAL entity.c, no rewritten rules. */
+#include "entity.h"
+#include "player.h"
+#include "message.h"
+static void UpdatePriorityTimer(void);
+'''
+for name in [
+ 'EntityDisabled','AnyPrioritySet','SetMinPriority','ResetEntityPriority',
+ 'RequestPriority','RequestPriorityDuration','SetPriorityTimer',
+ 'UpdatePriorityTimer','UpdatePriority','SetPlayerEventPriority',
+ 'ResetPlayerEventPriority','RevokePriority','SetRoomReloadPriority',
+ 'ClearEventPriority',
+]:
+ priority+=fn('src/entity.c',name)
+# Call through to original static frame priority update. No Zelda dispatcher.
+priority+='\\nvoid DsiPriorityE32_Tick(void) { UpdatePriority(); }\\n'
+(out/'dsi_priority_e32.c').write_text(priority)

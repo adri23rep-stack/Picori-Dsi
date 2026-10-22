@@ -21,6 +21,8 @@
 #include "common.h"
 #include "main.h"
 #include "game.h"
+#include "entity.h"
+#include "player.h"
 #include "area.h"
 #include "flags.h"
 #include "area.h"
@@ -145,7 +147,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E31.1\n");
+    iprintf("TMC / DSi ENGINE E32\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -398,6 +400,13 @@ int main(void) {
                     DsiEntitySearchProbeE30_Run();
                 bool persistent_room = search_original_ok && tile_ok && map_ok &&
                     DsiRoomSpawnE31_Load(&room_metadata);
+                /* Read-only ORIGINAL scheduler check, never update entities. */
+                Entity *bed_for_priority = persistent_room ?
+                    DeepFindEntityByID(OBJECT, 0x4fu) : NULL;
+                bool priority_core_ok = persistent_room && bed_for_priority &&
+                    AnyPrioritySet() &&
+                    !EntityDisabled(&gPlayerEntity.base) &&
+                    !EntityDisabled(bed_for_priority);
                 iprintf("\x1b[10;0HInitRoom original: %-6s N:%s",
                         original_room_ok ? "PASS" : "PENDING",
                         native_props_ok ? "OK" : "--");
@@ -408,10 +417,11 @@ int main(void) {
                 volatile unsigned e30Blocked = DsiE30Gate_Blockers();
                 (void)e30Blocked; /* debugger trace; must stay blocked */
 
-                iprintf("\x1b[16;0HGameTask: %-11s F:%s R:%s",
+                iprintf("\x1b[16;0HGameTask:%-10s F:%s R:%s P:%s",
                         persistent_room ? "ENTITIES" : (prefix_ok ? "ROOM PREFIX" : "BLOCKED"),
                         DsiGameNative_OriginalEntityLookupReady() ? "OK" : "--",
-                        registry_probe_ok ? "OK" : "--");
+                        registry_probe_ok ? "OK" : "--",
+                        priority_core_ok ? "OK" : "--");
                 iprintf("\x1b[9;0HROOM SCREEN:%-9s A:%s M:%s",
                         scene_ok ? "DISPLAYED" : "BLOCKED",
                         spawn_audit_ok ? "OK" : "--",
