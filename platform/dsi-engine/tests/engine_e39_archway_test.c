@@ -8,9 +8,11 @@
 #include "player.h"
 #include "game.h"
 #include "main.h"
+#include "message.h"
 #include <assert.h>
 #include <stdio.h>
 Main gMain;
+Message gMessage;
 static bool ready;
 bool DsiRoomSpawnE31_Ready(void){return ready;}
 extern void* GetEmptyEntityByKind(u32);
