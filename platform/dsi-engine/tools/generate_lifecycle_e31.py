@@ -109,9 +109,9 @@ obj='''/* Original engine object, allocation and placement functions. */
 #include "script.h"
 '''
 bed=(root/'src/object/bedCover.c').read_text()
-anchor='\\nvoid BedCover(BedCoverEntity* this) {'
+anchor='\nvoid BedCover(BedCoverEntity* this) {'
 if anchor not in bed: raise SystemExit('Original BedCover layout changed')
-obj+=bed[:bed.index(anchor)]+'\\n'
+obj+=bed[:bed.index(anchor)]+'\n'
 for path,names in {
  'src/objectUtils.c':['CreateObject','CreateObjectWithParent'],
  'src/physics.c':['PositionRelative','CopyPosition'],
