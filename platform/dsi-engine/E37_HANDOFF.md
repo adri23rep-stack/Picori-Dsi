@@ -18,3 +18,16 @@ CAVEATS: The interior tile collision LUT, ORIGINAL wake-up/PlayerNormal
 and animations have not been ported, so Link remains static and player
 input doesn't drive physics. No external EU ROM is bundled, and melonDS
 validation is still needed. User-verified E34 remains untouched.
+
+## CI VERIFIED — E37
+
+- Passing code commit: `772c278eebd5410c4c8f7221cd1ed5c3cdc1555f`
+- All host E30-E37 checks: **SUCCESS** (including sanitized zero-geometry regression).
+- Native ARM9 compilation and original symbol checks: **SUCCESS**.
+- CI: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39727592108
+- NDS: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39727592108/artifacts/12403419128
+- Build proof: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39727592108/artifacts/12403762243
+
+E37 is the recommended next test over E36. Need user's emulator visual
+result: original room, original static Link, original BedCover, and the
+bottom-screen `Room wall border:ORIGINAL` status. No claim of first playable.
