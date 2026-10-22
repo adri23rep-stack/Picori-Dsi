@@ -21,6 +21,8 @@ void DsiTitleSprites_Clear(void);
 /* Returns false if a requested ROM record is malformed/unavailable. */
 bool DsiTitleSprites_DrawDirect(uint32_t sprite, uint32_t frame, const OAMCommand *cmd);
 unsigned DsiTitleSprites_Count(void);
+/* E34: one OBJ palette bank for a single object preview, not source OAM. */
+bool DsiTitleSprites_UsePaletteBank(unsigned bank);
 uint32_t DsiTitleSprites_Signature(void);
 /* Draws normal, non-affine 4bpp/8bpp OBJ pieces over a GBA 240x160 scene. */
 bool DsiTitleSprites_Composite(uint16_t *frame, size_t stride,

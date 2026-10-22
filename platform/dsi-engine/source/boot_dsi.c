@@ -47,6 +47,7 @@
 #include "dsi_room_probe.h"
 #include "dsi_room_spawn_e31.h"
 #include "dsi_room_object_tick_e33.h"
+#include "dsi_room_bed_gfx_e34.h"
 #include "dsi_room_maps.h"
 #include "dsi_room_tiles.h"
 #include "dsi_room_preview.h"
@@ -148,7 +149,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E33\n");
+    iprintf("TMC / DSi ENGINE E34\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -355,6 +356,17 @@ int main(void) {
                     }
                 }
                 native = DsiGameNative_Status();
+                /* E34: compose a genuine EU ROM BedCover frame over the
+                 * original room, only if E33 initialized the real object.
+                 * On invalid ROM gfx or OAM data keep the verified room. */
+                bool bed_gfx_ok = scene_ok && DsiRoomObjectE33_Ready() &&
+                    DsiRoomBedGfxE34_Draw(&room_metadata, mainFrame,
+                                            DSI_RENDER_W);
+                if (bed_gfx_ok)
+                    dmaCopy(mainFrame, bgGetGfxPtr(mainBg), sizeof(mainFrame));
+                iprintf("\x1b[9;0HROOM: %-8s BED:%s ",
+                        scene_ok ? "DISPLAY" : "BLOCKED",
+                        bed_gfx_ok ? "ROM" : "--");
                 /* E28: Only the actual original InitRoom()/InitAllRoomResInfo()
                  * can fill gArea after the E24 transition. Verify the active
                  * room pointer and metadata, not an independent imitation. */

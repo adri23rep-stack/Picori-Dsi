@@ -186,3 +186,14 @@ bool DsiTitleSprites_Composite(uint16_t *dst,size_t stride,
     if(drawn_pixels) *drawn_pixels=painted;
     return true;
 }
+
+/* E34 presentation-only palette remap for a SINGLE original ROM sprite.
+ * This changes synthesized OAM attributes, never the source frame pieces. */
+bool DsiTitleSprites_UsePaletteBank(unsigned bank) {
+    if (bank>=16u || !count) return false;
+    for(unsigned i=0;i<count;i++)
+        if (pieces[i].attr0 & 0x2000u) return false; /* 8bpp is not banked */
+    for(unsigned i=0;i<count;i++)
+        pieces[i].attr2=(uint16_t)((pieces[i].attr2 & 0x0fffu) | (bank<<12));
+    return true;
+}
