@@ -22,6 +22,7 @@
 #include "main.h"
 #include "game.h"
 #include "entity.h"
+#include "object.h"
 #include "player.h"
 #include "area.h"
 #include "flags.h"
