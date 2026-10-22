@@ -217,6 +217,10 @@ int main(void) {
         gba_write16(0x04000130u, gbaKeys);
         ReadKeyInput();
         DsiRoomSpawnE31_PollInput();
+        /* E33 room tick: original bed action1, gated by native entity
+         * state and EntityDisabled; never invent player movement. */
+        if (DsiRoomObjectE33_Ready())
+            (void)DsiRoomObjectE33_Tick();
         /* SELECT exits diagnostics. START must reach Zelda's TitleTask. */
         if (gInput.newKeys & 0x04u) break;
         if (render_ok && !title_fault && !handoff_reported &&
@@ -456,8 +460,9 @@ int main(void) {
                 if (scene_ok) {
                     iprintf("\x1b[14;0HLive entities:%u managers:%u ",gEntCount,gManagerCount);
                 }
-                iprintf("\x1b[10;0HRoom bed original: %-7s ",
-                        native_bed_ok ? "ACTIVE" : "BLOCKED");
+                iprintf("\x1b[16;0HBed object: %-7s O:%u ",
+                        native_bed_ok ? "ACTIVE" : "BLOCKED",
+                        DsiRoomObjectE33_Ticks());
             } else {
                 iprintf("\x1b[15;0HGame RAM: BLOCKED     ");
             }
