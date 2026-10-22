@@ -20,7 +20,19 @@ macro pointers; there is no raw GBA pointer resolver in this milestone.
 ROM integration test also verifies input polling does not move Link or override
 disabled control. Run: E31_SANITIZE=1 sh platform/dsi-engine/tests/run_input_e31.sh
 and the existing run_room_spawn_e31.sh with the user's complete EU ROM.
-E31.1 CI result pending at this checkpoint; prior E31.0 build evidence below.
+E31.1 verified: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39703025065
+Code commit abb9a8f2b874a751203d7132393b1a3040a3e145: host regressions,
+lifecycle/input sanitizers, ARM9 compilation and linked-symbol checks SUCCESS.
+NDS artifact: 12393866948 (Picori-DSi-E31-NDS; title now E31.1).
+Local full EU ROM integration with ASan/UBSan also passed. No emulator/hardware
+execution performed. Input handling alone does NOT make this build playable.
+
+Next focused dependency blocks: original EntityDisabled/priority scheduling;
+then room callback binding and original manager/player dispatch. Manager id
+0x0a maps to EzloHintManager_Main in src/manager.c, not a generic dummy manager.
+Do not activate partial dispatch that skips unsupported entities as success.
+The persistent room loader is still single-shot; implement explicit invalidation
+on future room teardown/reload before enabling scene transitions.
 
 Implemented: original entity deletion/recycling and its real resource cleanup,
 script-context allocation/free, manager deletion, native globals, heap init,
