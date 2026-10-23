@@ -86,9 +86,18 @@ The linker now explicitly retains both original movement entry points and CI
 requires the complete closure in the final ELF, to detect missing dependencies.
 This supersedes the previous garbage-collection note above. Neither entry point
 is called by boot/input: original PlayerInit/PlayerSleep/frame dispatch remains
-the next blocker. Preconditions remain the original valid direction, initialized
-hitbox/maps/ROM parameters; never call UpdatePlayerMovement on DIR_NOT_MOVING
-(0x80), because the original slope table is indexed before movement checks it.
+the next blocker. Preconditions remain initialized hitbox/maps/ROM parameters.
+
+Closure CI passed: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39884554411
+Code: f0fea5aff7572b9efbd5556301782fc20682a474. Host regressions and final
+ARM9 movement symbols both passed; a real NDS was produced.
+
+Following that build, a stopped-player regression reproduced a native global
+buffer overflow: original idle/jump paths can pass DIR_NONE (0x80) through
+sub_08079F48 before LinearMoveDirectionOLD checks it. PC_PORT now bounds-checks
+each slope-table index, preserving all valid comparisons and returning FALSE
+when no slope entry exists. Original GBA build is unchanged. Tests cover every
+byte direction/collision pair and stopped UpdatePlayerMovement under sanitizers.
 
 Next blockers: original PlayerInit/sleep/wake dispatch, animation/OAM pipeline,
 room callbacks/scripts/managers, original movement/collision queries, transitions.

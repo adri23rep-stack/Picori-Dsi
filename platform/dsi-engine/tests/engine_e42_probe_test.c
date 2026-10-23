@@ -38,6 +38,14 @@ static void player_movement_tests(void) {
         UpdatePlayerMovement();
         assert(p->x.WORD==expected.x.WORD&&p->y.WORD==expected.y.WORD);
     }
+    p->direction=0x80;p->speed=0x180;
+    Entity stopped=*p;UpdatePlayerMovement();
+    assert(p->x.WORD==stopped.x.WORD&&p->y.WORD==stopped.y.WORD);
+    for(unsigned d=0;d<=255;d++)for(unsigned c=0;c<=255;c++) {
+        p->direction=d;
+        bool32 changed=sub_08079F48(d,c);
+        if(d>=32)assert(!changed&&p->direction==d);
+    }
     /* Original speed modifier and lower bound, including zero-speed bypass. */
     const unsigned speed[]={0,1,0x100,0x100};
     const int modifier[]={100,0,-240,128};

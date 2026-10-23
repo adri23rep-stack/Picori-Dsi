@@ -2659,9 +2659,19 @@ bool32 sub_08079E90(u32 direction) {
 }
 
 bool32 sub_08079F48(u32 direction, u32 collisionData) {
+#ifdef PC_PORT
+    /* DIR_NONE (0x80) reaches this from the original idle/jump paths.
+     * GBA-adjacent bytes are not part of this native slope table. */
+    if ((direction >> 2) >= ARRAY_COUNT(gUnk_0811C118))
+        return FALSE;
+#endif
     if (gUnk_0811C118[direction >> 2] == collisionData) {
         gPlayerEntity.base.direction = (gPlayerEntity.base.direction + 4) & 0x1f;
     } else {
+#ifdef PC_PORT
+        if ((direction >> 2) + 1 >= ARRAY_COUNT(gUnk_0811C118))
+            return FALSE;
+#endif
         if (gUnk_0811C118[(direction >> 2) + 1] != collisionData) {
             return FALSE;
         }
