@@ -8,7 +8,7 @@ NDS: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39915256792/arti
 
 1. Descarga el artefacto `Picori-DSi-E54-Prueba` y descomprímelo.
 2. Activa el modo DSi y la tarjeta SD virtual en melonDS.
-3. Coloca una copia personal de la **ROM europea (BZMP)** del juego en la ubicación que ya utiliza la rama E41.
+3. Coloca tu copia personal **europea (BZMP)** en la SD virtual, dentro de `/tmc-dsi/baserom_eu.gba` (también acepta `/tmc-dsi/baserom.gba`).
 4. Abre `Picori_DSi_E54_Prueba.nds`. Presiona START para avanzar en la transición al cuarto.
 5. Observa la habitación, el sprite de Link y, en la pantalla inferior, el diagnóstico **EU Link anim: ROM OK / BLOCKED**, si alcanzas la inicialización.
 6. Si algo falla, guarda capturas de ambas pantallas e indica si se congeló, se cerró o salió `BLOCKED`.
