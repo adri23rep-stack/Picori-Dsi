@@ -47,6 +47,19 @@ E31_SANITIZE=1 sh platform/dsi-engine/tests/run_room_spawn_e31.sh /ruta/ROM_EU.g
 
 ## Siguiente trabajo real
 
+Ya hay una revisión automática para orientar el siguiente bloque:
+
+```sh
+python3 platform/dsi-engine/tools/audit_player_e43.py
+```
+
+Compila el player.c original y sigue sus referencias, incluidas las tablas
+de acciones de PlayerSleep. El CI guarda el resultado en el archivo descargable
+`E43-player-dependencies`. Opcionalmente acepta `--elf ruta/al/juego.elf
+--nm arm-none-eabi-nm` para distinguir símbolos presentes y ausentes.
+Presente no significa implementado: puede ser un servicio bloqueado o incompleto.
+La revisión se detiene al salir de player.c; no declara completo todo el motor.
+
 Continuar con las dependencias de PlayerInit y PlayerSleep de src/player.c.
 No saltar su inicialización para mostrar movimiento con botones.
 La compilación de src/player.c a objeto en host ya funciona; sus relocaciones

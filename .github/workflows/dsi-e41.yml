@@ -42,6 +42,13 @@ jobs:
         run: E41_SANITIZE=1 sh platform/dsi-engine/tests/run_collision_e41.sh
       - name: E42 original pixel collision and hitbox probes
         run: E42_SANITIZE=1 sh platform/dsi-engine/tests/run_collision_probe_e42.sh
+      - name: E43 original player init and sleep dependency report
+        run: python3 platform/dsi-engine/tools/audit_player_e43.py > player-e43-dependencies.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: E43-player-dependencies
+          path: player-e43-dependencies.md
+          if-no-files-found: error
   nds:
     needs: host
     runs-on: ubuntu-latest
