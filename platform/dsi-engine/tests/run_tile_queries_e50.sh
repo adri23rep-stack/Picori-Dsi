@@ -16,7 +16,7 @@ sources={
  "port/port_gameplay_stubs.c":(
   "FindEntryForKeyInternal","FindValueForKey",
   "CheckNEastTile","PlayerCheckNEastTile"),
- "src/physics.c":("sub_0806F730"),
+ "src/physics.c":("sub_0806F730",),
  "src/scroll.c":("GetLayerByIndex",)
 }
 for filename,names in sources.items():
