@@ -30,6 +30,9 @@ remains static until the original player frame is enabled.
 
 Tests: run_animation_e45.sh under ASan/UBSan covers pointer/read faults, malformed
 tables/frames, timing, loops, GFX dirty marking, native pointer bounds and aborts.
-With /path/to/EU.gba it compared 4096 actual Link animation ticks (standing,
-walking, no cap and sleeping) with independently read raw ROM frame records.
+With /path/to/EU.gba it compared 4599 actual Link animation ticks (standing,
+walking, no cap, sleeping and waking) with independently read raw ROM frame records.
+Both wake variants produce frame event 1 and ANIM_DONE; their terminal duration
+is zero. PlayerSleep must consume ANIM_DONE and select the next state. Do not
+drive the primitive indefinitely after completion or invent a looping wake.
 Native CI must pass before calling this an ARM9 build; no emulator run yet.

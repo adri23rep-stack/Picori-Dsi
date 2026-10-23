@@ -154,7 +154,7 @@ static void real_rom(const char* path) {
     rom=fopen(path,"rb");assert(rom&&DsiAnimationE45_Prepare());
     /* Replay the original sleep/wake and initial standing/walking streams,
        comparing every loaded frame byte against independent ROM reads. */
-    const unsigned cases[][2]={{1,2},{1,4},{1,5},{1,6},{4,0},{4,4},{7,0x36},{7,0x3a}};
+    const unsigned cases[][2]={{1,2},{1,4},{1,5},{1,6},{4,0},{4,4},{7,0x36},{7,0x3a},{7,0x37},{7,0x3b}};
     unsigned ticks=0;
     for(unsigned i=0;i<sizeof cases/sizeof *cases;i++) {
         Entity e={0};e.spriteIndex=cases[i][0];e.spriteAnimation[0]=2;
@@ -167,7 +167,12 @@ static void real_rom(const char* path) {
         if(frame[3]&0x80){u8 back;assert(DsiGbaBus_Read(next,&back,1));next-=back*4;}
         assert(e.frameIndex==frame[0]&&e.frameDuration==frame[1]&&
                e.frameSpriteSettings==frame[2]&&e.frame==frame[3]);
+        bool waking=cases[i][0]==7&&(cases[i][1]==0x37||cases[i][1]==0x3b);
+        bool wakeEvent=false,wakeDone=false;
         for(unsigned tick=0;tick<512;tick++) {
+            /* PlayerSleep consumes ANIM_DONE and switches actions. Do not
+               keep replaying a completed wake animation with duration zero. */
+            if(waking&&(frame[3]&0x80)) {wakeDone=true;break;}
             /* These replay cases have positive durations; fail if the source
                changes instead of silently approximating zero-duration logic. */
             assert(frame[1]>0);
@@ -178,7 +183,8 @@ static void real_rom(const char* path) {
             UpdateAnimationSingleFrame(&e);
             assert(e.frameIndex==frame[0]&&e.frameDuration==frame[1]&&
                    e.frameSpriteSettings==frame[2]&&e.frame==frame[3]);
-            assert((uintptr_t)e.animPtr-(uintptr_t)nativeStart==(u32)(next-address));
+            if(waking&&e.frame==1)wakeEvent=true;
+            assert((intptr_t)e.animPtr-(intptr_t)nativeStart==(int64_t)next-address);
             SpriteFrame* f=DsiAnimationE45_Frame(e.spriteIndex,e.frameIndex);
             assert(gGFXSlots.slots[2].paletteIndex==f->numTiles);
             assert(gGFXSlots.slots[2].palettePointer==(u8*)DsiAnimationE45_Sprite(e.spriteIndex)->ptr+f->firstTileIndex*32);
@@ -192,6 +198,7 @@ static void real_rom(const char* path) {
 #endif
             ticks++;
         }
+        if(waking)assert(wakeDone&&wakeEvent);
     }
     fclose(rom);printf("E45 EU ROM: %u original Link animation ticks exactly match ROM records\n",ticks);
 #ifdef E46_UPLOAD_TEST

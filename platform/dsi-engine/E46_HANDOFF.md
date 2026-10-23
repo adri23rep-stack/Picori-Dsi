@@ -14,7 +14,7 @@ before abort (same decoder as existing E6); there is no success fallback.
 
 Sanitizers: dirty/no-change frames, forced refresh, literal LZ data, foreign
 pointers, BG writes, invalid slots and destination/table limits pass.
-With the user's EU ROM, 4096 original animation ticks each upload exactly the
+With the user's EU ROM, 4599 original animation ticks each upload exactly the
 corresponding ROM tile bytes. run_sprite_upload_e46.sh [ROM_EU.gba].
 
 This completes allocation -> original animation -> original upload dependency
