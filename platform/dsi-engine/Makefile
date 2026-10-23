@@ -28,7 +28,7 @@ LDFLAGS := -specs=ds_arm9.specs $(ARCH) -Wl,-Map,$(notdir $*.map) -Wl,--gc-secti
 LIBS := -lfat -lnds9
 # Retain the original movement entry points so CI proves their complete native
 # dependency closure links. This does not dispatch a player action/frame.
-LDFLAGS += -Wl,--undefined=UpdatePlayerMovement -Wl,--undefined=sub_08079E58
+LDFLAGS += -Wl,--undefined=UpdatePlayerMovement -Wl,--undefined=sub_08079E58 -Wl,--undefined=DsiPlayerE45_OriginalInit
 LIBDIRS := $(LIBNDS) $(PORTLIBS)
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))

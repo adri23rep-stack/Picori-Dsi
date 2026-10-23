@@ -2,7 +2,7 @@ name: Build Picori DSi E41 original interior collision
 on:
   workflow_dispatch:
   push:
-    branches: [e41-original-interior-collision, e44-original-player-arm9, e45-original-player-init-object]
+    branches: [e41-original-interior-collision, e44-original-player-arm9, e45-original-player-init-object, e46-player-init-runtime-lab]
     paths: ['platform/dsi-engine/**', 'platform/dsi/source/**', 'src/**', 'include/**', 'port/**', '.github/workflows/dsi-e41.yml']
 permissions:
   contents: read
@@ -106,13 +106,11 @@ jobs:
           for symbol in UpdatePlayerMovement sub_08079E58 sub_08079E90 sub_0807A5B8 sub_0807A750 LinearMoveDirectionOLD; do
             grep -Eq " [Tt] ${symbol}$" e41-elf-symbols.txt || { echo "Missing linked movement: $symbol"; exit 1; }
           done
-          # E45: verify original PlayerInit is in an ARM9 object, not live.
+          # E46 intentionally retains the real PlayerInit and fails on unresolved
+          # original service dependencies; do not replace them with stubs.
           arm-none-eabi-nm platform/dsi-engine/build/dsi_player_init_e45.o > e45-player-init-symbols.txt
           grep -Eq ' [Tt] DsiPlayerE45_OriginalInit$' e45-player-init-symbols.txt
-          if arm-none-eabi-nm --defined-only platform/dsi-engine/tmc-dsi-engine-e29.elf | grep -Eq ' [Tt] DsiPlayerE45_OriginalInit$'; then
-            echo 'Unsafe: PlayerInit retained without a validated runtime gate' >&2
-            exit 1
-          fi
+          arm-none-eabi-nm --defined-only platform/dsi-engine/tmc-dsi-engine-e29.elf | grep -Eq ' [Tt] DsiPlayerE45_OriginalInit$'
           # E44: compile the REAL full player.c for ARM9 as an object, without
           # linking/disabling the guarded room boot. No empty service stubs.
           sh platform/dsi-engine/tools/compile_player_e44.sh "$PWD"
