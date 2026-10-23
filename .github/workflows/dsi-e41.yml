@@ -2,7 +2,7 @@ name: Build Picori DSi E46 original Link graphics pipeline
 on:
   workflow_dispatch:
   push:
-    branches: [e41-original-interior-collision]
+    branches: [e41-original-interior-collision, e47-original-terrain-integration]
     paths: ['platform/dsi-engine/**', 'platform/dsi/source/**', 'src/**', 'include/**', 'port/**', '.github/workflows/dsi-e41.yml']
 permissions:
   contents: read
@@ -50,6 +50,8 @@ jobs:
         run: E45_SANITIZE=1 sh platform/dsi-engine/tests/run_animation_e45.sh
       - name: E46 original dirty-slot upload and OBJ memory transport
         run: E46_SANITIZE=1 sh platform/dsi-engine/tests/run_sprite_upload_e46.sh
+      - name: E47 original Link act-tile, layer and terrain functions
+        run: sh platform/dsi-engine/tests/run_tile_queries_e50.sh
       - uses: actions/upload-artifact@v4
         with:
           name: E43-player-dependencies
@@ -122,11 +124,17 @@ jobs:
           for symbol in sub_080ADD70 DsiSpriteUploadE46_Copy DsiSpriteUploadE46_Lz; do
             grep -Eq " [Tt] ${symbol}$" e41-elf-symbols.txt || { echo "Missing sprite upload: $symbol"; exit 1; }
           done
-          sha256sum Picori_DSi_E46.nds > Picori_DSi_E46.sha256
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_original_tile_queries_e50.o > e47-terrain-symbols.txt
+          for symbol in GetActTileAtTilePos GetActTileAtEntity GetActTileRelativeToEntity GetTileIndex GetLayerByIndex CheckNEastTile PlayerCheckNEastTile sub_0806F730; do
+            grep -Eq " [Tt] ${symbol}$" e47-terrain-symbols.txt || { echo "Missing original terrain: $symbol"; exit 1; }
+          done
+          grep -Eq ' [Tt] PlayerCheckNEastTile$' e41-elf-symbols.txt
+          cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E47.nds
+          sha256sum Picori_DSi_E47.nds > Picori_DSi_E47.sha256
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: E41-build-evidence
+          name: E47-build-evidence
           path: |
             e41-build.log
             e41-priority-symbols.txt
@@ -142,10 +150,11 @@ jobs:
             e41-size.txt
             e42-probe-symbols.txt
             e44-slot-symbols.txt
+            e47-terrain-symbols.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: Picori-DSi-E46-NDS
+          name: Picori-DSi-E47-NDS
           path: |
-            Picori_DSi_E46.nds
-            Picori_DSi_E46.sha256
+            Picori_DSi_E47.nds
+            Picori_DSi_E47.sha256
           if-no-files-found: error
