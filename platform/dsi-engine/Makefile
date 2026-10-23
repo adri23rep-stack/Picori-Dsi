@@ -52,6 +52,7 @@ CFILES += dsi_collision_probe_core_e42.c dsi_collision_probe_e42.c playerHitbox.
 CFILES += dsi_player_init_e45.c
 # E46 experimental direct originals: no replacement player dispatcher / inventory.
 CFILES += player.c itemDefinitions.c itemUtils.c itemMetaData.c mapActTileToSurfaceType.c
+CFILES += dsi_original_extra_sprite_e47.c
 export LD := $(CC)
 export OFILES := $(CFILES:.c=.o)
 export INCLUDE := -I$(STAGE_DIR)/source -I$(ROOT_DIR) -I$(ROOT_DIR)/include \
@@ -66,6 +67,7 @@ $(BUILD):
 	@python3 $(STAGE_DIR)/tools/generate_collision_e41.py $(ROOT_DIR) $(STAGE_DIR)/generated
 	@python3 $(STAGE_DIR)/tools/generate_collision_probe_e42.py $(ROOT_DIR) $(STAGE_DIR)/generated
 	@python3 $(STAGE_DIR)/tools/generate_player_init_e45.py $(ROOT_DIR) $(STAGE_DIR)/generated
+	@python3 $(STAGE_DIR)/tools/generate_extra_sprite_e47.py $(ROOT_DIR) $(STAGE_DIR)/generated
 	@sh $(STAGE_DIR)/tools/generate_entity_core_e29.sh $(ROOT_DIR)/src/entity.c $(STAGE_DIR)/generated/dsi_entity_core_e29.c
 	@sh $(STAGE_DIR)/tools/generate_collision_core_e29.sh $(ROOT_DIR)/src/collision.c $(STAGE_DIR)/generated/dsi_collision_core_e29.c
 	@sh $(STAGE_DIR)/tools/generate_sprite_layer_e29.sh $(ROOT_DIR)/port/port_linked_stubs.c $(STAGE_DIR)/generated/dsi_sprite_layer_e29.c
