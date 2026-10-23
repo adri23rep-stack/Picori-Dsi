@@ -15,6 +15,62 @@ PlayerState gPlayerState;
 PlayerEntity gPlayerEntity;
 static bool ready;
 static unsigned fault;
+static u16 mask(unsigned shape,unsigned row);
+extern bool32 sub_08079F48(u32,u32);
+extern void sub_0807A750(u32,u32,const u8*,u32);
+static void player_movement_tests(void) {
+    Entity* p=&gPlayerEntity.base;
+    const unsigned slopes[4][2]={{19,18},{18,16},{16,17},{17,19}};
+    for(unsigned d=0;d<32;d+=8)for(unsigned c=0;c<112;c++) {
+        p->direction=d;
+        bool32 hit=sub_08079F48(d,c);
+        unsigned want=c==slopes[d/8][0]?(d+4)%32:c==slopes[d/8][1]?(d+28)%32:d;
+        assert(p->direction==want&&!!hit==(want!=d));
+    }
+    memset(&gPlayerState,0,sizeof gPlayerState);
+    memset(&gRoomControls,0,sizeof gRoomControls);
+    memset(gMapBottom.collisionData,0,sizeof gMapBottom.collisionData);
+    memset(gMapTop.collisionData,0,sizeof gMapTop.collisionData);
+    for(unsigned d=0;d<32;d++) {
+        memset(p,0,sizeof *p);p->hitbox=(Hitbox*)&gPlayerHitbox;p->collisionLayer=1;
+        p->direction=d;p->speed=0x180;p->x.WORD=64<<16;p->y.WORD=64<<16;
+        Entity expected=*p;LinearMoveDirectionOLD(&expected,0x180,d);
+        UpdatePlayerMovement();
+        assert(p->x.WORD==expected.x.WORD&&p->y.WORD==expected.y.WORD);
+    }
+    /* Original speed modifier and lower bound, including zero-speed bypass. */
+    const unsigned speed[]={0,1,0x100,0x100};
+    const int modifier[]={100,0,-240,128};
+    const unsigned want[]={0,0x20,0x20,0x180};
+    for(unsigned i=0;i<4;i++) {
+        p->direction=8;p->speed=speed[i];gPlayerState.speed_modifier=modifier[i];
+        p->x.WORD=64<<16;p->y.WORD=64<<16;
+        UpdatePlayerMovement();
+        assert(p->speed==want[i]&&p->x.WORD==(64<<16)+(want[i]<<8));
+    }
+    /* Shape correction is tested independently against each original mask
+       row/column. Fractional position must survive integer depenetration. */
+    gPlayerState.speed_modifier=0;p->collisionLayer=1;
+    for(unsigned shape=0;shape<40;shape++)for(unsigned side=0;side<4;side++)
+    for(unsigned y=1;y<15;y++)for(unsigned x=1;x<15;x++) {
+        gMapBottom.collisionData[0]=16;
+        u8 params[96]={0};params[0]=shape;
+        unsigned start=side%2?x:y,target=start;
+        int step=(side==0||side==3)?1:-1;
+        while(target>0&&target<15) {
+            unsigned px=side%2?target:x,py=side%2?y:target;
+            if(!(mask(shape,py)&(0x8000u>>px)))break;
+            target+=step;
+        }
+        target-=step;
+        p->x.WORD=0x00341234;p->y.WORD=0x00565678;
+        sub_0807A750(x,y,params,side);
+        assert(p->x.HALF.LO==0x1234&&p->y.HALF.LO==0x5678);
+        assert(p->x.HALF.HI==0x34+(side%2?(int)target-(int)start:0));
+        assert(p->y.HALF.HI==0x56+(side%2?0:(int)target-(int)start));
+    }
+    memset(gMapBottom.collisionData,0,sizeof gMapBottom.collisionData);
+}
 static void movement_tests(void) {
     /* FixedMul must truncate toward zero before the position-scale multiply.
        Cover every signed input, negative fractions and extreme speeds. */
@@ -90,6 +146,7 @@ int main(void) {
     assert(!DsiCollisionE42_Prepare());ready=true;
     for(fault=1;fault<=4;fault++){DsiCollisionE42_Reset();assert(!DsiCollisionE42_Prepare());}
     fault=0;assert(DsiCollisionE42_Prepare());
+    player_movement_tests();
     for(unsigned mode=0;mode<7;mode++) {
         memset(&gPlayerState,0,sizeof gPlayerState);
         if(mode==1)gPlayerState.flags=PL_MINISH;

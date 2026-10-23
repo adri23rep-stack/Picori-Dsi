@@ -234,6 +234,10 @@ extern void LoadBgAnimations(u16*);
 
 void sub_0807BFA8(void);
 
+#ifdef TMC_DSI_E41_COLLISION
+#include "dsi_collision_bindings_e42.h"
+#endif
+
 void UpdateActiveItems(PlayerEntity* this) {
     u32 index;
 

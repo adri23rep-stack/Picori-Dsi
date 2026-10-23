@@ -26,6 +26,9 @@ ASFLAGS := -g $(ARCH)
 LDFLAGS := -specs=ds_arm9.specs $(ARCH) -Wl,-Map,$(notdir $*.map) -Wl,--gc-sections \
   -Wl,--wrap=LoadGfxGroup -Wl,--wrap=LoadPaletteGroup -Wl,--wrap=DispReset -Wl,--wrap=MemClear -Wl,--wrap=zMallocInit -Wl,--wrap=MessageInitialize -Wl,--wrap=SetFade -Wl,--wrap=EraseAllEntities -Wl,--wrap=InitRoom -Wl,--wrap=ExecuteScript -Wl,--wrap=MemFill32
 LIBS := -lfat -lnds9
+# Retain the original movement entry points so CI proves their complete native
+# dependency closure links. This does not dispatch a player action/frame.
+LDFLAGS += -Wl,--undefined=UpdatePlayerMovement -Wl,--undefined=sub_08079E58
 LIBDIRS := $(LIBNDS) $(PORTLIBS)
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))

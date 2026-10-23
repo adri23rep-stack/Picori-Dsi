@@ -5,7 +5,7 @@ import re,sys
 root,out=map(Path,sys.argv[1:3]);out.mkdir(parents=True,exist_ok=True)
 s=(root/'port/port_linked_stubs.c').read_text()
 def fn(name,source=s):
-    m=re.search(r'^[^\n;{}]*\b'+name+r'\([^\n;]*\) \{\n.*?^}',source,re.M|re.S)
+    m=re.search(r'^(?:(?:static|inline|const) )*[A-Za-z_]\w* *\*? +'+name+r'\([^\n;]*\) \{\n.*?^}',source,re.M|re.S)
     if not m:raise SystemExit('Missing original '+name)
     return m.group()+'\n'
 c='''/* Existing translations selected verbatim, with native data bindings. */
@@ -14,6 +14,8 @@ c='''/* Existing translations selected verbatim, with native data bindings. */
 #include "room.h"
 #include "map.h"
 #include "physics.h"
+#include "hitbox.h"
+#include "functions.h"
 #include "dsi_collision_probe_e42.h"
 #define Port_GetCollisionShapeData DsiCollisionE42_Shape
 #define port_resolve_addr DsiCollisionE42_Hitbox
@@ -37,6 +39,16 @@ for n in ['GetMapLayerForLayer','NormalizeTilePos','WorldToTilePos','RoomToTileP
           'SelectPlayerCollisionTable','TileCollisionLookup','sub_080085CC','sub_080085B0','sub_080086D8','sub_080086B4',
           'CalcCollisionDirectionOLD','LinearMoveDirectionOLD','sub_0800857C']:
     c+=fn(n)
+# Native ARM9 already compiles playerUtils.c. Select the identical functions
+# for host verification, with the same bindings and original direction table.
+c+='#ifndef ARM9\n'
+player=(root/'src/playerUtils.c').read_text()
+table=re.search(r'^const u8 gUnk_0811C118\[\] = \{.*?^};',player,re.M|re.S)
+if not table:raise SystemExit('Missing original slope directions')
+c+=table.group()+'\n'
+for n in ['sub_08079F48','sub_08079E90','sub_0807A750','sub_0807A5B8','UpdatePlayerMovement','sub_08079E58']:
+    c+=fn(n,player)
+c+='#endif\n'
 c+='''
 u32 DsiCollisionE42_OriginalPoint(Entity* e,u32 x,u32 y) {
     sActiveCollisionParams=SelectPlayerCollisionTable();

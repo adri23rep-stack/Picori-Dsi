@@ -94,6 +94,9 @@ jobs:
           for symbol in FixedMul LinearMoveDirectionOLD sub_0800857C; do
             grep -Eq " [Tt] ${symbol}$" e42-probe-symbols.txt || { echo "Missing movement: $symbol"; exit 1; }
           done
+          for symbol in UpdatePlayerMovement sub_08079E58 sub_08079E90 sub_0807A5B8 sub_0807A750 LinearMoveDirectionOLD; do
+            grep -Eq " [Tt] ${symbol}$" e41-elf-symbols.txt || { echo "Missing linked movement: $symbol"; exit 1; }
+          done
           cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E41.nds
           sha256sum Picori_DSi_E41.nds > Picori_DSi_E41.sha256
       - uses: actions/upload-artifact@v4

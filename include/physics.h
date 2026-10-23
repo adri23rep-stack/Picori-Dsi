@@ -19,7 +19,11 @@ void SortEntityAbove(Entity* below_ent, Entity* above_ent);
 void SortEntityBelow(Entity* above_ent, Entity* below_ent);
 
 void LinearMoveDirection(Entity* ent, u32 a, u32 b);
+#ifdef PC_PORT
 u32 LinearMoveDirectionOLD(Entity* ent, u32 speed, u32 direction);
+#else
+void LinearMoveDirectionOLD(Entity* ent, u32 speed, u32 direction);
+#endif
 void sub_0800857C(Entity* ent);
 void LinearMoveAngle(Entity* ent, u32 a, u32 b);
 

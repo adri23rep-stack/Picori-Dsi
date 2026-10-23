@@ -67,6 +67,29 @@ its original airborne/type2 exclusions. Native CI checks movement object symbols
 unreferenced movement is correctly removed from the final ELF until actual
 player dispatch is ready. Do not claim this dependency as playable movement.
 
+## E42 complete UpdatePlayerMovement dependency closure
+
+First movement CI 39884223678 passed host regressions but caught conflicting
+legacy asm.h/physics.h return declarations on ARM9. Both now agree with the
+existing C port's u32 return under PC_PORT; original GBA void ABI is preserved.
+
+Native playerUtils.c now binds its original parameter banks and shape lookup to
+the same verified E42 ROM transport. Its UpdatePlayerMovement/sub_08079E58 and
+direction/slope/depenetration functions are unchanged. Host tests select those
+literal bodies plus their original gUnk_0811C118 table. The extractor now matches
+top-level function declarations explicitly, never a call inside an if statement.
+Tests cover the original direction corrections, every free-space direction,
+speed modifiers/minimum/zero, and all 40 shapes on all four correction sides
+at every interior pixel while retaining fractional coordinates.
+
+The linker now explicitly retains both original movement entry points and CI
+requires the complete closure in the final ELF, to detect missing dependencies.
+This supersedes the previous garbage-collection note above. Neither entry point
+is called by boot/input: original PlayerInit/PlayerSleep/frame dispatch remains
+the next blocker. Preconditions remain the original valid direction, initialized
+hitbox/maps/ROM parameters; never call UpdatePlayerMovement on DIR_NOT_MOVING
+(0x80), because the original slope table is indexed before movement checks it.
+
 Next blockers: original PlayerInit/sleep/wake dispatch, animation/OAM pipeline,
 room callbacks/scripts/managers, original movement/collision queries, transitions.
 Full collision arrays alone do not run the collision solver or make Link playable.
