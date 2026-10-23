@@ -25,15 +25,19 @@ content = """/* GBA-to-C port translation bodies, selected verbatim.
 #include "map.h"
 #include "player.h"
 #include "room.h"
+#include "physics.h"
 #include "structures.h"
 #include "functions.h"
 """
 for name in ("GetMapLayerForLayer", "NormalizeTilePos", "WorldToTilePos"):
     content += select("port/port_linked_stubs.c", name)
 for name in ("GetTileTypeRelativeToEntity", "GetActTileAtTilePos",
-             "GetActTileAtEntity", "GetActTileRelativeToEntity"):
+             "GetActTileAtEntity", "GetActTileRelativeToEntity", "GetTileIndex"):
     content += select("port/port_linked_stubs.c", name)
 content += "extern const KeyValuePair gMapActTileToSurfaceType[];\n"
 for name in ("FindEntryForKeyInternal", "FindValueForKey", "CheckNEastTile", "PlayerCheckNEastTile"):
     content += select("port/port_gameplay_stubs.c", name)
+for name in ("sub_0806F730", "sub_0806F948"):
+    content += select("src/physics.c", name)
+content += select("src/scroll.c", "GetLayerByIndex")
 (out / "dsi_original_tile_queries_e50.c").write_text(content)
