@@ -2,7 +2,7 @@ name: Build Picori DSi E41 original interior collision
 on:
   workflow_dispatch:
   push:
-    branches: [e41-original-interior-collision]
+    branches: [e41-original-interior-collision, e44-original-player-arm9]
     paths: ['platform/dsi-engine/**', 'platform/dsi/source/**', 'src/**', 'include/**', 'port/**', '.github/workflows/dsi-e41.yml']
 permissions:
   contents: read
@@ -104,6 +104,12 @@ jobs:
           for symbol in UpdatePlayerMovement sub_08079E58 sub_08079E90 sub_0807A5B8 sub_0807A750 LinearMoveDirectionOLD; do
             grep -Eq " [Tt] ${symbol}$" e41-elf-symbols.txt || { echo "Missing linked movement: $symbol"; exit 1; }
           done
+          # E44: compile the REAL full player.c for ARM9 as an object, without
+          # linking/disabling the guarded room boot. No empty service stubs.
+          sh platform/dsi-engine/tools/compile_player_e44.sh "$PWD"
+          python3 platform/dsi-engine/tools/audit_player_e43.py \
+            --elf platform/dsi-engine/tmc-dsi-engine-e29.elf \
+            --nm arm-none-eabi-nm > e44-player-link-gap.md
           cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E41.nds
           sha256sum Picori_DSi_E41.nds > Picori_DSi_E41.sha256
       - uses: actions/upload-artifact@v4
@@ -124,6 +130,9 @@ jobs:
             e41-render-policy-symbols.txt
             e41-size.txt
             e42-probe-symbols.txt
+            e44-player-original-symbols.txt
+            e44-player-unresolved.txt
+            e44-player-link-gap.md
       - uses: actions/upload-artifact@v4
         with:
           name: Picori-DSi-E41-NDS

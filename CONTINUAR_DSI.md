@@ -1,6 +1,6 @@
 # Continuación del port nativo DSi
 
-Rama de trabajo: `e41-original-interior-collision`.
+Rama de trabajo actual: `e44-original-player-arm9` (derivada de `e41-original-interior-collision`).
 Base conservada: E40 `4285796d17214a11bbb0a35f7300afe90eda725b`.
 Último código y pruebas de esta sesión:
 `8a09f0a4d035d2414b3cd7d12d234a4deb1888b8`.
@@ -44,6 +44,22 @@ Comandos de host desde la raíz:
 E42_SANITIZE=1 sh platform/dsi-engine/tests/run_collision_probe_e42.sh
 E31_SANITIZE=1 sh platform/dsi-engine/tests/run_room_spawn_e31.sh /ruta/ROM_EU.gba
 ```
+
+## E44 — compilar src/player.c original para ARM9, sin fingir jugabilidad
+
+Se añadió `platform/dsi-engine/tools/compile_player_e44.sh`, que
+compila íntegramente el `src/player.c` original como objeto ARM9, con las
+mismas definiciones de plataforma y optimización que el motor DSi.
+La comprobación exige que existan `DoPlayerAction`, `PlayerInit` y
+`PlayerSleep` reales, y deja una lista de referencias todavía sin resolver.
+**NO enlaza ese objeto al .nds, no llama ninguna acción y no activa controles.**
+Así se pueden corregir dependencias sin romper el arranque estable.
+
+CI: rama `e44-original-player-arm9`, workflow `dsi-e41.yml`.
+Los archivos `e44-player-original-symbols.txt`,
+`e44-player-unresolved.txt` y `e44-player-link-gap.md` forman parte de
+`E41-build-evidence`, si las pruebas pasan. La última comparación
+distingue símbolo en ELF de comportamiento completo.
 
 ## Siguiente trabajo real
 
