@@ -29,7 +29,7 @@ prelude = """/* Native relocation of GBA extra-sprite side table. Originals belo
 #include "structures.h"
 #include "entity.h"
 
-struct_gUnk_020000C0 gUnk_020000C0[0x30];
+/* E31 already owns native gUnk_020000C0 storage. */
 Entity* gPlayerClones[3];
 
 """
