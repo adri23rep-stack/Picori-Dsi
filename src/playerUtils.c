@@ -247,7 +247,7 @@ void UpdateActiveItems(PlayerEntity* this) {
         gPlayerState.swim_state == 0 && IsAbleToUseItem(this) && !IsPreventedFromUsingItem()) {
         u32 aItem = gSave.stats.equipped[SLOT_A];
         u32 bItem = gSave.stats.equipped[SLOT_B];
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
         /* Soft-slots (X/Y/L2/R2) override the B-equipped item without
          * mutating gSave. See port/port_softslots.h. */
         bItem = Port_PcEffectiveBItem(bItem);
@@ -746,7 +746,7 @@ bool32 IsItemActiveByInput(ItemBehavior* this, PlayerInputState input) {
     u32 val;
     Stats* stats = &gSave.stats;
     u32 id = this->behaviorId;
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
     /* If the player is firing this item via a soft-slot (X/Y/L2/R2),
      * report it as if it were B-equipped so charged-hold semantics
      * (Gust Jar, Bow) and held-state checks (Lantern) still work. */
@@ -1072,7 +1072,7 @@ bool32 sub_08078008(ChargeState* state) {
         swordType = gSave.stats.equipped[SLOT_A];
     } else {
         u32 bItem = gSave.stats.equipped[SLOT_B];
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
         bItem = Port_PcEffectiveBItem(bItem);
 #endif
         if (ItemIsSword(bItem) != ITEM_NONE) {
@@ -2789,7 +2789,7 @@ bool32 HasSwordEquipped(void) {
         return TRUE;
     } else {
         u32 bItem = gSave.stats.equipped[SLOT_B];
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
         bItem = Port_PcEffectiveBItem(bItem);
 #endif
         return ItemIsSword(bItem);
