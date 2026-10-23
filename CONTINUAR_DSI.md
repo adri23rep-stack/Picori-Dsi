@@ -1,6 +1,64 @@
+# EXPERIMENTAL E46–E49 — ORIGINAL engine integration
+
+**Continue here:** `e46-player-init-runtime-lab`, NOT default `main`.
+Keep preserved stable branch `e45-original-player-init-object` intact.
+Original DSi goal: native port of Zelda's existing game source, no custom
+Link movement, no fake wake-up script, no hardcoded GBA-ROM data committed.
+
+## Code actually added
+
+- E46: retains original `PlayerInit` at link time and builds entire
+  upstream `src/player.c` (real `DoPlayerAction` / `PlayerSleep` dispatch).
+- E46.1: compiles upstream `itemDefinitions.c`, `itemUtils.c`,
+  `itemMetaData.c`, `mapActTileToSurfaceType.c`.
+- E47: exact `sub_0806FDA0` extra-sprite allocation and
+  `sub_0806FD8C` reset from original `src/physics.c`;
+  references existing E31 original memory bank, plus Link clone pointers.
+- E48: upstream `src/vram.c` original sprite GFX slot manager and
+  `LoadSwapGFX`. Duplicate native services excluded only for TMC_DSI.
+- E49: source-authentic `FixedDiv`, `LinearMoveUpdate` and existing
+  port translation of `GravityUpdate`, compiled for ARM9.
+
+Generator checks compare extracted function bodies against upstream source.
+All additions are experimental. No gameplay frame dispatch enabled yet,
+because the dependency closure does not link. A green host job or an
+existing older NDS does NOT imply the experimental runtime is playable.
+
+## Outstanding engine blockers
+
+- Original animation state machine and native ROM SpritePtr/frame resources:
+  `InitAnimationForceUpdate`, `UpdateAnimationSingleFrame` etc.
+- Full player/manager callbacks, sleeping scripts, `ExecuteScript`,
+  scene transition, surfaces, effects and original collision queries.
+- Desktop-only 3DS extras (`Port_SoftSlots`, `Port_Reborn`, logging):
+  exclude these **only under TMC_DSI**, preserving behavior on desktop.
+- GBA VRAM/OAM to libnds transport, and reliable ROM graphics/animation
+  palettes. Current visible Link is still a static initial sprite.
+- Validate actual game initialization in melonDS, then real DSi, not only
+  compilation and tests.
+
+## Verification
+
+Latest successful complete host tests before source-collision fixes:
+https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39907925209
+Native ARM9 experimental link was red there due multiple definitions and
+remaining original modules. The duplicate ownership of extra-sprite
+state and VRAM services has since been corrected in later commits.
+Check the **latest** workflow before claiming any new status.
+
+Last known successful downloadable diagnostic NDS from E45:
+https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39906400123
+This NDS is NOT playable. The experimental E46–E49 branch must not publish
+a NDS as usable until native linker and runtime actually work.
+
+Detailed provenance: `platform/dsi-engine/E46_RUNTIME_LINK.md`.
+Never upload the user's copyrighted EU ROM or generated assets.
+
+---
+
 # Continuación del port nativo DSi
 
-Rama de trabajo actual: `e45-original-player-init-object` (base E44, conservada).
+Rama conservada previa: `e45-original-player-init-object`. Para experimentar, usar E46–E49 arriba.
 Base conservada: E40 `4285796d17214a11bbb0a35f7300afe90eda725b`.
 Último código y pruebas de esta sesión:
 `8a09f0a4d035d2414b3cd7d12d234a4deb1888b8`.
