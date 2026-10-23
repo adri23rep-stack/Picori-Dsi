@@ -9,6 +9,15 @@
 #include "hitbox.h"
 #include <stdlib.h>
 u8 gDsiE42CollisionParams[7][96];
+/* E51: exact alias to the verified EU collision banks. Original player.c
+ * expects the historical USA name gUnk_080082DC, but DSi reads the EU
+ * ROM bytes into this same contiguous native block in Prepare(). No
+ * invented collision parameters or copy of stale/unverified data. */
+extern u8 gUnk_080082DC[7u * 96u]
+    __attribute__((alias("gDsiE42CollisionParams")));
+_Static_assert(sizeof gDsiE42CollisionParams == sizeof gUnk_080082DC,
+               "Original collision parameter bank size mismatch");
+
 static u16 sShapes[40][16];
 static bool sReady;
 extern void sub_080085CC(Entity*);
