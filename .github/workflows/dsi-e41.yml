@@ -44,6 +44,8 @@ jobs:
         run: E42_SANITIZE=1 sh platform/dsi-engine/tests/run_collision_probe_e42.sh
       - name: E45 compile isolated original PlayerInit
         run: sh platform/dsi-engine/tests/run_player_init_e45.sh
+      - name: E47 original extra-sprite allocator compile
+        run: sh platform/dsi-engine/tests/run_extra_sprite_e47.sh
       - name: E43 original player init and sleep dependency report
         run: python3 platform/dsi-engine/tools/audit_player_e43.py > player-e43-dependencies.md
       - uses: actions/upload-artifact@v4
