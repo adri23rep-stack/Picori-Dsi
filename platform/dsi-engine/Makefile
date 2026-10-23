@@ -50,6 +50,8 @@ CFILES := dsi_room_sprite_policy_e40.c archway.c dsi_room_archway_e39.c dsi_room
 CFILES += dsi_collision_core_e41.c dsi_room_collision_e41.c
 CFILES += dsi_collision_probe_core_e42.c dsi_collision_probe_e42.c playerHitbox.c sineTable.c
 CFILES += dsi_player_init_e45.c
+# E46 experimental direct originals: no replacement player dispatcher / inventory.
+CFILES += player.c itemDefinitions.c itemUtils.c itemMetaData.c mapActTileToSurfaceType.c
 export LD := $(CC)
 export OFILES := $(CFILES:.c=.o)
 export INCLUDE := -I$(STAGE_DIR)/source -I$(ROOT_DIR) -I$(ROOT_DIR)/include \
