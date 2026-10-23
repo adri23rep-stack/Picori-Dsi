@@ -23,10 +23,7 @@ cc -std=gnu11 -O1 -g -w -ffunction-sections -fdata-sections \
 for symbol in sub_0806FD8C sub_0806FDA0 gPlayerClones; do
   nm --defined-only "$TMP/extra.o" | grep -Eq " [A-Za-z] ${symbol}$"
 done
-# The existing E31 native state unit must own this GBA global.
-nm -u "$TMP/extra.o" | grep -Eq ' U gUnk_020000C0
-
-grep -Eq '^struct_gUnk_020000C0 gUnk_020000C0\[48\];
- \
-  "$ROOT/platform/dsi-engine/source/dsi_lifecycle_state_e31.c"
+# The existing E31 native state unit owns this original GBA global.
+nm -u "$TMP/extra.o" | grep -F 'U gUnk_020000C0'
+grep -F 'struct_gUnk_020000C0 gUnk_020000C0[48];' "$ROOT/platform/dsi-engine/source/dsi_lifecycle_state_e31.c"
 echo "E47 original physics.c functions compiled and E31 shared memory reused"
