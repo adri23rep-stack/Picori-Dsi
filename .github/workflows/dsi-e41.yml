@@ -110,6 +110,10 @@ jobs:
           python3 platform/dsi-engine/tools/audit_player_e43.py \
             --elf platform/dsi-engine/tmc-dsi-engine-e29.elf \
             --nm arm-none-eabi-nm > e44-player-link-gap.md
+          echo '=== E44 PlayerInit / PlayerSleep native ELF dependencies ==='
+          sed -n '/^## PlayerInit/,/^## PlayerSleep/p' e44-player-link-gap.md | head -70
+          echo '=== E44 original ARM9 object unresolved count ==='
+          wc -l e44-player-unresolved.txt
           cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E41.nds
           sha256sum Picori_DSi_E41.nds > Picori_DSi_E41.sha256
       - uses: actions/upload-artifact@v4
