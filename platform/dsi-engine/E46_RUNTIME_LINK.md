@@ -31,3 +31,16 @@ dependencies. Existing room boot still does not call that dispatch.
 
 This branch is allowed to remain red until the entire dependency closure
 links; original E45 and E41 remain stable.
+
+## E47: real sprite slot memory replaces fake reset
+
+New generator selects `sub_0806FD8C` and `sub_0806FDA0`
+**verbatim** from `src/physics.c`. The former clears the original
+extra-sprite bank; the latter reserves a slot for an original Entity,
+used directly by PlayerInit. The native DSi side-table and
+`gPlayerClones[3]` are actual relocated GBA globals, not substituted
+movement or entity AI. The previous `sub_0806FD8C` counter stub
+was removed so the reset is real.
+
+Note: compiler/link success still does NOT establish that the final native
+SpritePtr/animation resource loader is ready. E47 does not execute wake-up.
