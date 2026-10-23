@@ -248,7 +248,7 @@ void ModShells(s32 shells) {
     if (shells < 0) {
         shells = 0;
     } else {
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
         /* Reborn parity: raised shells cap to 9999 when the toggle is
          * on (default), original 999 when off. Clean-room from the
          * upstream README. */
@@ -300,7 +300,7 @@ void ModArrows(s32 arrows) {
 u32 IsItemEquipped(u32 itemId) {
     EquipSlot equipSlot;
 
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
     /* When a soft-slot (X/Y/L2/R2) is currently active and assigned this
      * item, report it as B-equipped so held-item code paths (lantern stay-
      * lit, magic boomerang return, gust-jar charge) behave normally. */
