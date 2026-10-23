@@ -20,7 +20,13 @@ cc -std=gnu11 -O1 -g -w -ffunction-sections -fdata-sections \
   -I"$ROOT/platform/dsi/source" -I"$ROOT/platform/dsi-engine/source" \
   -include "$ROOT/include/region.h" \
   -c "$TMP/dsi_original_extra_sprite_e47.c" -o "$TMP/extra.o"
-for symbol in sub_0806FD8C sub_0806FDA0 gUnk_020000C0 gPlayerClones; do
+for symbol in sub_0806FD8C sub_0806FDA0 gPlayerClones; do
   nm --defined-only "$TMP/extra.o" | grep -Eq " [A-Za-z] ${symbol}$"
 done
-echo "E47 original physics.c extra-sprite functions/data host compile OK"
+# The existing E31 native state unit must own this GBA global.
+nm -u "$TMP/extra.o" | grep -Eq ' U gUnk_020000C0
+
+grep -Eq '^struct_gUnk_020000C0 gUnk_020000C0\[48\];
+ \
+  "$ROOT/platform/dsi-engine/source/dsi_lifecycle_state_e31.c"
+echo "E47 original physics.c functions compiled and E31 shared memory reused"
