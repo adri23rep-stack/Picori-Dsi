@@ -333,7 +333,7 @@ bool32 CheckInitPauseMenu(void) {
 }
 
 void DoPlayerAction(PlayerEntity* this) {
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
     {
         extern void Port_LogPlayerState(unsigned action, unsigned controlMode,
                                         unsigned stateFlags, unsigned eventPrio,
@@ -439,7 +439,7 @@ static void PlayerInit(PlayerEntity* this) {
 }
 
 static void PlayerNormal(PlayerEntity* this) {
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
     {
         extern void Port_LogPlayerNormalEnter(unsigned queuedAction);
         Port_LogPlayerNormalEnter(gPlayerState.queued_action);
@@ -474,7 +474,7 @@ static void PlayerNormal(PlayerEntity* this) {
     sub_080085B0(super);
     super->hurtType = 0;
     if (CheckQueuedAction()) {
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
         { extern void Port_LogPlayerEarlyReturn(const char* tag); Port_LogPlayerEarlyReturn("CQA-0"); }
 #endif
         return;
@@ -498,7 +498,7 @@ static void PlayerNormal(PlayerEntity* this) {
     }
 
     if (CheckQueuedAction()) {
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
         { extern void Port_LogPlayerEarlyReturn(const char* tag); Port_LogPlayerEarlyReturn("CQA-1"); }
 #endif
         return;
@@ -513,7 +513,7 @@ static void PlayerNormal(PlayerEntity* this) {
                 UpdateFloorType();
                 CheckQueuedAction();
             }
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
             { extern void Port_LogPlayerEarlyReturn(const char* tag); Port_LogPlayerEarlyReturn("sub_080782C0"); }
 #endif
             return;
@@ -532,14 +532,14 @@ static void PlayerNormal(PlayerEntity* this) {
                 case 15:
                     super->flags &= ~ENT_COLLIDE;
                     sub_080797EC();
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
                     { extern void Port_LogPlayerEarlyReturn(const char* tag); Port_LogPlayerEarlyReturn("col=15"); }
 #endif
                     return;
                 case 4:
                     gPlayerState.pushedObject ^= 0x80;
                     sub_080797EC();
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
                     { extern void Port_LogPlayerEarlyReturn(const char* tag); Port_LogPlayerEarlyReturn("col=4"); }
 #endif
                     return;
@@ -547,7 +547,7 @@ static void PlayerNormal(PlayerEntity* this) {
                 case 2:
                 case 5 ... 14:
                 default:
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
                     {
                         extern void Port_LogPlayerEarlyReturn(const char* tag);
                         char buf[16];
@@ -563,7 +563,7 @@ static void PlayerNormal(PlayerEntity* this) {
     super->collisionFlags = 0;
     super->spritePriority.b0 = 4;
     if (sub_0807AC54(super)) {
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
         { extern void Port_LogPlayerEarlyReturn(const char* tag); Port_LogPlayerEarlyReturn("sub_0807AC54"); }
 #endif
         return;
@@ -571,7 +571,7 @@ static void PlayerNormal(PlayerEntity* this) {
     UpdateActiveItems(super);
 
     if (CheckQueuedAction()) {
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
         { extern void Port_LogPlayerEarlyReturn(const char* tag); Port_LogPlayerEarlyReturn("CQA-2"); }
 #endif
         return;
@@ -579,7 +579,7 @@ static void PlayerNormal(PlayerEntity* this) {
 
     sub_080792D8();
     if ((gPlayerState.jump_status | gPlayerState.field_0xa) == 0 && (sub_08079550() || sub_08078F74(super))) {
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
         { extern void Port_LogPlayerEarlyReturn(const char* tag); Port_LogPlayerEarlyReturn("9550-or-8F74"); }
 #endif
         return;
@@ -587,7 +587,7 @@ static void PlayerNormal(PlayerEntity* this) {
     DoJump(this);
 
     if (CheckQueuedAction()) {
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
         { extern void Port_LogPlayerEarlyReturn(const char* tag); Port_LogPlayerEarlyReturn("CQA-3"); }
 #endif
         return;
@@ -606,12 +606,12 @@ static void PlayerNormal(PlayerEntity* this) {
         UpdatePlayerMovement();
         if ((super->frame & 2) == 0 && !gPlayerState.attack_status)
             UpdateAnimationSingleFrame(super);
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
         { extern void Port_LogPlayerEarlyReturn(const char* tag); Port_LogPlayerEarlyReturn("jump-path"); }
 #endif
         return;
     }
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
     {
         extern void Port_LogPlayerEarlyReturn(const char* tag);
         char buf[32];
@@ -625,7 +625,7 @@ static void PlayerNormal(PlayerEntity* this) {
         if (gPlayerState.swim_state) {
             gPlayerState.framestate = PL_STATE_SWIM;
             PlayerSwimming(super);
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
             { extern void Port_LogPlayerEarlyReturn(const char* tag); Port_LogPlayerEarlyReturn("post-swim"); }
 #endif
         } else {
@@ -660,7 +660,7 @@ static void PlayerNormal(PlayerEntity* this) {
                 ((gPlayerState.dash_state & 0x40) || gPlayerState.floor_type != SURFACE_ICE))
                 v13 = 3;
         }
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
         {
             extern void Port_LogPlayerMovementGate(unsigned v13, unsigned dir, unsigned psDir,
                                                    unsigned f7, unsigned fa, unsigned dash,
@@ -680,12 +680,12 @@ static void PlayerNormal(PlayerEntity* this) {
             UpdateAnimationSingleFrame(super);
         if (gPlayerState.swim_state != 0 && (gRoomTransition.frameCount & 7) == 0)
             CreateWaterTrace(super);
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
         { extern void Port_LogPlayerEarlyReturn(const char* tag); Port_LogPlayerEarlyReturn("knock-nonzero"); }
 #endif
         return;
     }
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
     { extern void Port_LogPlayerEarlyReturn(const char* tag); Port_LogPlayerEarlyReturn("pn-end"); }
 #endif
 }
@@ -3615,7 +3615,7 @@ void SurfaceAction_CloneTile(PlayerEntity* this) {
             item = gSave.stats.equipped[SLOT_A];
         } else {
             item = gSave.stats.equipped[SLOT_B];
-#ifdef PC_PORT
+#if defined(PC_PORT) && !defined(TMC_DSI)
             /* Soft-slots can map an arbitrary item to "effective B". This is
              * the sword-clone mechanic and the switch below only handles
              * sword levels (1-4,6); a non-sword effective item would hit the
