@@ -10,7 +10,7 @@ out.mkdir(parents=True, exist_ok=True)
 
 def select(path, name):
     source = (root / path).read_text()
-    pattern = r'^((?:static )?(?:u32|u16|s32|bool32|void) +[^\n;{}]*\b' + re.escape(name) + r'\([^\n;]*\) \{\n.*?^})'
+    pattern = r'^((?:static inline |static )?(?:MapLayer\*|u32|u16|s32|bool32|void) +[^\n;{}]*\b' + re.escape(name) + r'\([^\n;]*\) \{\n.*?^})'
     matches = re.findall(pattern, source, re.M | re.S)
     if len(matches) != 1:
         raise SystemExit("Ambiguous/missing original: " + path + "::" + name)
@@ -19,6 +19,7 @@ def select(path, name):
 content = """/* GBA-to-C port translation bodies, selected verbatim.
  * E31/E42 already supply layer selection and world-to-tile coordinates. */
 #include "area.h"
+#include "asm.h"
 #include "collision.h"
 #include "entity.h"
 #include "map.h"
@@ -27,6 +28,8 @@ content = """/* GBA-to-C port translation bodies, selected verbatim.
 #include "structures.h"
 #include "functions.h"
 """
+for name in ("GetMapLayerForLayer", "NormalizeTilePos", "WorldToTilePos"):
+    content += select("port/port_linked_stubs.c", name)
 for name in ("GetTileTypeRelativeToEntity", "GetActTileAtTilePos",
              "GetActTileAtEntity", "GetActTileRelativeToEntity"):
     content += select("port/port_linked_stubs.c", name)
