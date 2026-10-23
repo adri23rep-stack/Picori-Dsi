@@ -23,7 +23,7 @@ cc -std=gnu11 -O2 -g -w -ffunction-sections -fdata-sections \
    -I"$ROOT/platform/dsi/source" -I"$ROOT/platform/dsi-engine/source" \
    -include "$ROOT/include/region.h" \
    -c "$TMP/dsi_original_tile_queries_e50.c" -o "$TMP/tiles.o"
-for n in GetTileTypeRelativeToEntity GetActTileAtTilePos GetActTileAtEntity GetActTileRelativeToEntity FindValueForKey; do
+for n in GetTileTypeRelativeToEntity GetActTileAtTilePos GetActTileAtEntity GetActTileRelativeToEntity FindValueForKey CheckNEastTile PlayerCheckNEastTile; do
  nm --defined-only "$TMP/tiles.o" | grep -Eq " [Tt] ${n}$"
 done
 echo "E50 original tile queries compiled and source matched"
