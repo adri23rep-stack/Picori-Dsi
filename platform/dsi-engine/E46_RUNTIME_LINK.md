@@ -56,3 +56,12 @@ not a recreated player animation or fake LoadSwapGFX handler.
 table are NOT yet translated to DSi VRAM/OAM. Full runtime PlayerInit is
 not enabled and is still intentionally unresolved. Do not call hardware
 transfer paths without mapping native VRAM and validating ROM sources.
+
+## E49 — real gravity + smooth linear movement
+
+Extracted untouched originals `FixedDiv`, `LinearMoveUpdate` from
+`src/physics.c` and the established 3DS C translation of
+`GravityUpdate` from `port/port_linked_stubs.c`.
+This connects further genuine player action dependencies (jump, sleep,
+swim and room transition effects). **No special frame/input loop is
+invented; no movement is activated.**

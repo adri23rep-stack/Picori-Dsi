@@ -46,6 +46,8 @@ jobs:
         run: sh platform/dsi-engine/tests/run_player_init_e45.sh
       - name: E47 original extra-sprite allocator compile
         run: sh platform/dsi-engine/tests/run_extra_sprite_e47.sh
+      - name: E49 original gravity and linear movement compilation
+        run: sh platform/dsi-engine/tests/run_original_physics_e49.sh
       - name: E43 original player init and sleep dependency report
         run: python3 platform/dsi-engine/tools/audit_player_e43.py > player-e43-dependencies.md
       - uses: actions/upload-artifact@v4
@@ -113,6 +115,10 @@ jobs:
           arm-none-eabi-nm platform/dsi-engine/build/dsi_player_init_e45.o > e45-player-init-symbols.txt
           grep -Eq ' [Tt] DsiPlayerE45_OriginalInit$' e45-player-init-symbols.txt
           arm-none-eabi-nm --defined-only platform/dsi-engine/tmc-dsi-engine-e29.elf | grep -Eq ' [Tt] DsiPlayerE45_OriginalInit$'
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_original_physics_e49.o > e49-original-physics-symbols.txt
+          for symbol in GravityUpdate LinearMoveUpdate FixedDiv; do
+            grep -Eq " [Tt] ${symbol}$" e49-original-physics-symbols.txt || exit 1
+          done
           # E44: compile the REAL full player.c for ARM9 as an object, without
           # linking/disabling the guarded room boot. No empty service stubs.
           sh platform/dsi-engine/tools/compile_player_e44.sh "$PWD"
@@ -147,6 +153,7 @@ jobs:
             e44-player-unresolved.txt
             e44-player-link-gap.md
             e45-player-init-symbols.txt
+            e49-original-physics-symbols.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Picori-DSi-E41-NDS
