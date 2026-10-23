@@ -23,6 +23,7 @@ if "ARRAY_COUNT(gUnk_020000C0)" not in allocate or "spriteAnimation[2]" not in a
     raise SystemExit("unexpected original extra sprite allocator")
 prelude = """/* Native relocation of GBA extra-sprite side table. Originals below. */
 #include "physics.h"
+#include "color.h"
 #include "player.h"
 #include "common.h"
 #include "structures.h"
