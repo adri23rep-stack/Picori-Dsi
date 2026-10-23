@@ -737,7 +737,7 @@ u32 LinearMoveDirectionOLD(Entity* ent, u32 speed, u32 direction) {
         s16 sinVal = gSineTable[direction * 8];
         if (sinVal != 0) {
             moved |= 1;
-            s32 dx = FixedMul(sinVal, (s16)speed) << 8;
+            s32 dx = FixedMul(sinVal, (s16)speed) * 256;
             ent->x.WORD += dx;
         }
     }
@@ -747,7 +747,7 @@ u32 LinearMoveDirectionOLD(Entity* ent, u32 speed, u32 direction) {
         s16 cosVal = gSineTable[direction * 8 + 64];
         if (cosVal != 0) {
             moved |= 2;
-            s32 dy = FixedMul(cosVal, (s16)speed) << 8;
+            s32 dy = FixedMul(cosVal, (s16)speed) * 256;
             ent->y.WORD -= dy;
         }
     }

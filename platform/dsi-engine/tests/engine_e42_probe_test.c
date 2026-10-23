@@ -4,6 +4,7 @@
 #include "room.h"
 #include "map.h"
 #include "hitbox.h"
+#include "physics.h"
 #include "port_config.h"
 #include <assert.h>
 #include <string.h>
@@ -14,6 +15,50 @@ PlayerState gPlayerState;
 PlayerEntity gPlayerEntity;
 static bool ready;
 static unsigned fault;
+static void movement_tests(void) {
+    /* FixedMul must truncate toward zero before the position-scale multiply.
+       Cover every signed input, negative fractions and extreme speeds. */
+    const s16 speeds[]={-32768,-513,-257,-1,0,1,255,256,257,513,32767};
+    for(int a=-32768;a<=32767;a++)for(unsigned i=0;i<sizeof speeds/sizeof *speeds;i++)
+        assert(FixedMul(a,speeds[i])==(s16)((a*(int)speeds[i])/256));
+    /* Exact cardinal wall-slide cases from the Thumb branch conditions.
+       Each row checks forward, first escape, second escape and enclosure. */
+    const unsigned dirs[]={0,8,16,24};
+    const unsigned block[]={0x000e,0xe000,0x00e0,0x0e00};
+    const unsigned first[]={8,0,8,0}, second[]={24,16,24,16};
+    const unsigned firstMask[]={0xe004,0x200e,0xe040,0x020e};
+    const unsigned secondMask[]={0x0e02,0x40e0,0x0e20,0x04e0};
+    const int dx[]={0,1,0,-1},dy[]={-1,0,1,0};
+    for(unsigned q=0;q<4;q++)for(unsigned collision=0;collision<=65535;collision++) {
+        Entity e={0};e.collisions=collision;e.x.WORD=0x12345678;e.y.WORD=0x23456789;
+        unsigned d=dirs[q],speed=0x280;
+        if(collision&block[q]) {
+            if(!(collision&firstMask[q]))d=first[q];
+            else if(!(collision&secondMask[q]))d=second[q];
+            if(d!=dirs[q])speed=0x100;
+        }
+        unsigned axisMask=(d==0?0x0006:d==8?0x6000:d==16?0x0060:0x0600);
+        int moves=!(collision&axisMask);
+        unsigned result=LinearMoveDirectionOLD(&e,0x280,dirs[q]);
+        assert(e.x.WORD==0x12345678+dx[d/8]*(int)(speed*256)*moves);
+        assert(e.y.WORD==0x23456789+dy[d/8]*(int)(speed*256)*moves);
+        assert(result==(moves?(d%16?1:2):0));
+    }
+    for(unsigned d=0;d<32;d++) {
+        Entity e={0};e.x.WORD=0x100000;e.y.WORD=0x200000;
+        assert(LinearMoveDirectionOLD(&e,0x180,d));
+        int x=e.x.WORD-0x100000,y=e.y.WORD-0x200000;
+        assert(x>=-0x18000&&x<=0x18000&&y>=-0x18000&&y<=0x18000);
+        Entity opposite={0};LinearMoveDirectionOLD(&opposite,0x180,(d+16)%32);
+        assert(opposite.x.WORD==-x&&opposite.y.WORD==-y);
+        e.collisions=0x6666;Entity before=e;
+        assert(!LinearMoveDirectionOLD(&e,0x180,d));
+        assert(!memcmp(&before,&e,sizeof e));
+        e.collisions=0;before=e;
+        assert(!LinearMoveDirectionOLD(&e,0x180,d|0x80));
+        assert(!memcmp(&before,&e,sizeof e));
+    }
+}
 bool DsiRoomCollisionE41_Ready(void){return ready;}
 static u16 mask(unsigned shape,unsigned row){return (u16)((0x9365u+shape*271u)^(row*397u));}
 bool DsiGbaBus_Read(uint32_t a,void* out,size_t n) {
@@ -39,6 +84,7 @@ bool DsiGbaBus_Read(uint32_t a,void* out,size_t n) {
     return false;
 }
 int main(void) {
+    movement_tests();
     Entity e={0};u32 blocked=99;e.collisionLayer=1;
     assert(!DsiCollisionE42_Point(&e,0,0,&blocked)&&blocked==99);
     assert(!DsiCollisionE42_Prepare());ready=true;
@@ -89,8 +135,19 @@ int main(void) {
         gMapBottom.collisionData[tile]=0;
     }
     assert(e.x.HALF.HI==132&&e.y.HALF.HI==232);
+    /* Genuine movement wrapper refreshes hitbox collisions; the original
+       airborne/type2 exclusions retain previously computed collisions. */
+    e.direction=8;e.speed=0x180;e.collisions=0x6666;
+    sub_0800857C(&e);assert(!e.collisions);assert(e.x.WORD==(132<<16)+0x18000);
+    memset(gMapBottom.collisionData,15,sizeof gMapBottom.collisionData);
+    Entity before=e;sub_0800857C(&e);
+    assert(e.collisions==0x6666&&e.x.WORD==before.x.WORD&&e.y.WORD==before.y.WORD);
+    e.collisions=0;e.type2=0x80;sub_0800857C(&e);
+    assert(!e.collisions&&e.x.WORD==before.x.WORD+0x18000);
+    e.type2=0;gPlayerState.jump_status=0x80;before=e;sub_0800857C(&e);
+    assert(!e.collisions&&e.x.WORD==before.x.WORD+0x18000);
     gMapTop.collisionData[4000]=112;
     assert(!DsiCollisionE42_Probe(&e));
     ready=false;assert(!DsiCollisionE42_Ready());
-    puts("E42 original pixel collision: 7 parameter modes, every pixel/type, original hitbox edge masks PASS");
+    puts("E42 original pixel collision and movement: modes, masks, 262144 wall-slide cases, fixed-point signs PASS");
 }

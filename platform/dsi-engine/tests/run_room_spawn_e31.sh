@@ -22,7 +22,7 @@ cc $FLAGS ${E31_SANITIZE:+-fsanitize=address,undefined -fno-omit-frame-pointer} 
  "$ROOT/platform/dsi-engine/source/dsi_room_spawn_e31.c" \
  "$TMP/dsi_collision_core_e41.c" \
  "$TMP/dsi_collision_probe_core_e42.c" \
- "$ROOT/platform/dsi-engine/source/dsi_collision_probe_e42.c" "$ROOT/src/playerHitbox.c" \
+ "$ROOT/platform/dsi-engine/source/dsi_collision_probe_e42.c" "$ROOT/src/playerHitbox.c" "$ROOT/src/sineTable.c" \
  "$ROOT/platform/dsi-engine/source/dsi_room_collision_e36.c" \
  "$ROOT/platform/dsi-engine/source/dsi_room_collision_e41.c" \
  "$ROOT/platform/dsi-engine/source/dsi_room_property_native_e30.c" \

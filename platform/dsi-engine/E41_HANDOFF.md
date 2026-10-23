@@ -46,7 +46,26 @@ Sanitizer tests pass for every byte-valued collision type, every pixel, seven
 parameter modes, invalid/missing masks, layer selection, world-origin hitbox
 offsets and all eight edge bits. Full EU ROM integration independently compared
 every bedroom pixel on both layers in eight player states against raw ROM masks.
-E41.1 CI pending at checkpoint; workflow retains E30-E41 regressions and adds E42.
+E41.1 CI passed: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39849729718
+Code commit: 63012aef3cbb03a679dd9f631beeb31e405e13c7.
+Workflow retains E30-E41 regressions and adds E42.
+
+## E42 original movement dependency
+
+The generator now also selects CalcCollisionDirectionOLD, LinearMoveDirectionOLD
+and sub_0800857C from the existing port translation. Original FixedMul is selected
+from physics.c and sineTable.c is compiled directly. Direction masks are decoded
+from the original gUnk_0800275C assembler bytes, with exact size checking.
+The two signed negative left shifts in the existing C translation use *256:
+same GBA position scaling, defined C behavior for all s16 FixedMul results.
+No player frame dispatch or diagnostic movement has been enabled.
+
+Host sanitizer tests cover all 65536 collision masks for each cardinal direction
+(262144 wall-slide cases), all 32 directions/opposites, stopped/enclosed entities,
+all signed FixedMul inputs at 11 speeds, and the real hitbox-refresh wrapper with
+its original airborne/type2 exclusions. Native CI checks movement object symbols;
+unreferenced movement is correctly removed from the final ELF until actual
+player dispatch is ready. Do not claim this dependency as playable movement.
 
 Next blockers: original PlayerInit/sleep/wake dispatch, animation/OAM pipeline,
 room callbacks/scripts/managers, original movement/collision queries, transitions.

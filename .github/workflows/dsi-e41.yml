@@ -91,6 +91,9 @@ jobs:
           done
           arm-none-eabi-nm platform/dsi-engine/build/dsi_collision_probe_core_e42.o > e42-probe-symbols.txt
           grep -Eq ' [Tt] sub_080085CC$' e42-probe-symbols.txt
+          for symbol in FixedMul LinearMoveDirectionOLD sub_0800857C; do
+            grep -Eq " [Tt] ${symbol}$" e42-probe-symbols.txt || { echo "Missing movement: $symbol"; exit 1; }
+          done
           cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E41.nds
           sha256sum Picori_DSi_E41.nds > Picori_DSi_E41.sha256
       - uses: actions/upload-artifact@v4

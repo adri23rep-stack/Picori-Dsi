@@ -19,6 +19,8 @@ void SortEntityAbove(Entity* below_ent, Entity* above_ent);
 void SortEntityBelow(Entity* above_ent, Entity* below_ent);
 
 void LinearMoveDirection(Entity* ent, u32 a, u32 b);
+u32 LinearMoveDirectionOLD(Entity* ent, u32 speed, u32 direction);
+void sub_0800857C(Entity* ent);
 void LinearMoveAngle(Entity* ent, u32 a, u32 b);
 
 bool32 EntityWithinDistance(Entity* entity, s32 x, s32 y, s32 distance);
