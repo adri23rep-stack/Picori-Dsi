@@ -35,7 +35,13 @@ Keep E45 as the last verified diagnostics NDS.
 E49 first forced native link: **67 distinct unresolved references**.
 E50 native link (run 39909711401): **52 distinct unresolved references**.
 The 15 reductions are verified via real ARM9 linker logs, not gameplay
-claims. Latest E51–E53 totals must be read from the latest Actions
+claims.
+Later E50–E53 native link (run 39911093009): **47 distinct unresolved
+references**; 20 fewer than E49. Host tests succeeded, including E53
+ROM pointer validation under sanitizers. ARM9 compilation reaches the
+linker, then fails on missing real engine functions. Full details:
+https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39911093009
+ Latest E51–E53 totals must be read from the latest Actions
 run before reporting. Main missing services include actual original
 `UpdateAnimationSingleFrame`, `InitAnimationForceUpdate`,
 `sub_080042BA`, `ExecuteItemFunction`, scripts, GBA OAM/VRAM,
