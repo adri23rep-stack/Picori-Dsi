@@ -37,7 +37,7 @@ for name in ("GetTileTypeRelativeToEntity", "GetActTileAtTilePos",
 content += "extern const KeyValuePair gMapActTileToSurfaceType[];\n"
 for name in ("FindEntryForKeyInternal", "FindValueForKey", "CheckNEastTile", "PlayerCheckNEastTile"):
     content += select("port/port_gameplay_stubs.c", name)
-for name in ("sub_0806F730", "sub_0806F948"):
+for name in ("sub_0806F730",):
     content += select("src/physics.c", name)
 content += select("src/scroll.c", "GetLayerByIndex")
 (out / "dsi_original_tile_queries_e50.c").write_text(content)
