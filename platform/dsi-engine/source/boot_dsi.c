@@ -30,6 +30,7 @@
 #include "flags.h"
 #include "dsi_gba_bus.h"
 #include "dsi_rom_refs.h"
+#include "dsi_player_anim_rom_e53.h"
 #include "dsi_engine_state.h"
 #include "dsi_title_trace.h"
 #include "dsi_title_assets.h"
@@ -390,6 +391,16 @@ int main(void) {
                     DsiRoomLinkOriginE39_BindBeforeInitializePlayer(&room_metadata);
                 bool link_native = link_origin_ok &&
                     DsiGameNative_BootOriginalPlayer();
+                /* E53: Read the ORIGINAL sprite pointer table from the EU
+                 * user's ROM. PlayerInit chooses sprite 1/animation 2.
+                 * This is a provenance check, NOT an animation dispatcher. */
+                DsiPlayerAnimE53 link_anim_rom = {0};
+                bool link_animation_data_ok = link_native &&
+                    DsiPlayerAnimE53_Preflight(1u,2u,&link_anim_rom);
+                iprintf("\x1b[23;0HEU Link anim: %s f:%u   ",
+                        link_animation_data_ok ? "ROM OK" : "BLOCKED",
+                        link_animation_data_ok ? link_anim_rom.frame_index : 0u);
+
                 /* E30.3: attach only original property 0/1 (EntityData) to
                  * the original RoomResInfo AFTER original InitRoom and Link.
                  * Slots 2..7 remain NULL; no GBA callbacks can run. */
