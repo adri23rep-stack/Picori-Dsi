@@ -1,3 +1,54 @@
+# E50–E53 EXPERIMENTAL: original player, terrain and animation ROM tables
+
+**Current branch:** `e50-original-tile-player-bindings` (base:
+`e46-player-init-runtime-lab`). Do not use `main` or
+`e45-original-player-init-object` for experimental player changes.
+Keep E45 as the last verified diagnostics NDS.
+
+## Progress saved for another developer / AI
+1. ARM9 `PlayerInit` and genuine `src/player.c` dispatcher remain forcibly
+   linked in this experimental branch, which intentionally causes red CI
+   until ALL original dependencies are implemented. Do **not** add dummy
+   success services, fake Link movement, or silence missing references.
+2. E50: original 3DS port's tile-type / action tile lookups, the actual
+   `FindValueForKey` table search and the original static world map
+   conversion helpers. Desktop-only input/telemetry/Reborn code excluded
+   solely under `TMC_DSI`; desktop builds unaffected.
+3. E50.1: original `CheckNEastTile` and
+   `PlayerCheckNEastTile` bodies, not invented collision rules.
+4. E51: exact `gUnk_080082DC` symbol alias to E42's *real EU ROM*
+   seven 96-byte collision parameter banks. No baked/fake data.
+5. E52: source-authentic `GetTileIndex`,
+   `GetLayerByIndex`, `sub_0806F730` (original hitbox-relative
+   leading tile lookup). Original `sub_0806F948` deliberately deferred:
+   its unresolved C-direction enum names cannot be guessed.
+6. E53: native EU ROM gSpritePtrs table read, using the verified EU
+   offset 0x002A5C from the PC port's `kRomOffsets_EU`. Reads
+   the original packed 16-byte sprite definition and follows the
+   animation index to actual frame bytes through DSi ROM page API.
+   Native boot preflights Link sprite index 1, animation index 2
+   (exact values from original `PlayerInit`). Does NOT dispatch
+   animations or move Link yet. Host synthetic-pointer test uses
+   ASan/UBSan; no copyrighted ROM committed.
+
+## Evidence & blockers
+E49 first forced native link: **67 distinct unresolved references**.
+E50 native link (run 39909711401): **52 distinct unresolved references**.
+The 15 reductions are verified via real ARM9 linker logs, not gameplay
+claims. Latest E51–E53 totals must be read from the latest Actions
+run before reporting. Main missing services include actual original
+`UpdateAnimationSingleFrame`, `InitAnimationForceUpdate`,
+`sub_080042BA`, `ExecuteItemFunction`, scripts, GBA OAM/VRAM,
+effects, game callbacks and room transitions.
+
+**NOT PLAYABLE.** No working player action tick, wake-up script,
+animation renderer or verified hardware execution. Keep the proven E45
+NDS downloadable until the complete native link and melonDS test pass.
+Do not bundle user GBA ROM. See detailed `platform/dsi-engine/E46_RUNTIME_LINK.md`
+and GitHub Actions on current branch.
+
+---
+
 # EXPERIMENTAL E46–E49 — ORIGINAL engine integration
 
 **Continue here:** `e46-player-init-runtime-lab`, NOT default `main`.
