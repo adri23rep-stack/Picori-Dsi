@@ -107,9 +107,11 @@ jobs:
             grep -Eq " [Tt] ${symbol}$" e41-elf-symbols.txt || { echo "Missing linked movement: $symbol"; exit 1; }
           done
           cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E41.nds
-          for symbol in ResetPalettes sub_0806FD8C sub_0806FDA0 LoadSwapGFX CleanUpGFXSlots; do
+          for symbol in ResetPalettes sub_0806FD8C sub_0806FDA0 LoadSwapGFX; do
             grep -Eq " [Tt] ${symbol}$" e41-elf-symbols.txt || { echo "Missing sprite slots: $symbol"; exit 1; }
           done
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_sprite_slots_e44.o > e44-slot-symbols.txt
+          grep -Eq ' [Tt] CleanUpGFXSlots$' e44-slot-symbols.txt
           sha256sum Picori_DSi_E41.nds > Picori_DSi_E41.sha256
       - uses: actions/upload-artifact@v4
         if: always()
@@ -129,6 +131,7 @@ jobs:
             e41-render-policy-symbols.txt
             e41-size.txt
             e42-probe-symbols.txt
+            e44-slot-symbols.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Picori-DSi-E41-NDS
