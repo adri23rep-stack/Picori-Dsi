@@ -473,6 +473,20 @@ int main(void) {
                     DsiCollisionE42_Point(&gPlayerEntity.base,
                         gPlayerEntity.base.x.HALF.HI-gRoomControls.origin_x,
                         gPlayerEntity.base.y.HALF.HI-gRoomControls.origin_y,&player_pixel_blocked);
+                /* E47: query the original player's current northeast/action
+                 * tile against the ORIGINAL source mapping. Read-only: no
+                 * input override, no synthetic player position/terrain rules.
+                 * Only after real E41 act tiles + E42 collision are ready. */
+                unsigned original_ne_tile = 0;
+                bool original_ne_tile_ready = collision_probe_ok &&
+                    DsiRoomSpawnE31_Ready();
+                if (original_ne_tile_ready) {
+                    extern u32 PlayerCheckNEastTile(void);
+                    original_ne_tile = PlayerCheckNEastTile();
+                }
+                iprintf("\x1b[21;0HE47 terrain: %s %u  ",
+                        original_ne_tile_ready ? "ORIGINAL" : "BLOCKED",
+                        original_ne_tile);
                 /* Prepare original ROM animation data; PlayerInit must choose
                  * the animation later. This does not tick a fake wake sequence. */
                 bool animation_data_ok=persistent_room&&DsiAnimationE45_Prepare();
