@@ -1,0 +1,79 @@
+name: E54 Picori DSi - melonDS test build
+on:
+  workflow_dispatch:
+  push:
+    branches: [e54-melonds-test-build]
+    paths:
+      - 'platform/dsi-engine/**'
+      - 'src/**'
+      - 'include/**'
+      - 'port/**'
+      - '.github/workflows/dsi-e54-test.yml'
+permissions:
+  contents: read
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Source-authentic terrain and animation ROM tests
+        run: |
+          set -eu
+          sh platform/dsi-engine/tests/run_tile_queries_e50.sh
+          sh platform/dsi-engine/tests/run_animation_rom_e53.sh
+          sh platform/dsi-engine/tests/run_player_init_e45.sh
+          sh platform/dsi-engine/tests/run_original_physics_e49.sh
+      - name: Original room and sprite regressions
+        run: |
+          set -eu
+          sh platform/dsi-engine/tests/run_link_rom_e35.sh
+          sh platform/dsi-engine/tests/run_collision_probe_e42.sh
+  nds:
+    needs: host
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:20260610
+    env:
+      DEVKITPRO: /opt/devkitpro
+      DEVKITARM: /opt/devkitpro/devkitARM
+      LIBNDS: /opt/devkitpro/libnds
+      PORTLIBS: /opt/devkitpro/portlibs/nds
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build native E54 test ROM
+        run: |
+          set -eu
+          export PATH="$DEVKITARM/bin:$PATH"
+          make -C platform/dsi-engine TMC_DSI_TEST_BUILD=1 > e54-build.log 2>&1 || {
+            tail -n 140 e54-build.log
+            exit 1
+          }
+          test -s platform/dsi-engine/tmc-dsi-engine-e29.nds
+          test -s platform/dsi-engine/tmc-dsi-engine-e29.elf
+          arm-none-eabi-nm --defined-only platform/dsi-engine/tmc-dsi-engine-e29.elf > e54-symbols.txt
+          for symbol in DsiPlayerAnimE53_Preflight DsiRoomLinkE35_Draw DsiRoomSpawnE31_Load DsiCollisionE42_Prepare; do
+            grep -Eq " [Tt] ${symbol}$" e54-symbols.txt || { echo "Missing original/test symbol: $symbol"; exit 1; }
+          done
+          if grep -Eq ' [Tt] DsiPlayerE45_OriginalInit$' e54-symbols.txt; then
+            echo 'E54 unexpectedly enabled unported PlayerInit dispatch' >&2
+            exit 1
+          fi
+          cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E54_Prueba.nds
+          sha256sum Picori_DSi_E54_Prueba.nds > Picori_DSi_E54_Prueba.sha256
+          arm-none-eabi-size platform/dsi-engine/tmc-dsi-engine-e29.elf > e54-size.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: E54-compiler-evidence
+          path: |
+            e54-build.log
+            e54-symbols.txt
+            e54-size.txt
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Picori-DSi-E54-Prueba
+          path: |
+            Picori_DSi_E54_Prueba.nds
+            Picori_DSi_E54_Prueba.sha256
+          if-no-files-found: error
