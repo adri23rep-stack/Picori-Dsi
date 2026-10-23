@@ -36,6 +36,7 @@ static bool32 IsLiveGFXSlot(u32 index) {
     }
 }
 
+#ifndef TMC_DSI
 void ResetPalettes(void) {
     GfxSlot* slots;
     GfxSlot* slot;
@@ -50,6 +51,7 @@ void ResetPalettes(void) {
         slot->referenceCount = 0x80;
     }
 }
+#endif
 
 void sub_080ADD70(void) {
     u32 index;
@@ -280,6 +282,7 @@ _080AE058:
     return slotIndex != 0;
 }
 
+#ifndef TMC_DSI
 void UnloadGFXSlots(Entity* param_1) {
     u32 slotIndex;
     GfxSlot* slot;
@@ -305,6 +308,7 @@ void UnloadGFXSlots(Entity* param_1) {
         }
     }
 }
+#endif
 
 void sub_080AE0C8(u32 index, Entity* entity, u32 status) {
     GfxSlot* slot;
