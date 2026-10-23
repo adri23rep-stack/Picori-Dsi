@@ -33,6 +33,7 @@ for name in ("GetMapLayerForLayer", "NormalizeTilePos", "WorldToTilePos"):
 for name in ("GetTileTypeRelativeToEntity", "GetActTileAtTilePos",
              "GetActTileAtEntity", "GetActTileRelativeToEntity"):
     content += select("port/port_linked_stubs.c", name)
-for name in ("FindEntryForKeyInternal", "FindValueForKey"):
+content += "extern const KeyValuePair gMapActTileToSurfaceType[];\\n"
+for name in ("FindEntryForKeyInternal", "FindValueForKey", "CheckNEastTile", "PlayerCheckNEastTile"):
     content += select("port/port_gameplay_stubs.c", name)
 (out / "dsi_original_tile_queries_e50.c").write_text(content)
