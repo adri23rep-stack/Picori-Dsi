@@ -1,5 +1,6 @@
 #!/bin/sh
 set -eu
+ulimit -c 0
 HERE=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
 ROOT=$(CDPATH='' cd -- "$HERE/../../.." && pwd)
 TMP=$(mktemp -d)

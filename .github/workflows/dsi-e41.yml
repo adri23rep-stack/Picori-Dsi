@@ -1,4 +1,4 @@
-name: Build Picori DSi E45 original Link animation
+name: Build Picori DSi E46 original Link graphics pipeline
 on:
   workflow_dispatch:
   push:
@@ -48,6 +48,8 @@ jobs:
         run: E44_SANITIZE=1 sh platform/dsi-engine/tests/run_sprite_slots_e44.sh
       - name: E45 original animation and native ROM transport
         run: E45_SANITIZE=1 sh platform/dsi-engine/tests/run_animation_e45.sh
+      - name: E46 original dirty-slot upload and OBJ memory transport
+        run: E46_SANITIZE=1 sh platform/dsi-engine/tests/run_sprite_upload_e46.sh
       - uses: actions/upload-artifact@v4
         with:
           name: E43-player-dependencies
@@ -108,7 +110,7 @@ jobs:
           for symbol in UpdatePlayerMovement sub_08079E58 sub_08079E90 sub_0807A5B8 sub_0807A750 LinearMoveDirectionOLD; do
             grep -Eq " [Tt] ${symbol}$" e41-elf-symbols.txt || { echo "Missing linked movement: $symbol"; exit 1; }
           done
-          cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E45.nds
+          cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E46.nds
           for symbol in ResetPalettes sub_0806FD8C sub_0806FDA0 LoadSwapGFX; do
             grep -Eq " [Tt] ${symbol}$" e41-elf-symbols.txt || { echo "Missing sprite slots: $symbol"; exit 1; }
           done
@@ -117,7 +119,10 @@ jobs:
           for symbol in DsiAnimationE45_Prepare InitializeAnimation InitAnimationForceUpdate UpdateAnimationSingleFrame; do
             grep -Eq " [Tt] ${symbol}$" e41-elf-symbols.txt || { echo "Missing animation: $symbol"; exit 1; }
           done
-          sha256sum Picori_DSi_E45.nds > Picori_DSi_E45.sha256
+          for symbol in sub_080ADD70 DsiSpriteUploadE46_Copy DsiSpriteUploadE46_Lz; do
+            grep -Eq " [Tt] ${symbol}$" e41-elf-symbols.txt || { echo "Missing sprite upload: $symbol"; exit 1; }
+          done
+          sha256sum Picori_DSi_E46.nds > Picori_DSi_E46.sha256
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -139,8 +144,8 @@ jobs:
             e44-slot-symbols.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: Picori-DSi-E45-NDS
+          name: Picori-DSi-E46-NDS
           path: |
-            Picori_DSi_E45.nds
-            Picori_DSi_E45.sha256
+            Picori_DSi_E46.nds
+            Picori_DSi_E46.sha256
           if-no-files-found: error

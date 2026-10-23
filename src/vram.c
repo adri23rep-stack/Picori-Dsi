@@ -2,6 +2,9 @@
 #include "fileselect.h"
 #include "main.h"
 #include "structures.h"
+#ifdef TMC_DSI_E46_SPRITE_UPLOAD
+#include "dsi_sprite_upload_e46.h"
+#endif
 
 #ifdef PC_PORT
 #include "port_config.h"
@@ -123,6 +126,9 @@ void sub_080ADE74(u32 index) {
     s32 loopIndex;
     s32 tmp1;
 
+#ifdef TMC_DSI_E46_SPRITE_UPLOAD
+    DsiSpriteUploadE46_ValidateSlot(index);
+#endif
     slot = gGFXSlots.slots + index;
     if (slot->vramStatus != 0) {
         slot->vramStatus = 1;

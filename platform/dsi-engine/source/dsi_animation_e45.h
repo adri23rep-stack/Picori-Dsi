@@ -8,6 +8,7 @@
  * Does not choose player actions/animations or upload/render graphics. */
 bool DsiAnimationE45_Prepare(void);
 bool DsiAnimationE45_Ready(void);
+bool DsiAnimationE45_IsTileSpan(const void* pointer,size_t bytes);
 bool DsiAnimationE45_CanInitialize(u16 sprite,u32 animation);
 const SpritePtr* DsiAnimationE45_Sprite(u16 sprite);
 const u8* DsiAnimationE45_Data(u16 sprite,u32 animation);

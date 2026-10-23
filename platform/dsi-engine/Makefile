@@ -9,7 +9,7 @@ STAGE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
 ROOT_DIR := $(abspath $(STAGE_DIR)/../..)
 include $(DEVKITARM)/ds_rules
 
-GAME_TITLE := TMC DSi Engine E45
+GAME_TITLE := TMC DSi Engine E46
 GAME_SUBTITLE1 := Original game source
 GAME_SUBTITLE2 := Original Link / EU ROM
 TARGET := tmc-dsi-engine-e29
@@ -23,6 +23,7 @@ CFLAGS := -std=gnu11 -O2 -g -w -ffunction-sections -fdata-sections -fno-strict-a
 CFLAGS += -DTMC_DSI_E41_COLLISION
 CFLAGS += -DTMC_DSI_E44_SPRITE_SLOTS
 CFLAGS += -DTMC_DSI_E45_ANIMATION
+CFLAGS += -DTMC_DSI_E46_SPRITE_UPLOAD
 CXXFLAGS := $(CFLAGS) -fno-exceptions -fno-rtti
 ASFLAGS := -g $(ARCH)
 LDFLAGS := -specs=ds_arm9.specs $(ARCH) -Wl,-Map,$(notdir $*.map) -Wl,--gc-sections \
@@ -33,6 +34,7 @@ LIBS := -lfat -lnds9
 LDFLAGS += -Wl,--undefined=UpdatePlayerMovement -Wl,--undefined=sub_08079E58
 LDFLAGS += -Wl,--undefined=LoadSwapGFX -Wl,--undefined=sub_0806FDA0
 LDFLAGS += -Wl,--undefined=InitAnimationForceUpdate -Wl,--undefined=UpdateAnimationSingleFrame
+LDFLAGS += -Wl,--undefined=sub_080ADD70
 LIBDIRS := $(LIBNDS) $(PORTLIBS)
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))
@@ -55,6 +57,7 @@ CFILES += dsi_collision_core_e41.c dsi_room_collision_e41.c
 CFILES += dsi_collision_probe_core_e42.c dsi_collision_probe_e42.c playerHitbox.c sineTable.c
 CFILES += dsi_sprite_slots_e44.c
 CFILES += dsi_animation_core_e45.c dsi_animation_e45.c
+CFILES += dsi_sprite_upload_core_e46.c dsi_sprite_upload_e46.c
 export LD := $(CC)
 export OFILES := $(CFILES:.c=.o)
 export INCLUDE := -I$(STAGE_DIR)/source -I$(ROOT_DIR) -I$(ROOT_DIR)/include \
@@ -71,6 +74,7 @@ $(BUILD):
 	@python3 $(STAGE_DIR)/tools/generate_collision_probe_e42.py $(ROOT_DIR) $(STAGE_DIR)/generated
 	@python3 $(STAGE_DIR)/tools/generate_sprite_slots_e44.py $(ROOT_DIR) $(STAGE_DIR)/generated
 	@python3 $(STAGE_DIR)/tools/generate_animation_e45.py $(ROOT_DIR) $(STAGE_DIR)/generated
+	@python3 $(STAGE_DIR)/tools/generate_sprite_upload_e46.py $(ROOT_DIR) $(STAGE_DIR)/generated
 	@sh $(STAGE_DIR)/tools/generate_entity_core_e29.sh $(ROOT_DIR)/src/entity.c $(STAGE_DIR)/generated/dsi_entity_core_e29.c
 	@sh $(STAGE_DIR)/tools/generate_collision_core_e29.sh $(ROOT_DIR)/src/collision.c $(STAGE_DIR)/generated/dsi_collision_core_e29.c
 	@sh $(STAGE_DIR)/tools/generate_sprite_layer_e29.sh $(ROOT_DIR)/port/port_linked_stubs.c $(STAGE_DIR)/generated/dsi_sprite_layer_e29.c

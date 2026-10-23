@@ -17,6 +17,10 @@ static int find_sprite(u16 sprite) {
     return -1;
 }
 bool DsiAnimationE45_Ready(void) {return sReady;}
+bool DsiAnimationE45_IsTileSpan(const void* pointer,size_t bytes) {
+    uintptr_t p=(uintptr_t)pointer,base=(uintptr_t)sTiles;
+    return sReady&&p>=base&&p-base<=E45_GFX_BYTES&&bytes<=E45_GFX_BYTES-(p-base);
+}
 bool DsiAnimationE45_CanInitialize(u16 sprite,u32 animation) {
     int slot=find_sprite(sprite);
     return sReady&&slot>=0&&animation<e45Metadata[slot].animCount;
