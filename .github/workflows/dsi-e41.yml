@@ -122,7 +122,7 @@ jobs:
             grep -Eq " [Tt] ${symbol}$" e49-original-physics-symbols.txt || exit 1
           done
           arm-none-eabi-nm platform/dsi-engine/build/dsi_original_tile_queries_e50.o > e50-tiles-symbols.txt
-          for symbol in GetTileTypeRelativeToEntity GetActTileAtTilePos GetActTileAtEntity GetActTileRelativeToEntity FindValueForKey; do
+          for symbol in GetTileTypeRelativeToEntity GetActTileAtTilePos GetActTileAtEntity GetActTileRelativeToEntity FindValueForKey CheckNEastTile PlayerCheckNEastTile; do
             grep -Eq " [Tt] ${symbol}$" e50-tiles-symbols.txt || exit 1
           done
           # E44: compile the REAL full player.c for ARM9 as an object, without
