@@ -2,7 +2,7 @@ name: Build Picori DSi E41 original interior collision
 on:
   workflow_dispatch:
   push:
-    branches: [e41-original-interior-collision, e44-original-player-arm9, e45-original-player-init-object, e46-player-init-runtime-lab]
+    branches: [e41-original-interior-collision, e44-original-player-arm9, e45-original-player-init-object, e46-player-init-runtime-lab, e50-original-tile-player-bindings]
     paths: ['platform/dsi-engine/**', 'platform/dsi/source/**', 'src/**', 'include/**', 'port/**', '.github/workflows/dsi-e41.yml']
 permissions:
   contents: read
@@ -48,6 +48,8 @@ jobs:
         run: sh platform/dsi-engine/tests/run_extra_sprite_e47.sh
       - name: E49 original gravity and linear movement compilation
         run: sh platform/dsi-engine/tests/run_original_physics_e49.sh
+      - name: E50 original tile query extraction and compile
+        run: sh platform/dsi-engine/tests/run_tile_queries_e50.sh
       - name: E43 original player init and sleep dependency report
         run: python3 platform/dsi-engine/tools/audit_player_e43.py > player-e43-dependencies.md
       - uses: actions/upload-artifact@v4
@@ -119,6 +121,10 @@ jobs:
           for symbol in GravityUpdate LinearMoveUpdate FixedDiv; do
             grep -Eq " [Tt] ${symbol}$" e49-original-physics-symbols.txt || exit 1
           done
+          arm-none-eabi-nm platform/dsi-engine/build/dsi_original_tile_queries_e50.o > e50-tiles-symbols.txt
+          for symbol in GetTileTypeRelativeToEntity GetActTileAtTilePos GetActTileAtEntity GetActTileRelativeToEntity FindValueForKey; do
+            grep -Eq " [Tt] ${symbol}$" e50-tiles-symbols.txt || exit 1
+          done
           # E44: compile the REAL full player.c for ARM9 as an object, without
           # linking/disabling the guarded room boot. No empty service stubs.
           sh platform/dsi-engine/tools/compile_player_e44.sh "$PWD"
@@ -154,6 +160,7 @@ jobs:
             e44-player-link-gap.md
             e45-player-init-symbols.txt
             e49-original-physics-symbols.txt
+            e50-tiles-symbols.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Picori-DSi-E41-NDS
