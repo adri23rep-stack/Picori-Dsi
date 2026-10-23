@@ -1,6 +1,6 @@
 # Continuación del port nativo DSi
 
-Rama de trabajo actual: `e44-original-player-arm9` (derivada de `e41-original-interior-collision`).
+Rama de trabajo actual: `e45-original-player-init-object` (base E44, conservada).
 Base conservada: E40 `4285796d17214a11bbb0a35f7300afe90eda725b`.
 Último código y pruebas de esta sesión:
 `8a09f0a4d035d2414b3cd7d12d234a4deb1888b8`.
@@ -60,6 +60,18 @@ Los archivos `e44-player-original-symbols.txt`,
 `e44-player-unresolved.txt` y `e44-player-link-gap.md` forman parte de
 `E41-build-evidence`, si las pruebas pasan. La última comparación
 distingue símbolo en ELF de comportamiento completo.
+
+## E45 — PlayerInit original incluido en la compilación DSi (no activo)
+
+El generador `generate_player_init_e45.py` selecciona el cuerpo **literal**
+de `PlayerInit` en `src/player.c`, conservando su lógica y llamadas originales.
+`Makefile` ahora compila `dsi_player_init_e45.c` junto al motor.
+La nueva entrada `DsiPlayerE45_OriginalInit` queda fuera del ELF final por
+`--gc-sections`: su ejecución todavía necesita dependencias originales reales
+(animaciones, cargas GFX, habilidades, macros de jugador). El CI exige
+tanto la presencia del objeto como su ausencia en el ELF ejecutable:
+**nada de movimientos simulados ni habilitación prematura**.
+Prueba host: `sh platform/dsi-engine/tests/run_player_init_e45.sh`.
 
 ## Siguiente trabajo real
 
