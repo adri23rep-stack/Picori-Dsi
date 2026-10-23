@@ -73,6 +73,12 @@ tanto la presencia del objeto como su ausencia en el ELF ejecutable:
 **nada de movimientos simulados ni habilitación prematura**.
 Prueba host: `sh platform/dsi-engine/tests/run_player_init_e45.sh`.
 
+CI completo: https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39906400123
+**host SUCCESS / nds SUCCESS**, incluyendo compilación real del archivo
+`dsi_player_init_e45.o` y verificación de que la función aún no se ejecuta.
+Artefacto actual (diagnóstico, NO jugable):
+https://github.com/adri23rep-stack/Picori-Dsi/actions/runs/39906400123/artifacts/12480981696
+
 ## Siguiente trabajo real
 
 Ya hay una revisión automática para orientar el siguiente bloque:
