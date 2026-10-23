@@ -44,6 +44,8 @@ jobs:
         run: E42_SANITIZE=1 sh platform/dsi-engine/tests/run_collision_probe_e42.sh
       - name: E43 original player init and sleep dependency report
         run: python3 platform/dsi-engine/tools/audit_player_e43.py > player-e43-dependencies.md
+      - name: E44 original sprite slot allocation and compaction
+        run: E44_SANITIZE=1 sh platform/dsi-engine/tests/run_sprite_slots_e44.sh
       - uses: actions/upload-artifact@v4
         with:
           name: E43-player-dependencies
@@ -105,6 +107,9 @@ jobs:
             grep -Eq " [Tt] ${symbol}$" e41-elf-symbols.txt || { echo "Missing linked movement: $symbol"; exit 1; }
           done
           cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E41.nds
+          for symbol in ResetPalettes sub_0806FD8C sub_0806FDA0 LoadSwapGFX CleanUpGFXSlots; do
+            grep -Eq " [Tt] ${symbol}$" e41-elf-symbols.txt || { echo "Missing sprite slots: $symbol"; exit 1; }
+          done
           sha256sum Picori_DSi_E41.nds > Picori_DSi_E41.sha256
       - uses: actions/upload-artifact@v4
         if: always()

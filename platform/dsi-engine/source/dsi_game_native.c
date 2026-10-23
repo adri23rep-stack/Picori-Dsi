@@ -89,7 +89,9 @@ void __wrap_zMallocInit(void) { ++sStats.deferred_services; }
 #endif
 void SetBGDefaults(void) { ++sStats.deferred_services; }
 void ClearTileMaps(void) { ++sStats.deferred_services; }
+#ifndef TMC_DSI_E44_SPRITE_SLOTS
 void sub_0806FD8C(void) { ++sStats.deferred_services; }
+#endif
 void LoadGfxGroups(void) { ++sStats.deferred_services; }
 
 #ifdef TMC_DSI_E28_ORIGINAL_INITROOM

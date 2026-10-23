@@ -126,7 +126,9 @@ void __wrap_LoadPaletteGroup(u32 group) {
     if (DsiTitleAssets_Active()) (void)DsiTitleAssets_LoadPaletteGroup(group);
 }
 void ResetPaletteTable(u32 a1) { (void)a1; ++gDsiTitleTrace.unsupported_service_calls; }
+#ifndef TMC_DSI_E44_SPRITE_SLOTS
 void ResetPalettes(void) { ++gDsiTitleTrace.unsupported_service_calls; }
+#endif
 #ifdef TMC_DSI_E31_LIFECYCLE
 void __real_EraseAllEntities(void);
 void __wrap_EraseAllEntities(void) {
