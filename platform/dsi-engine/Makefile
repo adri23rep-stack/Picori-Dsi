@@ -56,6 +56,7 @@ CFILES += dsi_original_extra_sprite_e47.c
 CFILES += vram.c
 CFILES += dsi_original_physics_e49.c
 CFILES += dsi_original_tile_queries_e50.c
+CFILES += dsi_player_anim_rom_e53.c
 export LD := $(CC)
 export OFILES := $(CFILES:.c=.o)
 export INCLUDE := -I$(STAGE_DIR)/source -I$(ROOT_DIR) -I$(ROOT_DIR)/include \
