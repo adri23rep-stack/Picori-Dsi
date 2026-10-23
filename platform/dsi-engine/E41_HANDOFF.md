@@ -99,6 +99,11 @@ each slope-table index, preserving all valid comparisons and returning FALSE
 when no slope entry exists. Original GBA build is unchanged. Tests cover every
 byte direction/collision pair and stopped UpdatePlayerMovement under sanitizers.
 
+Full EU ROM integration also passed 10824 original UpdatePlayerMovement steps
+at 328 clear room positions across both layers (all 32 directions plus stopped),
+with exact fixed-point displacement and the persistent player restored afterward.
+These are host tests only, not a new input-driven runtime path.
+
 Next blockers: original PlayerInit/sleep/wake dispatch, animation/OAM pipeline,
 room callbacks/scripts/managers, original movement/collision queries, transitions.
 Full collision arrays alone do not run the collision solver or make Link playable.

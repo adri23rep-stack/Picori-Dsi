@@ -14,6 +14,8 @@
 #include "game.h"
 #include "map.h"
 #include "common.h"
+#include "physics.h"
+#include "hitbox.h"
 #include "port_region_data.h"
 #include <assert.h>
 #include <stdio.h>
@@ -21,6 +23,42 @@
 extern void ClearAllDeletedEntities(void);
 Input gInput;
 PlayerState gPlayerState;
+static void CheckRealRoomMovement(const DsiRoomMetadata* room) {
+    PlayerEntity saved=gPlayerEntity;PlayerState state=gPlayerState;
+    memset(&gPlayerState,0,sizeof gPlayerState);
+    unsigned starts=0,moves=0;
+    /* Only positions with a completely empty swept rectangle are used for
+       exact free-space displacement. Walls/slopes have independent exhaustive
+       tests; no collision map or original entity list is replaced here. */
+    for(unsigned layer=1;layer<=2;layer++) {
+        MapLayer* map=layer==2?&gMapTop:&gMapBottom;
+        for(int y=16;y<(int)room->height-16;y+=8)
+        for(int x=16;x<(int)room->width-16;x+=8) {
+            bool empty=true;
+            for(int ty=(y-12)/16;ty<=(y+12)/16;ty++)
+            for(int tx=(x-12)/16;tx<=(x+12)/16;tx++)
+                if(map->collisionData[ty*64+tx])empty=false;
+            if(!empty)continue;
+            starts++;
+            for(unsigned d=0;d<=32;d++) {
+                gPlayerEntity=saved;Entity* p=&gPlayerEntity.base;
+                p->hitbox=(Hitbox*)&gPlayerHitbox;p->collisionLayer=layer;
+                p->direction=d==32?0x80:d;p->speed=0x180;p->type2=0;
+                p->x.WORD=(room->map_x+x)*65536+0x1234;
+                p->y.WORD=(room->map_y+y)*65536+0x5678;
+                s32 bx=p->x.WORD,by=p->y.WORD;
+                UpdatePlayerMovement();
+                int dx=d==32?0:(gSineTable[d*8]*0x180/256)*256;
+                int dy=d==32?0:(gSineTable[d*8+64]*0x180/256)*256;
+                assert(p->x.WORD==bx+dx&&p->y.WORD==by-dy);
+                assert(!p->collisions);moves++;
+            }
+        }
+    }
+    assert(starts>0&&moves==starts*33);
+    gPlayerEntity=saved;gPlayerState=state;
+    printf("E42 ROM: %u original movement steps at %u clear room positions; player restored\n",moves,starts);
+}
 int main(int argc,char**argv){
     gInput.heldKeys=A_BUTTON|DPAD_RIGHT;
     gPlayerState.controlMode=CONTROL_ENABLED;
@@ -97,6 +135,7 @@ int main(int argc,char**argv){
     }
     memset(&gPlayerState,0,sizeof gPlayerState);gPlayerState.controlMode=CONTROL_ENABLED;
     puts("E42 ROM: every bedroom pixel on both layers matches original masks in 8 player states");
+    CheckRealRoomMovement(&room);
     s32 x=gPlayerEntity.base.x.WORD,y=gPlayerEntity.base.y.WORD;
     DsiRoomSpawnE31_PollInput();
     assert(gPlayerState.playerInput.heldInput&INPUT_RIGHT);
