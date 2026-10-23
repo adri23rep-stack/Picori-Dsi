@@ -10,7 +10,7 @@ out.mkdir(parents=True, exist_ok=True)
 
 def select(path, name):
     source = (root / path).read_text()
-    pattern = r'^([^\n;{}]*\b' + re.escape(name) + r'\([^\n;]*\) \{\n.*?^})'
+    pattern = r'^((?:static )?(?:u32|u16|s32|bool32|void) +[^\n;{}]*\b' + re.escape(name) + r'\([^\n;]*\) \{\n.*?^})'
     matches = re.findall(pattern, source, re.M | re.S)
     if len(matches) != 1:
         raise SystemExit("Ambiguous/missing original: " + path + "::" + name)
