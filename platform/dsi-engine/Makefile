@@ -28,7 +28,17 @@ LDFLAGS := -specs=ds_arm9.specs $(ARCH) -Wl,-Map,$(notdir $*.map) -Wl,--gc-secti
 LIBS := -lfat -lnds9
 # Retain the original movement entry points so CI proves their complete native
 # dependency closure links. This does not dispatch a player action/frame.
+# E54 testable NDS: keep the proven E41 movement source and E53 ROM
+# preflight but do not force the incomplete PlayerInit dependency closure.
+# The original PlayerInit object is STILL COMPILED, never replaced or stubbed.
+# Experimental full-link CI still runs with default TMC_DSI_TEST_BUILD=0.
+ifeq ($(TMC_DSI_TEST_BUILD),1)
+CFLAGS += -DTMC_DSI_TEST_BUILD
+LDFLAGS += -Wl,--undefined=UpdatePlayerMovement -Wl,--undefined=sub_08079E58
+GAME_TITLE := PICORI DSi E54 TEST
+else
 LDFLAGS += -Wl,--undefined=UpdatePlayerMovement -Wl,--undefined=sub_08079E58 -Wl,--undefined=DsiPlayerE45_OriginalInit
+endif
 LIBDIRS := $(LIBNDS) $(PORTLIBS)
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))
