@@ -106,91 +106,11 @@ jobs:
           for symbol in UpdatePlayerMovement sub_08079E58 sub_08079E90 sub_0807A5B8 sub_0807A750 LinearMoveDirectionOLD; do
             grep -Eq " [Tt] ${symbol}$" e41-elf-symbols.txt || { echo "Missing linked movement: $symbol"; exit 1; }
           done
-          # E45: verify the ORIGINAL isolated PlayerInit compiled in the native
-          # engine object but was not silently enabled at runtime.
+          # E45: verify original PlayerInit is in an ARM9 object, not live.
           arm-none-eabi-nm platform/dsi-engine/build/dsi_player_init_e45.o > e45-player-init-symbols.txt
-          grep -Eq ' [Tt] DsiPlayerE45_OriginalInit          # linking/disabling the guarded room boot. No empty service stubs.
-          sh platform/dsi-engine/tools/compile_player_e44.sh "$PWD"
-          python3 platform/dsi-engine/tools/audit_player_e43.py \
-            --elf platform/dsi-engine/tmc-dsi-engine-e29.elf \
-            --nm arm-none-eabi-nm > e44-player-link-gap.md
-          echo '=== E44 PlayerInit / PlayerSleep native ELF dependencies ==='
-          sed -n '/^## PlayerInit/,/^## PlayerSleep/p' e44-player-link-gap.md | head -70
-          echo '=== E44 original ARM9 object unresolved count ==='
-          wc -l e44-player-unresolved.txt
-          cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E41.nds
-          sha256sum Picori_DSi_E41.nds > Picori_DSi_E41.sha256
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: E41-build-evidence
-          path: |
-            e41-build.log
-            e41-priority-symbols.txt
-            e41-elf-symbols.txt
-            e41-objects-symbols.txt
-            e41-bed-gfx-symbols.txt
-            e41-link-symbols.txt
-            e41-border-symbols.txt
-            e41-geometry-symbols.txt
-            e41-archway-symbols.txt
-            e41-origin-symbols.txt
-            e41-render-policy-symbols.txt
-            e41-size.txt
-            e42-probe-symbols.txt
-            e44-player-original-symbols.txt
-            e44-player-unresolved.txt
-            e44-player-link-gap.md
-            e45-player-init-symbols.txt
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E41-NDS
-          path: |
-            Picori_DSi_E41.nds
-            Picori_DSi_E41.sha256
-          if-no-files-found: error
- e45-player-init-symbols.txt
-          if arm-none-eabi-nm --defined-only platform/dsi-engine/tmc-dsi-engine-e29.elf | grep -Eq ' [Tt] DsiPlayerE45_OriginalInit          # linking/disabling the guarded room boot. No empty service stubs.
-          sh platform/dsi-engine/tools/compile_player_e44.sh "$PWD"
-          python3 platform/dsi-engine/tools/audit_player_e43.py \
-            --elf platform/dsi-engine/tmc-dsi-engine-e29.elf \
-            --nm arm-none-eabi-nm > e44-player-link-gap.md
-          echo '=== E44 PlayerInit / PlayerSleep native ELF dependencies ==='
-          sed -n '/^## PlayerInit/,/^## PlayerSleep/p' e44-player-link-gap.md | head -70
-          echo '=== E44 original ARM9 object unresolved count ==='
-          wc -l e44-player-unresolved.txt
-          cp platform/dsi-engine/tmc-dsi-engine-e29.nds Picori_DSi_E41.nds
-          sha256sum Picori_DSi_E41.nds > Picori_DSi_E41.sha256
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: E41-build-evidence
-          path: |
-            e41-build.log
-            e41-priority-symbols.txt
-            e41-elf-symbols.txt
-            e41-objects-symbols.txt
-            e41-bed-gfx-symbols.txt
-            e41-link-symbols.txt
-            e41-border-symbols.txt
-            e41-geometry-symbols.txt
-            e41-archway-symbols.txt
-            e41-origin-symbols.txt
-            e41-render-policy-symbols.txt
-            e41-size.txt
-            e42-probe-symbols.txt
-            e44-player-original-symbols.txt
-            e44-player-unresolved.txt
-            e44-player-link-gap.md
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Picori-DSi-E41-NDS
-          path: |
-            Picori_DSi_E41.nds
-            Picori_DSi_E41.sha256
-          if-no-files-found: error
-; then
-            echo 'Unsafe: PlayerInit was retained without a validated runtime gate' >&2
+          grep -Eq ' [Tt] DsiPlayerE45_OriginalInit$' e45-player-init-symbols.txt
+          if arm-none-eabi-nm --defined-only platform/dsi-engine/tmc-dsi-engine-e29.elf | grep -Eq ' [Tt] DsiPlayerE45_OriginalInit$'; then
+            echo 'Unsafe: PlayerInit retained without a validated runtime gate' >&2
             exit 1
           fi
           # E44: compile the REAL full player.c for ARM9 as an object, without
@@ -226,6 +146,7 @@ jobs:
             e44-player-original-symbols.txt
             e44-player-unresolved.txt
             e44-player-link-gap.md
+            e45-player-init-symbols.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Picori-DSi-E41-NDS
