@@ -57,6 +57,7 @@
 #include "dsi_room_collision_e36.h"
 #include "dsi_room_collision_e41.h"
 #include "dsi_collision_probe_e42.h"
+#include "dsi_animation_e45.h"
 #include "dsi_room_geometry_e38.h"
 #include "dsi_room_maps.h"
 #include "dsi_room_tiles.h"
@@ -159,7 +160,7 @@ int main(void) {
     DsiEntityLists_Reset();
     DsiAreaHeaders_Reset();
     bool flags_ok = DsiEngineState_SelfTest();
-    iprintf("TMC / DSi ENGINE E41.1\n");
+    iprintf("TMC / DSi ENGINE E45\n");
     iprintf("========================\n");
     iprintf("DSi mode: %s\n", isDSiMode()?"YES":"NO");
     iprintf("GBA memory: %s\n", memory_test()?"PASS":"FAIL");
@@ -472,8 +473,12 @@ int main(void) {
                     DsiCollisionE42_Point(&gPlayerEntity.base,
                         gPlayerEntity.base.x.HALF.HI-gRoomControls.origin_x,
                         gPlayerEntity.base.y.HALF.HI-gRoomControls.origin_y,&player_pixel_blocked);
-                iprintf("\x1b[19;0HRoom wall border:%s",
-                        collision_probe_ok ? "PIXEL" : (collision_interior_ok ? "FULL" : (collision_border_ok ? "BORDER" : "BLOCKED")));
+                /* Prepare original ROM animation data; PlayerInit must choose
+                 * the animation later. This does not tick a fake wake sequence. */
+                bool animation_data_ok=persistent_room&&DsiAnimationE45_Prepare();
+                iprintf("\x1b[19;0HCollision:%s Anim data:%s",
+                        collision_probe_ok ? "PIXEL" : (collision_interior_ok ? "FULL" : (collision_border_ok ? "BORDER" : "BLOCKED")),
+                        animation_data_ok ? "OK" : "--");
 
 
                 /* Read-only ORIGINAL scheduler check, never update entities. */

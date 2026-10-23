@@ -22,6 +22,9 @@
 #include "structures.h"
 #include <stdio.h>
 #include <string.h>
+#ifdef TMC_DSI_E45_ANIMATION
+#include "dsi_animation_e45.h"
+#endif
 
 
 static int AnimRangeHasBytes(const void* ptr, size_t count) {
@@ -63,7 +66,11 @@ static void UpdateSpriteGfxSlot(Entity* entity, u8 frameIdx, u16 spriteIdx) {
     if (!frames)
         return;
 
+#ifdef TMC_DSI_E45_ANIMATION
+    SpriteFrame* f = DsiAnimationE45_Frame(spriteIdx, frameIdx);
+#else
     SpriteFrame* f = &frames[frameIdx];
+#endif
     if (f->numTiles == 0)
         return;
 
@@ -120,7 +127,11 @@ static void FrameZero(Entity* entity) {
             return;
         }
         u8 loopBack = p[0]; /* next byte = backwards distance in 4-byte frames */
+#ifdef TMC_DSI_E45_ANIMATION
+        p = DsiAnimationE45_LoopTarget(p, loopBack);
+#else
         p -= (u32)loopBack * 4;
+#endif
     }
     entity->animPtr = p;
 }
@@ -198,7 +209,11 @@ void UpdateAnimationVariableFrames(Entity* entity, u32 amount) {
                 return;
             }
             u8 loopBack = p[0];
+#ifdef TMC_DSI_E45_ANIMATION
+            p = DsiAnimationE45_LoopTarget(p, loopBack);
+#else
             p -= (u32)loopBack * 4;
+#endif
         }
     }
 }
