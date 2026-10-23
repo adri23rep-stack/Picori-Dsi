@@ -44,3 +44,15 @@ was removed so the reset is real.
 
 Note: compiler/link success still does NOT establish that the final native
 SpritePtr/animation resource loader is ready. E47 does not execute wake-up.
+
+## E48 — upstream GFX slot manager compilation
+
+The original `src/vram.c` now joins native ARM9 build directly, including
+`LoadSwapGFX`, slot reservations/references and their genuine management
+routines. This is the GBA→DSi port's actual original resource manager,
+not a recreated player animation or fake LoadSwapGFX handler.
+
+**Hardware caveat:** GBA VRAM ownership and the original animation pointer
+table are NOT yet translated to DSi VRAM/OAM. Full runtime PlayerInit is
+not enabled and is still intentionally unresolved. Do not call hardware
+transfer paths without mapping native VRAM and validating ROM sources.

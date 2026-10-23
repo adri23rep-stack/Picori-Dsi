@@ -53,6 +53,7 @@ CFILES += dsi_player_init_e45.c
 # E46 experimental direct originals: no replacement player dispatcher / inventory.
 CFILES += player.c itemDefinitions.c itemUtils.c itemMetaData.c mapActTileToSurfaceType.c
 CFILES += dsi_original_extra_sprite_e47.c
+CFILES += vram.c
 export LD := $(CC)
 export OFILES := $(CFILES:.c=.o)
 export INCLUDE := -I$(STAGE_DIR)/source -I$(ROOT_DIR) -I$(ROOT_DIR)/include \
